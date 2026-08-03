@@ -367,10 +367,11 @@
         </div>
     </main>
 
+    <!-- ★ FULL COMPREHENSIVE EDIT MODAL ASSEMBLY ★ -->
     <div id="editModal" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 900px; width: 90%;">
             <h3>Edit Item Details</h3>
-            <form id="editForm" class="modal-grid" novalidate>
+            <form id="editForm" class="modal-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;" novalidate>
                 <input type="hidden" id="editIndex">
 
                 <div class="form-group-custom">
@@ -380,7 +381,7 @@
                 </div>
                 
                 <div class="form-group-custom">
-                    <label>Code</label>
+                    <label>Item Code</label>
                     <input type="text" id="editCode" class="input-field-custom" maxlength="20" required>
                     <div class="error-msg" id="editCodeError"></div>
                 </div>
@@ -392,28 +393,16 @@
                 </div>
 
                 <div class="form-group-custom">
-                    <label>HSN / SAC Code</label>
-                    <input type="text" id="editHsnCode" class="input-field-custom">
-                    <div class="error-msg" id="editHsnCodeError"></div>
-                </div>
-
-                <div class="form-group-custom">
-                    <label>Type</label>
+                    <label>Item Type</label>
                     <select class="input-field-custom" id="editType">
                         <option value="Product">Product</option>
                         <option value="Service">Service</option>
                     </select>
                     <div class="error-msg" id="editTypeError"></div>
                 </div>
-                
+
                 <div class="form-group-custom">
-                    <label>Brand</label>
-                    <input type="text" id="editBrand" class="input-field-custom" maxlength="50">
-                    <div class="error-msg" id="editBrandError"></div>
-                </div>
-                
-                <div class="form-group-custom">
-                    <label>Group</label>
+                    <label>Group / Category</label>
                     <select class="input-field-custom" id="editGroup">
                         <option value="General">General</option>
                         <option value="Electronics">Electronics</option>
@@ -422,11 +411,29 @@
                     </select>
                     <div class="error-msg" id="editGroupError"></div>
                 </div>
+                
+                <div class="form-group-custom">
+                    <label>Brand</label>
+                    <input type="text" id="editBrand" class="input-field-custom" maxlength="50">
+                    <div class="error-msg" id="editBrandError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Unit</label>
+                    <select class="input-field-custom" id="editUnit">
+                        <option value="Pcs">Pcs</option>
+                        <option value="Kg">Kg</option>
+                        <option value="Ltr">Ltr</option>
+                        <option value="Box">Box</option>
+                        <option value="Meter">Meter</option>
+                        <option value="Nos">Nos</option>
+                    </select>
+                    <div class="error-msg" id="editUnitError"></div>
+                </div>
 
                 <div class="form-group-custom">
                     <label>Tax Category</label>
                     <select class="input-field-custom" id="editTaxCategory">
-                        <option value="">Select Tax</option>
                         <option value="Central-12%">Central-12%</option>
                         <option value="Central-18%">Central-18%</option>
                         <option value="Central-28%">Central-28%</option>
@@ -474,26 +481,62 @@
                     </select>
                     <div class="error-msg" id="editTaxCategoryError"></div>
                 </div>
+
+                <div class="form-group-custom">
+                    <label>HSN / SAC Code</label>
+                    <input type="text" id="editHsnCode" class="input-field-custom">
+                    <div class="error-msg" id="editHsnCodeError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Purchase Price</label>
+                    <input type="text" id="editPurchasePrice" class="input-field-custom" placeholder="0.00">
+                    <div class="error-msg" id="editPurchasePriceError"></div>
+                </div>
                 
                 <div class="form-group-custom">
                     <label>Sales Price</label>
-                    <input type="text" id="editPrice" class="input-field-custom">
+                    <input type="text" id="editPrice" class="input-field-custom" placeholder="0.00">
                     <div class="error-msg" id="editPriceError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>MRP</label>
+                    <input type="text" id="editMrp" class="input-field-custom" placeholder="0.00">
+                    <div class="error-msg" id="editMrpError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Packing Dimension</label>
+                    <input type="text" id="editPacking" class="input-field-custom" placeholder="14 cm * 15 cm">
+                    <div class="error-msg" id="editPackingError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Video Link</label>
+                    <input type="url" id="editVideoLink" class="input-field-custom" placeholder="https://youtube.com/...">
+                    <div class="error-msg" id="editVideoLinkError"></div>
                 </div>
                 
                 <div class="form-group-custom">
-                    <label>Stock</label>
+                    <label>Current Stock (Qty)</label>
                     <input type="text" id="editStock" class="input-field-custom">
                     <div class="error-msg" id="editStockError"></div>
                 </div>
+
+                <div class="form-group-custom" style="grid-column: span 2;">
+                    <label>Item Specification</label>
+                    <textarea id="editDescription" class="textarea-field-custom" rows="2" maxlength="1000"></textarea>
+                    <div class="error-msg" id="editDescriptionError"></div>
+                </div>
                 
-                <div class="form-group-custom grid-col-span-full">
+                <div class="form-group-custom" style="grid-column: span 2;">
                     <label>Image URL</label>
                     <input type="url" id="editImageUrl" class="input-field-custom">
                     <div class="error-msg" id="editImageUrlError"></div>
                 </div>
 
-                <div class="form-group-custom grid-col-span-full">
+                <div class="form-group-custom" style="grid-column: span 2;">
                     <label>Or Change Image File (Optional)</label>
                     <div class="modern-file-wrapper">
                         <input type="file" id="editImg" class="file-hidden" accept="image/jpeg, image/jpg, image/png, image/webp">
@@ -502,7 +545,7 @@
                     <div class="error-msg" id="editImgError"></div>
                 </div>
 
-                <div style="grid-column: span 2; margin-top: 20px; display: flex; gap: 10px;">
+                <div style="grid-column: span 2; margin-top: 15px; display: flex; gap: 10px;">
                     <button type="submit" class="action-btn-submit" style="flex:1;"><i class="fa-solid fa-check"></i> Update</button>
                     <button type="button" id="closeModal" class="action-btn-cancel" style="flex:1; background:#64748b;"><i class="fa-solid fa-xmark"></i> Cancel</button>
                 </div>

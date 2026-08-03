@@ -154,6 +154,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Edit Modal file input listener
+    editImgInput.addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            editImgLabel.innerHTML = `<i class="fa-solid fa-check"></i> ${this.files[0].name}`;
+            editImgLabel.style.borderColor = "#10b981";
+        }
+    });
+
     function validateMainForm() {
         let isValid = true;
         if (nameInp.value.trim() === "") { showError(nameInp, 'itemNameError', 'Item Name is required.'); isValid = false; } else clearError(nameInp, 'itemNameError');
@@ -239,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ★ PUT: आयटम एडिट मॉडेल उघडणे
+    // ★ PUT: आयटम एडिट मॉडेल उघडणे (सर्व १६ उपलब्ध फील्ड्स बाइंड केल्या आहेत)
     window.openEditModal = (id) => {
         const item = items.find(x => x.id.toString() === id.toString());
         if (!item) return;
@@ -248,13 +256,19 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('editName').value = item.item_name;
         document.getElementById('editCode').value = item.item_code;
         document.getElementById('editPrintName').value = item.print_name || '';
-        document.getElementById('editHsnCode').value = item.hsn_sac_code || '';
         document.getElementById('editType').value = item.item_type || 'Product';
-        document.getElementById('editBrand').value = item.brand || '';
         document.getElementById('editGroup').value = item.item_group || 'General';
+        document.getElementById('editBrand').value = item.brand || '';
+        document.getElementById('editUnit').value = item.unit || 'Pcs';
         document.getElementById('editTaxCategory').value = item.tax_category || '';
-        document.getElementById('editPrice').value = item.sales_price || item.price;
-        document.getElementById('editStock').value = item.current_stock || item.stock;
+        document.getElementById('editHsnCode').value = item.hsn_sac_code || '';
+        document.getElementById('editPurchasePrice').value = item.purchase_price || '0.00';
+        document.getElementById('editPrice').value = item.sales_price || '0.00';
+        document.getElementById('editMrp').value = item.mrp || '0.00';
+        document.getElementById('editPacking').value = item.packing_dimension || '';
+        document.getElementById('editVideoLink').value = item.video_link || '';
+        document.getElementById('editStock').value = item.current_stock || item.stock || '0';
+        document.getElementById('editDescription').value = item.item_specification || '';
         
         if (item.image_path && item.image_path.startsWith('http')) {
             document.getElementById('editImageUrl').value = item.image_path;
@@ -262,10 +276,12 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('editImageUrl').value = '';
         }
 
+        editImgLabel.innerHTML = '<i class="fa-solid fa-image"></i> Choose Image';
+        editImgLabel.style.borderColor = "";
         editModal.style.display = 'flex';
     };
 
-    // ★ PUT Submit: डेटा अपडेट करणे
+    // ★ PUT Submit: सर्व डेटा एडिट मॉडेल वरून सर्व्हरवर अपडेट करणे
     editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('editIndex').value;
@@ -273,26 +289,38 @@ document.addEventListener("DOMContentLoaded", () => {
         const name = document.getElementById('editName').value.trim();
         const code = document.getElementById('editCode').value.trim();
         const printName = document.getElementById('editPrintName').value.trim();
-        const hsn = document.getElementById('editHsnCode').value.trim();
         const type = document.getElementById('editType').value;
-        const brand = document.getElementById('editBrand').value.trim();
         const group = document.getElementById('editGroup').value;
+        const brand = document.getElementById('editBrand').value.trim();
+        const unit = document.getElementById('editUnit').value;
         const taxCategory = document.getElementById('editTaxCategory').value;
+        const hsn = document.getElementById('editHsnCode').value.trim();
+        const purchasePrice = document.getElementById('editPurchasePrice').value.trim();
         const price = document.getElementById('editPrice').value.trim();
+        const mrp = document.getElementById('editMrp').value.trim();
+        const packing = document.getElementById('editPacking').value.trim();
+        const videoLink = document.getElementById('editVideoLink').value.trim();
         const stock = document.getElementById('editStock').value.trim();
+        const description = document.getElementById('editDescription').value.trim();
         const image = document.getElementById('editImageUrl').value.trim();
 
         const formData = new FormData();
         formData.append('name', name);
         formData.append('code', code);
         formData.append('printName', printName);
-        formData.append('hsn', hsn);
         formData.append('type', type);
-        formData.append('brand', brand);
         formData.append('group', group);
+        formData.append('brand', brand);
+        formData.append('unit', unit);
         formData.append('taxCategory', taxCategory);
+        formData.append('hsn', hsn);
+        formData.append('purchasePrice', purchasePrice);
         formData.append('price', price);
+        formData.append('mrp', mrp);
+        formData.append('packing', packing);
+        formData.append('videoLink', videoLink);
         formData.append('stock', stock);
+        formData.append('description', description);
         formData.append('image', image);
 
         if (editImgInput.files[0]) formData.append('itemImg', editImgInput.files[0]);
@@ -307,10 +335,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Error: " + result.message);
             }
         } catch (err) {
-            // डेटाबेस नसल्यास लोकल ॲरे अपडेट करा
             const idx = items.findIndex(x => x.id.toString() === id.toString());
             if(idx !== -1) {
-                items[idx] = { ...items[idx], item_name: name, item_code: code, print_name: printName, hsn_sac_code: hsn, item_type: type, brand: brand, item_group: group, tax_category: taxCategory, sales_price: price, current_stock: stock, image_path: image };
+                items[idx] = { 
+                    ...items[idx], 
+                    item_name: name, item_code: code, print_name: printName, item_type: type, 
+                    item_group: group, brand: brand, unit: unit, tax_category: taxCategory, 
+                    hsn_sac_code: hsn, purchase_price: purchasePrice, sales_price: price, mrp: mrp, 
+                    packing_dimension: packing, video_link: videoLink, current_stock: stock, 
+                    item_specification: description, image_path: image 
+                };
                 renderTable(items);
                 alert('तात्पुरते लोकल चेंजेस अपडेट झाले!');
             }
@@ -403,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 9. Import / Export (SheetJS चा ओरिजिनल मॅकेनिझम न बदलता ठेवला आहे) ---
+    // --- 9. Import / Export (SheetJS) ---
     const importBtn = document.getElementById('importItemBtn');
     const importInput = document.getElementById('importFileInput');
     const exportBtn = document.getElementById('exportItemBtn');
@@ -461,7 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
 
-                    // डेटाबेस असो वा नसो, लोकल ॲरे आणि टेबल लगेच अपडेट होईल
                     localStorage.setItem('myItems', JSON.stringify(items));
                     renderTable(items);
                     alert('Excel data imported successfully to table!');
