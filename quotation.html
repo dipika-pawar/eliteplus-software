@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | Sales Quotation Voucher</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="quotation.css">
+</head>
+
+<body>
+
+  <header class="mobile-header">
+    <div class="mobile-logo">
+      <i class="fa-solid fa-user-shield"></i>
+      <span>AdminPanel</span>
+    </div>
+    <button class="menu-toggle" id="menuToggle">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div class="brand-info">
+        <h3>ElitePlus</h3>
+        <p>Management System</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-menu">
+      <ul>
+        <li class="menu-item">
+          <a href="dashboard.html">
+            <i class="fa-solid fa-chart-pie menu-icon"></i>
+            <span class="menu-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="company-profile.html">
+            <i class="fa-solid fa-building menu-icon"></i>
+            <span class="menu-text">Company Profile</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="account-master.html">
+            <i class="fa-solid fa-file-invoice-dollar menu-icon"></i>
+            <span class="menu-text">Account Master</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="item-master.html">
+            <i class="fa-solid fa-boxes-stacked menu-icon"></i>
+            <span class="menu-text">Item Master</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="user-management.html">
+            <i class="fa-solid fa-users-gear menu-icon"></i>
+            <span class="menu-text">User Management</span>
+          </a>
+        </li>
+        <li class="menu-item active">
+          <a href="quotation.html">
+            <i class="fa-solid fa-file-lines menu-icon"></i>
+            <span class="menu-text">Quotation</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="logout.html" class="logout-btn">
+        <i class="fa-solid fa-right-from-bracket menu-icon"></i>
+        <span class="menu-text">Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="container-fluid px-0">
+
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div class="dashboard-header">
+          <h1>Modify Sales Quotation Voucher</h1>
+          <p>Create and update official client proposals and inventory pricing allocations.</p>
+        </div>
+        <div>
+          <button type="button" class="btn btn-primary px-4 fw-semibold" id="topVchDetailBtn">
+            <i class="fa-solid fa-circle-info me-2"></i>Vch. Detail
+          </button>
+        </div>
+      </div>
+
+      <div class="voucher-card mb-5" id="voucherFormCard">
+        <h4 class="section-title mb-4" id="formVoucherHeaderTitle"><i class="fa-solid fa-file-signature text-success"></i> Voucher Entry Panel</h4>
+        <form id="quotationForm" autocomplete="off" novalidate>
+
+          <input type="hidden" id="qVoucherTrackIndex" value="">
+
+          <div class="row g-3 parameter-section p-3 mb-4 rounded">
+            <div class="col-md-3">
+              <label class="form-label-custom">Series</label>
+              <input type="text" class="form-control-custom font-weight-bold" value="Main" id="qSeries" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom">Date</label>
+              <input type="text" class="form-control-custom" id="qDate" readonly>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom">Vch No.</label>
+              <input type="text" class="form-control-custom text-danger fw-bold" value="QTN/2026-27/26" id="qVchNo" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom">Sale Type</label>
+              <select class="form-control-custom select-custom" id="qSaleType" required>
+                <option value="I/GST-MultiRate">I/GST-MultiRate</option>
+                <option value="Add. Cess on GST">Add. Cess on GST</option>
+                <option value="Add. Cess on GST (ITC-None)">Add. Cess on GST (ITC-None)</option>
+                <option value="Adjustment">Adjustment</option>
+                <option value="Cess on GST">Cess on GST</option>
+                <option value="Cess on GST (ITC-None)">Cess on GST (ITC-None)</option>
+                <option value="CGST">CGST</option>
+                <option value="CGST (ITC-None)">CGST (ITC-None)</option>
+                <option value="Discount">Discount</option>
+                <option value="Freight & Forwarding Charges">Freight & Forwarding Charges</option>
+                <option value="Fuel Charges">Fuel Charges</option>
+                <option value="IGST">IGST</option>
+                <option value="IGST (Export / SEZ Unit)">IGST (Export / SEZ Unit)</option>
+                <option value="IGST (ITC-None)">IGST (ITC-None)</option>
+                <option value="Rounded Off (-)">Rounded Off (-)</option>
+                <option value="Rounded Off (+)">Rounded Off (+)</option>
+                <option value="SGST">SGST</option>
+                <option value="SGST (ITC-None)">SGST (ITC-None)</option>
+                <option value="Tax Collected at Source">Tax Collected at Source (TCS)</option>
+                <option value="TDS on Pymt./Purc. of Goods">TDS on Pymt./Purc. of Goods</option>
+              </select>
+            </div>
+
+            <div class="col-md-6 position-relative">
+              <label class="form-label-custom">Party Name</label>
+              <input type="text" class="form-control-custom text-primary fw-semibold" placeholder="Type first letter to search party..." id="qParty" required>
+              <div id="partySuggestionsList" class="autocomplete-suggestions-box"></div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom">Mat. Centre</label>
+              <input type="text" class="form-control-custom" value="Main Store" id="qMatCentre" required>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label-custom">Narration</label>
+              <textarea class="form-control-custom rows-textarea" rows="1" placeholder="Enter voucher narration..." id="qNarration"></textarea>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="section-title m-0"><i class="fa-solid fa-list-check"></i> Item Details</h4>
+            <button type="button" class="btn btn-primary btn-sm px-3" id="openAddModalBtn">
+              <i class="fa-solid fa-plus me-2"></i>Add Item
+            </button>
+          </div>
+
+          <div class="table-responsive-custom mb-4">
+            <table class="table-custom text-center" id="itemsTable">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">S.N.</th>
+                  <th class="text-start">Item Description</th>
+                  <th style="width: 100px;">Qty</th>
+                  <th style="width: 100px;">Unit</th>
+                  <th style="width: 140px;">Price (Rs.)</th>
+                  <th style="width: 140px;">Amount (Rs.)</th>
+                  <th style="width: 150px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="itemTableBody">
+              </tbody>
+            </table>
+          </div>
+
+          <div class="row g-4 summary-container p-3 rounded">
+            <div class="col-lg-5">
+              <div class="summary-box h-100 p-3 bg-white border rounded">
+                <h5 class="summary-box-title mb-3"><i class="fa-solid fa-calculator text-muted"></i> Tax Summary</h5>
+                <table class="w-100 small-table">
+                  <thead>
+                    <tr class="border-bottom text-muted">
+                      <th>Tax Rate</th>
+                      <th>Taxable Amt.</th>
+                      <th>IGST</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>18%</td>
+                      <td id="taxableAmt18">0.00</td>
+                      <td id="taxAmt18">0.00</td>
+                    </tr>
+                    <tr>
+                      <td>5%</td>
+                      <td id="taxableAmt5">0.00</td>
+                      <td id="taxAmt5">0.00</td>
+                    </tr>
+                    <tr class="fw-bold text-dark">
+                      <td>Totals</td>
+                      <td id="totalTaxableAmtDisplay">0.00</td>
+                      <td id="totalTaxAmtDisplay">0.00</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-lg-7">
+              <div class="summary-box p-3 bg-white border rounded">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="summary-box-title m-0"><i class="fa-solid fa-receipt text-muted"></i> Bill Sundry Calculations</h5>
+                  <button type="button" class="btn btn-sm btn-outline-primary" style="font-size: 11px;">Apply Tax (F4)</button>
+                </div>
+
+                <table class="w-100 sundry-table text-center">
+                  <thead>
+                    <tr class="text-muted">
+                      <th>S.N.</th>
+                      <th class="text-start">Bill Sundry</th>
+                      <th>@ (%)</th>
+                      <th class="text-end">Amount (Rs.)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td class="text-start fw-medium">IGST</td>
+                      <td>18.000 %</td>
+                      <td class="text-end fw-semibold text-dark" id="sundryAmt18">0.00</td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td class="text-start fw-medium">IGST</td>
+                      <td>5.000 %</td>
+                      <td class="text-end fw-semibold text-dark" id="sundryAmt5">0.00</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <hr class="my-3">
+
+                <div class="row align-items-center mb-3 p-2 bg-light rounded border">
+                  <div class="col-sm-5">
+                    <span class="fw-semibold text-secondary small-label text-uppercase"><i class="fa-solid fa-tags text-danger me-1"></i> Manual Discount Box</span>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm">
+                      <input type="text" id="manualDiscountPercentage" class="form-control text-center fw-bold" placeholder="0.00" value="0.00">
+                      <span class="input-group-text bg-white fw-medium">%</span>
+                    </div>
+                  </div>
+                  <div class="col-sm-4 text-end">
+                    <span class="fw-bold text-danger" id="manualDiscountAmountDisplay">-0.00</span>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded border border-primary border-dashed">
+                  <span class="fw-bold text-secondary text-uppercase fs-6">Grand Total (Currency: Rs.)</span>
+                  <span class="fs-4 fw-bold text-primary" id="grandTotalDisplay">0.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 justify-content-end mt-4 form-action-row flex-wrap align-items-center">
+            <button type="button" class="btn btn-outline-whatsapp px-3" id="btnWhatsAppConfig"><i class="fa-brands fa-whatsapp me-1"></i> WhatsApp</button>
+            <button type="button" class="btn btn-outline-email px-3" id="btnEmailConfig"><i class="fa-solid fa-envelope me-1"></i> Email</button>
+            <button type="button" class="btn btn-outline-primary px-4" id="btnPrintQuotation"><i class="fa-solid fa-print me-1"></i> Print Quotation</button>
+            <button type="button" class="btn btn-outline-success px-4" id="btnPrintCatalog"><i class="fa-solid fa-file-pdf me-1"></i> Print Catalog</button>
+            <button type="submit" class="btn btn-success btn-save-voucher px-5" id="mainVoucherSaveBtn"><i class="fa-solid fa-floppy-disk me-1"></i> Save Voucher</button>
+            <button type="button" class="btn btn-danger btn-quit px-4" onclick="window.location.reload()"><i class="fa-solid fa-right-from-bracket me-1"></i> Quit</button>
+          </div>
+
+        </form>
+      </div>
+
+      <div class="voucher-card" id="voucherDirectoryCard">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h4 class="section-title m-0"><i class="fa-solid fa-folder-tree text-primary"></i> Saved Voucher Details Directory</h4>
+          <div class="d-flex align-items-center gap-2 style-search-container">
+            <input type="text" id="vchSearchBox" class="form-control form-control-sm px-3 py-1.5" style="width: 240px; font-size: 13px; border-radius: 6px; border: 1px solid #cbd5e1;" placeholder="Enter Voucher No. to search...">
+          </div>
+        </div>
+        <div class="table-responsive-custom">
+          <table class="table-custom text-center" id="voucherMasterTable">
+            <thead>
+              <tr>
+                <th style="width: 70px;">S.N.</th>
+                <th>Voucher No.</th>
+                <th>Date</th>
+                <th class="text-start">Party Name</th>
+                <th>Sale Type</th>
+                <th>Grand Total (Rs.)</th>
+                <th style="width: 180px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="voucherMasterTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content style-modal-box">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title" id="addItemModalLabel"><i class="fa-solid fa-box-open me-2"></i> <span id="modalFormMode">Add</span> Item Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="modalItemForm" novalidate>
+          <input type="hidden" id="modalEditIndex" value="">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-secondary">Item Description</label>
+              <input type="text" id="modalItemName" class="form-control" placeholder="Enter item name..." required>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary">Qty</label>
+                <input type="text" id="modalItemQty" class="form-control" placeholder="1.00" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary">Unit</label>
+                <input type="text" id="modalItemUnit" class="form-control" placeholder="Pcs. / Nos" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary">Price (Rs.)</label>
+                <input type="text" id="modalItemPrice" class="form-control" placeholder="0.00" required>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success px-4" id="modalSubmitBtn"><i class="fa-solid fa-check me-1"></i> Add to Table</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="printPreviewModal" tabindex="-1" aria-labelledby="printPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content text-dark">
+        <div class="modal-header bg-secondary text-white justify-content-between py-2 px-3">
+          <h5 class="modal-title fs-6 fw-bold" id="printPreviewModalLabel"><i class="fa-solid fa-file-pdf me-2"></i>Document Printing Preview</h5>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-warning fw-bold px-3 " id="modalDownloadPdfBtn"><i class="fa-solid fa-circle-down me-1"></i>Download PDF</button>
+            <button type="button" class="btn btn-light border fw-bold px-3 " data-bs-dismiss="modal"><i class="fa-solid fa-circle-xmark me-1"></i>Close</button>
+          </div>
+        </div>
+        <div class="modal-body bg-dark-subtle p-4 d-flex justify-content-center">
+
+          <div class="pdf-render-isolation-wrapper">
+            <div id="pdfPrintTargetArea" class="pdf-document-paper">
+              <div class="pdf-inner-border-wrapper">
+
+                <div class="pdf-letterhead-container mb-1">
+                  <div class="logo-wrapper">
+                    <img src="Images/Eliteplus-logo.png" alt="Company Logo" class="pdf-header-logo">
+                  </div>
+                </div>
+
+                <div class="text-center my-1">
+                  <h4 class="pdf-doc-title">SALES QUOTATION</h4>
+                </div>
+
+                <div class="pdf-meta-box-grid mb-2">
+                  <div class="client-address-side p-2">
+                    <span class="fw-bold d-block text-muted small mb-1">To,</span>
+                    <span class="fw-bold fs-6 d-block text-dark">The Principal,</span>
+                    <span class="d-block fw-semibold text-wrap text-dark" id="pdfClientInstitution">Maharshi Karve Stree Shikshan Samstha's</span>
+                    <span class="d-block text-wrap text-dark" id="pdfClientSubName"></span>
+                    <span class="d-block text-muted" id="pdfClientLocation">Karvenagar, Pune 411052</span>
+                    <span class="d-block text-dark small" style="margin-top: 2px;"><strong class="text-secondary">Mobile:</strong> <span id="pdfClientMobile">N/A</span></span>
+                    <span class="d-block text-dark small"><strong class="text-secondary">Email:</strong> <span id="pdfClientEmail">N/A</span></span>
+                    <span class="d-block text-dark small"><strong class="text-secondary">GST No:</strong> <span id="pdfClientGst">N/A</span></span>
+                  </div>
+                  <div class="invoice-meta-side p-2 border-start">
+                    <table class="w-100 table-meta-specs small">
+                      <tr>
+                        <td><strong>Date:</strong></td>
+                        <td id="pdfMetaDate" class="ps-2 text-dark">26/05/2026</td>
+                      </tr>
+                      <tr>
+                        <td><strong>QTN No:</strong></td>
+                        <td id="pdfMetaQtnNo" class="ps-2 text-danger fw-bold">QTN/2026-27/26</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Ref:</strong></td>
+                        <td id="pdfMetaRef" class="ps-2 text-muted">Email</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <p class="small text-dark mb-1 px-1">Dear Sir/Madam,</p>
+                <p class="small text-dark mb-2 px-1">As per your requirement, please find enclosed our offer along with terms and conditions for your kind consideration:</p>
+
+                <div class="pdf-table-wrapper mb-2">
+                  <table class="pdf-items-table w-100 text-center">
+                    <thead>
+                      <tr>
+                        <th style="width: 6%;">Sr No</th>
+                        <th class="text-start" style="width: 38%;">Items Description</th>
+                        <th style="width: 10%;">Brand</th>
+                        <th class="text-end" style="width: 14%;">Price</th>
+                        <th style="width: 6%;">Qty</th>
+                        <th style="width: 6%;">Unit</th>
+                        <th style="width: 8%;">GST %</th>
+                        <th class="text-end" style="width: 12%;">GST Amt</th>
+                        <th class="text-end" style="width: 14%;">Total Amt</th>
+                      </tr>
+                    </thead>
+                    <tbody id="pdfItemRowsTarget">
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="pdf-left-details-block mb-2 px-1">
+                  <div class="pdf-words-amount mb-2">
+                    <strong>INR :</strong> <span id="pdfAmountInWords" class="font-monospace text-dark">Twelve Lakh Ninety Eight Thousand Rupees Only</span>
+                  </div>
+                  <div class="pdf-bank-details-plain">
+                    <div class="fw-bold text-secondary small border-bottom-0 pb-0 mb-1"><i class="fa-solid fa-building-columns me-1"></i> BANK DETAIL</div>
+                    <div class="row font-monospace small g-0">
+                      <div class="col-12">
+                        <div><span class="text-muted">A/C Name:</span> <strong class="text-dark">Elite Plus</strong></div>
+                        <div><span class="text-muted">A/C No:</span> <strong class="text-dark">0787102000005364</strong></div>
+                        <div><span class="text-muted">IFSC Code:</span> <strong class="text-dark">IBKL0000787</strong></div>
+                        <div><span class="text-muted">Bank Name:</span> <strong class="text-dark">IDBI Bank, Warje Pune</strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pdf-bottom-pinned-group">
+                  <div class="pdf-auth-terms-container-row">
+                    <div class="terms-and-conditions-box p-2 bg-light text-dark">
+                      <span class="fw-bold d-block text-secondary small border-bottom pb-1 mb-1"><i class="fa-solid fa-scale-balanced me-1"></i> TERMS & CONDITIONS</span>
+                      <ol class="m-0 ps-3 lh-base text-dark" style="font-size: 11px;">
+                        <li>Packing, Forwarding and Transport Charges inclusive.</li>
+                        <li>Delivery within 2 weeks after receipt of Purchase Order.</li>
+                        <li>Payment 50% advanced and 50% after delivery.</li>
+                        <li>Disputes, if any, are subject to Pune Jurisdiction.</li>
+                        <li>Quotation Validity 30 Days.</li>
+                      </ol>
+                    </div>
+
+                    <div class="center-qr-code-holder border bg-light p-1 d-flex flex-column justify-content-center align-items-center">
+                      <div class="embedded-qr-placeholder-box-real">
+                        <img src="Images/scanner.png" alt="Payment Scanner" class="pdf-scanner-img">
+                      </div>
+                      <span class="text-muted text-uppercase mt-1 font-monospace fw-bold" style="font-size: 9px; letter-spacing: 0.5px;">Scan Validation</span>
+                    </div>
+
+                    <div class="signature-stamp-frame text-center p-2 bg-light d-flex flex-column justify-content-between">
+                      <div class="pt-0 text-dark fw-bold text-uppercase tracking-wide" style="font-size: 11px; font-family: sans-serif;">for Elite Plus</div>
+                      <div class="overlap-stamp-signature-container">
+                        <div class="mock-seal-circle-absolute-image">
+                          <img src="Images/download.jpegstamp.jpeg" alt="Elite Plus Stamp" class="pdf-stamp-real-img">
+                        </div>
+                        <div class="mock-signature-overlay-image-line">
+                          <img src="Images/sign.png" alt="Authorized Signature" class="pdf-signature-real-img">
+                        </div>
+                      </div>
+                      <div class="pt-1 border-top fw-bold text-primary tracking-wider text-uppercase mx-auto w-100" style="font-size: 10px;">Authorized Signatory</div>
+                    </div>
+                  </div>
+
+                  <div class="pdf-corporate-footer-blue-bar text-white d-flex justify-content-between align-items-center">
+                    <div class="legal-address-column small text-start">
+                      <div class="opacity-90 mb-1" style="max-width: 540px; color: #cbd5e1; font-size: 11px;">
+                        <i class="fa-solid fa-location-dot me-1 text-info"></i> Sr.No 175, Fl No #116, F Wing, Laxmi Shantiban, NDA Road, Near Walnut School, Shivane, Pune - 411023, Maharashtra
+                      </div>
+                      <div class="fw-medium font-monospace text-white-50" style="font-size: 10.5px;">
+                        <i class="fa-solid fa-phone me-1 text-info"></i> 9890017812, 020-25291213
+                        <span class="mx-1">|</span>
+                        <i class="fa-solid fa-envelope me-1 text-info"></i> elite.pune@gmail.com
+                        <span class="mx-1">|</span>
+                        <i class="fa-solid fa-globe me-1 text-info"></i> www.eliteplus.in
+                      </div>
+                    </div>
+
+                    <div class="footer-right-side-qr-area bg-white p-1 rounded">
+                      <div class="embedded-qr-placeholder-box-real mini-qr-box">
+                        <img src="Images/scanner.png" alt="Mini Scanner" class="pdf-scanner-img">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="catalogPreviewModal" tabindex="-1" aria-labelledby="catalogPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content text-dark">
+        <div class="modal-header bg-success text-white justify-content-between py-2 px-3">
+          <h5 class="modal-title fs-6 fw-bold" id="catalogPreviewModalLabel"><i class="fa-solid fa-file-pdf me-2"></i>Product Catalog Printing Preview</h5>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-warning fw-bold px-3" id="modalDownloadCatalogBtn"><i class="fa-solid fa-circle-down me-1"></i>Download Catalog PDF</button>
+            <button type="button" class="btn btn-light border fw-bold px-3" data-bs-dismiss="modal"><i class="fa-solid fa-circle-xmark me-1"></i>Close</button>
+          </div>
+        </div>
+        <div class="modal-body bg-dark-subtle p-4 d-flex justify-content-center">
+
+          <div class="pdf-render-isolation-wrapper">
+            <div id="catalogPrintTargetArea" class="pdf-catalog-container">
+
+              <div class="catalog-page">
+                <div class="pdf-inner-border-wrapper">
+
+                  <div class="pdf-letterhead-container mb-2">
+                    <div class="logo-wrapper">
+                      <img src="Images/Eliteplus-logo.png" alt="Company Logo" class="pdf-header-logo">
+                    </div>
+                  </div>
+
+                  <div class="catalog-product-row px-2 py-3">
+                    <h1 class="catalog-screenshot-title">Advanced Practi-Man CPR Manikin</h1>
+                    <div class="catalog-screenshot-code">Code MB 001B AD</div>
+
+                    <div class="product-img-box-clean">
+                      <img src="Images/advanced-practi-man-cpr-manikin-254.jpg" alt="Advanced Practi-Man Kit" onerror="this.onerror=null; this.src='Images/practiman_advanced.png';">
+                    </div>
+
+                    <p class="catalog-screenshot-desc fw-semibold mb-3">
+                      The new Advanced Practi Man Single with Carry Bag & Mat.
+                    </p>
+                    <p class="catalog-screenshot-desc">
+                      Advanced Practi Man can be used as an Adult or Child Manikin with inbuilt chest clicker. Adult, Child & Neutral positions. Realistic head tilt & chest rise, nose pinch. Light weight & portable. Can be used with any AED Trainer. In our opinion this manikin is realistic, great value for money and a fantastic choice for any first aid trainer.
+                    </p>
+                  </div>
+
+                  <div class="pdf-bottom-pinned-group mt-auto">
+                    <div class="pdf-corporate-footer-blue-bar text-white d-flex justify-content-between align-items-center">
+                      <div class="legal-address-column small text-start">
+                        <div class="opacity-90 mb-1" style="max-width: 540px; color: #cbd5e1; font-size: 11px;">
+                          <i class="fa-solid fa-location-dot me-1 text-info"></i> Sr.No 175, Fl No #116, F Wing, Laxmi Shantiban, NDA Road, Near Walnut School, Shivane, Pune - 411023, Maharashtra
+                        </div>
+                        <div class="fw-medium font-monospace text-white-50" style="font-size: 10.5px;">
+                          <i class="fa-solid fa-phone me-1 text-info"></i> 9890017812, 020-25291213
+                          <span class="mx-1">|</span>
+                          <i class="fa-solid fa-envelope me-1 text-info"></i> elite.pune@gmail.com
+                          <span class="mx-1">|</span>
+                          <i class="fa-solid fa-globe me-1 text-info"></i> www.eliteplus.in
+                        </div>
+                      </div>
+                      <div class="footer-right-side-qr-area bg-white p-1 rounded">
+                        <div class="embedded-qr-placeholder-box-real mini-qr-box">
+                          <img src="Images/scanner.png" alt="Mini Scanner" class="pdf-scanner-img">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <div class="catalog-page catalog-page-break">
+                <div class="pdf-inner-border-wrapper">
+
+                  <div class="pdf-letterhead-container mb-2">
+                    <div class="logo-wrapper">
+                      <img src="Images/Eliteplus-logo.png" alt="Company Logo" class="pdf-header-logo">
+                    </div>
+                  </div>
+
+                  <div class="catalog-product-row px-2 py-3">
+                    <h1 class="catalog-screenshot-title">Advanced Practiman Plus CPR Manikin</h1>
+                    <div class="catalog-screenshot-code">Code:1254</div>
+
+                    <div class="product-img-box-clean">
+                      <img src="Images/advanced-practi-man-cpr-manikin-254.jpg" alt="Advanced Practiman Plus Kit" onerror="this.onerror=null; this.src='Images/practiman_plus.png';">
+                    </div>
+
+                    <p class="catalog-screenshot-desc">
+                      The Practi-Man Plus manikin benefits from all of the features of the Advanced manikin and has the added benefit of providing feedback making it ideal for teaching enhanced CPR and BLS courses particularly in the healthcare setting. Each manikin comes with its own feedback device that connects to the manikin via bluetooth. Set up is easy simply turn on the device and press down on the manikin chest to pair the manikin with the device and you are ready to go. The device provides information on speed and depth of compression and release, giving you and your students results that are easy to read.
+                    </p>
+                    <p class="catalog-screenshot-desc mt-2">
+                      This manikin makes delivering training more fun and more informative without the hassle of asking students to download apps to their phones or mobile devices. The Plus Manikin can also be used to demonstrate and practice the insertion and removal of OP airways by removing the airway valve. All of the Practi-man range have a valve system that lets exhaled air vent through the back of the head, providing additional infection control and allows you to change the lungs after each course rather than between students.
+                    </p>
+                    <p class="catalog-screenshot-desc mt-2">
+                      This manikin can be used with face shields or the face skin can be changed between students, this is quick and easy (and environmentally friendly option ) and the added benefit is that in the long-term this can be more cost effective as they can be washed easily after each course and re-used. Packs of face skins are available for all manikins. The latex-free skin is easily wiped clean, making them ideal to use during AED Training.
+                    </p>
+                  </div>
+
+                  <div class="pdf-bottom-pinned-group mt-auto">
+                    <div class="pdf-corporate-footer-blue-bar text-white d-flex justify-content-between align-items-center">
+                      <div class="legal-address-column small text-start">
+                        <div class="opacity-90 mb-1" style="max-width: 540px; color: #cbd5e1; font-size: 11px;">
+                          <i class="fa-solid fa-location-dot me-1 text-info"></i> Sr.No 175, Fl No #116, F Wing, Laxmi Shantiban, NDA Road, Near Walnut School, Shivane, Pune - 411023, Maharashtra
+                        </div>
+                        <div class="fw-medium font-monospace text-white-50" style="font-size: 10.5px;">
+                          <i class="fa-solid fa-phone me-1 text-info"></i> 9890017812, 020-25291213
+                          <span class="mx-1">|</span>
+                          <i class="fa-solid fa-envelope me-1 text-info"></i> elite.pune@gmail.com
+                          <span class="mx-1">|</span>
+                          <i class="fa-solid fa-globe me-1 text-info"></i> www.eliteplus.in
+                        </div>
+                      </div>
+                      <div class="footer-right-side-qr-area bg-white p-1 rounded">
+                        <div class="embedded-qr-placeholder-box-real mini-qr-box">
+                          <img src="Images/scanner.png" alt="Mini Scanner" class="pdf-scanner-img">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <script src="quotation.js"></script>
+</body>
+
+</html>

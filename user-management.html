@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | Layout</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="user-management.css">
+</head>
+
+<body>
+
+  <header class="mobile-header">
+    <div class="mobile-logo">
+      <i class="fa-solid fa-user-shield"></i>
+      <span>AdminPanel</span>
+    </div>
+    <button class="menu-toggle" id="menuToggle">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div class="brand-info">
+        <h3>ElitePlus</h3>
+        <p>Management System</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-menu">
+      <ul>
+        <li class="menu-item">
+          <a href="dashboard.html">
+            <i class="fa-solid fa-chart-pie menu-icon"></i>
+            <span class="menu-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="company-profile.html">
+            <i class="fa-solid fa-building menu-icon"></i>
+            <span class="menu-text">Company Profile</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="account-master.html">
+            <i class="fa-solid fa-file-invoice-dollar menu-icon"></i>
+            <span class="menu-text">Account Master</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="item-master.html">
+            <i class="fa-solid fa-boxes-stacked menu-icon"></i>
+            <span class="menu-text">Item Master</span>
+          </a>
+        </li>
+        <li class="menu-item active">
+          <a href="user-management.html">
+            <i class="fa-solid fa-users-gear menu-icon"></i>
+            <span class="menu-text">User Management</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="quotation.html">
+            <i class="fa-solid fa-file-lines menu-icon"></i>
+            <span class="menu-text">Quotation</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="logout.html" class="logout-btn">
+        <i class="fa-solid fa-right-from-bracket menu-icon"></i>
+        <span class="menu-text">Logout</span>
+      </a>
+    </div>
+  </aside>
+
+
+
+
+<main class="main-content">
+  <div class="container-fluid px-0">
+    <div class="master-card" id="userManagementSection">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h2 class="user-directory-title">User Directory</h2>
+        <input type="text" id="userSearch" class="search-input-custom" placeholder="Search Users...">
+        <button class="btn-add-user" onclick="openUserModal()">
+          <i class="fa-solid fa-plus me-2"></i>Add New User
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive-custom">
+        <table class="table-custom">
+          <thead>
+            <tr>
+              <th>FULL NAME</th><th>USERNAME</th><th>ROLE</th><th>EMAIL</th><th>PHONE</th><th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody">
+            <tr>
+              <td>Rajeev</td><td>admin</td><td>admin</td><td>ceo@smartitbox.in</td><td>8716808360</td>
+              <td>
+                <button class="btn-action-edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button class="btn-action-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Modal (Form) -->
+  <div id="userModal" class="user-modal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Add New User</h3>
+      <input type="hidden" id="editRowId">
+      <input type="text" id="fName" placeholder="Full Name" required>
+      <input type="text" id="uName" placeholder="Username">
+      <input type="text" id="role" placeholder="Role">
+      <input type="email" id="email" placeholder="Email">
+      <input type="tel" id="phone" placeholder="Phone">
+      <div class="modal-btns">
+        <button class="btn-save" onclick="saveUser()">Save Changes</button>
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bundle.min.js"></script>
+  <script src="user-management.js"></script>
+</body>
+
+</html>

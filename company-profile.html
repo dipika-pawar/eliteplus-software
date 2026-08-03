@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | Layout</title>
+
+  <!-- External Stylesheets -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Link to Custom Separate CSS -->
+  <link rel="stylesheet" href="company-profile.css">
+</head>
+
+<body>
+
+  <header class="mobile-header">
+    <div class="mobile-logo">
+      <i class="fa-solid fa-user-shield"></i>
+      <span>AdminPanel</span>
+    </div>
+    <button class="menu-toggle" id="menuToggle">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div class="brand-info">
+        <h3>ElitePlus</h3>
+        <p>Management System</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-menu">
+      <ul>
+        <li class="menu-item">
+          <a href="dashboard.html">
+            <i class="fa-solid fa-chart-pie menu-icon"></i>
+            <span class="menu-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="menu-item active">
+          <a href="company-profile.html">
+            <i class="fa-solid fa-building menu-icon"></i>
+            <span class="menu-text">Company Profile</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="account-master.html">
+            <i class="fa-solid fa-file-invoice-dollar menu-icon"></i>
+            <span class="menu-text">Account Master</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="item-master.html">
+            <i class="fa-solid fa-boxes-stacked menu-icon"></i>
+            <span class="menu-text">Item Master</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="user-management.html">
+            <i class="fa-solid fa-users-gear menu-icon"></i>
+            <span class="menu-text">User Management</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="quotation.html">
+            <i class="fa-solid fa-file-lines menu-icon"></i>
+            <span class="menu-text">Quotation</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="logout.html" class="logout-btn">
+        <i class="fa-solid fa-right-from-bracket menu-icon"></i>
+        <span class="menu-text">Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="container-fluid px-0">
+
+      <div class="dashboard-header">
+        <h1>Company Profile</h1>
+        <p>Manage organizational metrics, dynamic legal registers, and identity variables</p>
+      </div>
+
+      <div class="card card-box mb-5">
+        <h3 class="page-subheading"><i class="fa-solid fa-building-circle-check"></i> Comprehensive Company Profile</h3>
+        <form id="companyProfileForm" onsubmit="event.preventDefault();" novalidate>
+          <input type="hidden" id="editRowId">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="form-group-custom">
+                <label>Company Name</label>
+                <input type="text" id="compName" class="form-control-custom" placeholder="Enter Company Name">
+                <div class="error-feedback" id="err-compName"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group-custom">
+                <label>Print Name</label>
+                <input type="text" id="printName" class="form-control-custom" placeholder="Name to appear on print">
+                <div class="error-feedback" id="err-printName"></div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group-custom">
+                <label>GST Number</label>
+                <input type="text" id="gstNumber" class="form-control-custom" placeholder="Enter GST No">
+                <div class="error-feedback" id="err-gstNumber"></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group-custom">
+                <label>GST Status</label>
+                <select id="gstStatus" class="form-control-custom" style="appearance: auto;">
+                  <option value="">Select Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+                <div class="error-feedback" id="err-gstStatus"></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group-custom">
+                <label>PAN Number</label>
+                <input type="text" id="panNumber" class="form-control-custom" placeholder="PAN No">
+                <div class="error-feedback" id="err-panNumber"></div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group-custom">
+                <label>CIN Number</label>
+                <input type="text" id="cinNumber" class="form-control-custom" placeholder="CIN No (Required if registered)">
+                <div class="error-feedback" id="err-cinNumber"></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group-custom">
+                <label>TAN Number</label>
+                <input type="text" id="tanNumber" class="form-control-custom" placeholder="TAN No">
+                <div class="error-feedback" id="err-tanNumber"></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group-custom">
+                <label>MSME / UDYAM Number</label>
+                <input type="text" id="udyamNumber" class="form-control-custom" placeholder="Enter Udyam No">
+                <div class="error-feedback" id="err-udyamNumber"></div>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>F.Y Beginning</label>
+                <input type="text" id="fyBeginning" class="form-control-custom" placeholder="2026">
+                <div class="error-feedback" id="err-fyBeginning"></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>Email Address</label>
+                <input type="email" id="compEmail" class="form-control-custom" placeholder="Email">
+                <div class="error-feedback" id="err-compEmail"></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>Mobile Number</label>
+                <input type="text" id="compMobile" class="form-control-custom" placeholder="Mobile">
+                <div class="error-feedback" id="err-compMobile"></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>Website URL</label>
+                <input type="url" id="compWebsite" class="form-control-custom" placeholder="https://website.com">
+                <div class="error-feedback" id="err-compWebsite"></div>
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="form-group-custom">
+                <label>Multiple Bank Accounts</label>
+                <textarea id="bankAccounts" class="form-control-custom" rows="2" placeholder="Bank Name, A/c No, IFSC (Comma separated)"></textarea>
+                <div class="error-feedback" id="err-bankAccounts"></div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="form-group-custom">
+                <label>Registered Address</label>
+                <textarea id="regAddress" class="form-control-custom" rows="2" placeholder="Enter Full Address"></textarea>
+                <div class="error-feedback" id="err-regAddress"></div>
+              </div>
+            </div>
+
+            <!-- फाईल अपलोडिंग ग्रिड (नवीन स्टॅम्प फील्डसह ३ ऐवजी ४ कॉलम्स) -->
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>Company Logo</label>
+                <div class="upload-box-wrapper" id="wrapper-logoFile" tabindex="0"><i class="fa-solid fa-cloud-arrow-up"></i>
+                  <p class="mb-0 text-preview" style="font-size: 12px;">Upload Logo</p>
+                  <input type="file" id="logoFile" class="file-input-detector" accept=".jpg,.png,.jpeg">
+                </div>
+                <div class="error-feedback" id="err-logoFile"></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>UPI QR Code</label>
+                <div class="upload-box-wrapper" id="wrapper-qrFile" tabindex="0"><i class="fa-solid fa-qrcode"></i>
+                  <p class="mb-0 text-preview" style="font-size: 12px;">Upload QR</p>
+                  <input type="file" id="qrFile" class="file-input-detector" accept=".jpg,.png,.jpeg">
+                </div>
+                <div class="error-feedback" id="err-qrFile"></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>Company Stamp</label>
+                <div class="upload-box-wrapper" id="wrapper-stampFile" tabindex="0"><i class="fa-solid fa-stamp"></i>
+                  <p class="mb-0 text-preview" style="font-size: 12px;">Upload Stamp</p>
+                  <input type="file" id="stampFile" class="file-input-detector" accept=".jpg,.png,.jpeg">
+                </div>
+                <div class="error-feedback" id="err-stampFile"></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>Authorized Signature</label>
+                <div class="upload-box-wrapper" id="wrapper-signFile" tabindex="0"><i class="fa-solid fa-signature"></i>
+                  <p class="mb-0 text-preview" style="font-size: 12px;">Upload Signature</p>
+                  <input type="file" id="signFile" class="file-input-detector" accept=".jpg,.png,.jpeg">
+                </div>
+                <div class="error-feedback" id="err-signFile"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 p-3 border rounded bg-light" style="border-style: dashed !important;">
+            <h6 class="text-primary"><i class="fa-solid fa-eye"></i> Letterhead Preview</h6>
+            <p class="text-muted small">Your official documents will be generated with these saved details.</p>
+          </div>
+
+          <div class="mt-4">
+            <button type="submit" id="btnSaveCompany" class="btn btn-action-primary">
+              <i class="fa-solid fa-floppy-disk me-2"></i> Save Company Profile
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card card-box">
+        <h3 class="page-subheading"><i class="fa-solid fa-building"></i> Company Profile Directory</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <span class="text-muted small fw-medium">Manage corporate identities, legal numbers and system master entities</span>
+          
+          <div class="d-flex align-items-center gap-3 ms-auto flex-wrap">
+            <div class="search-input-group">
+              <i class="fa-solid fa-magnifying-glass search-icon-inside"></i>
+              <input type="text" id="tableSearchInput" class="search-control-custom" placeholder="Search by first letter...">
+            </div>
+            <button class="btn btn-action-success" id="btnAddNewCompany">
+              <i class="fa-solid fa-plus me-2"></i> Add New Profile
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive-wrapper">
+          <table class="table table-modern table-hover align-middle" id="companyDatagrid">
+            <thead>
+              <tr>
+                <th class="text-start">Company Name</th>
+                <th>Print Name</th>
+                <th>GST No</th>
+                <th>GST Status</th>
+                <th>PAN No</th>
+                <th>CIN No</th>
+                <th>TAN No</th>
+                <th>MSME No</th>
+                <th>F.Y. Start</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>Website</th>
+                <th>Bank Details</th>
+                <th>Address</th>
+                <th>Logo</th>
+                <th>QR Code</th>
+                <th>Stamp</th>
+                <th>Signature</th>
+                <th class="text-end action-column">Action</th>
+              </tr>
+            </thead>
+            <tbody id="companyTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="company-profile.js"></script>
+</body>
+
+</html>

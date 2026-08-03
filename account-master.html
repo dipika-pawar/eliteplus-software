@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | Layout</title>
+
+  <!-- External Framework Links -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom Stylesheet Link -->
+  <link rel="stylesheet" href="account-master.css">
+</head>
+
+<body>
+
+  <header class="mobile-header">
+    <div class="mobile-logo">
+      <i class="fa-solid fa-user-shield"></i>
+      <span>AdminPanel</span>
+    </div>
+    <button class="menu-toggle" id="menuToggle">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div class="brand-info">
+        <h3>ElitePlus</h3>
+        <p>Management System</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-menu">
+      <ul>
+        <li class="menu-item">
+          <a href="dashboard.html">
+            <i class="fa-solid fa-chart-pie menu-icon"></i>
+            <span class="menu-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="company-profile.html">
+            <i class="fa-solid fa-building menu-icon"></i>
+            <span class="menu-text">Company Profile</span>
+          </a>
+        </li>
+        <li class="menu-item active">
+          <a href="account-master.html">
+            <i class="fa-solid fa-file-invoice-dollar menu-icon"></i>
+            <span class="menu-text">Account Master</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="item-master.html">
+            <i class="fa-solid fa-boxes-stacked menu-icon"></i>
+            <span class="menu-text">Item Master</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="user-management.html">
+            <i class="fa-solid fa-users-gear menu-icon"></i>
+            <span class="menu-text">User Management</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="quotation.html">
+            <i class="fa-solid fa-file-lines menu-icon"></i>
+            <span class="menu-text">Quotation</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="logout.html" class="logout-btn">
+        <i class="fa-solid fa-right-from-bracket menu-icon"></i>
+        <span class="menu-text">Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="container-fluid px-0">
+
+      <div class="account-master-section animate-fade-in">
+
+        <div class="master-card mb-4" id="accountFormCard">
+          <div class="master-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h2 class="master-title" id="formCardTitle">💼 Account Master <span class="badge-enhanced">Enhanced</span>
+            </h2>
+            <button type="button" class="btn-top-action" id="scrollListBtn">View Account List</button>
+          </div>
+
+          <div class="master-card-body">
+            <ul class="nav nav-tabs mb-4" id="accountTabs" role="tablist">
+              <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#basicInfo">Basic Info</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#taxInfo">Tax Info</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#addressInfo">Address</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#creditControl">Credit Control</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">Documents</button></li>
+            </ul>
+
+            <form id="accountForm" novalidate>
+              <div class="tab-content">
+                <div class="tab-pane fade show active" id="basicInfo">
+                  <div class="row g-3">
+                    <div class="col-md-4"><label>Print Name</label><input type="text" class="form-input-custom" id="printName"></div>
+                    <div class="col-md-4"><label>Group</label><select class="form-input-custom" id="accGroup">
+                        <option value="">Select Group</option>
+                        <option value="Sundry Debtors">Sundry Debtors</option>
+                        <option value="Sundry Creditors">Sundry Creditors</option>
+                        <option value="Bank Accounts">Bank Accounts</option>
+                        <option value="Cash-in-Hand">Cash-in-Hand</option>
+                      </select></div>
+                    <div class="col-md-2"><label>Opening Bal</label><input type="text" class="form-input-custom" id="opBal"></div>
+                    <div class="col-md-2"><label>Dr/Cr</label><select class="form-input-custom" id="balType">
+                        <option value="">Select</option>
+                        <option value="Dr">Dr</option>
+                        <option value="Cr">Cr</option>
+                      </select></div>
+                    <div class="col-md-3"><label>Credit Limit</label><input type="text" class="form-input-custom" id="creditLimit"></div>
+                    <div class="col-md-3"><label>Email ID</label><input type="email" class="form-input-custom" id="emailId"></div>
+                    <div class="col-md-3"><label>Mobile No</label><input type="text" class="form-input-custom" id="mobileNo"></div>
+                    <div class="col-md-3"><label>WhatsApp No</label><input type="text" class="form-input-custom" id="whatsappNo"></div>
+                    <div class="col-md-3"><label>Telephone</label><input type="text" class="form-input-custom" id="telNo"></div>
+                    <div class="col-md-3"><label>Transport</label><input type="text" class="form-input-custom" id="transport"></div>
+                    <div class="col-md-3"><label>Station</label><input type="text" class="form-input-custom" id="station"></div>
+                    <div class="col-md-3"><label>Pin Code</label><input type="text" class="form-input-custom" id="pinCode"></div>
+                    <div class="col-md-4"><label>MSME Type</label><select class="form-input-custom" id="msmeType">
+                        <option value="">Select MSME Type</option>
+                        <option value="Micro">Micro</option>
+                        <option value="Small">Small</option>
+                        <option value="Medium">Medium</option>
+                      </select></div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="taxInfo">
+                  <div class="row g-3">
+                    <div class="col-md-3"><label>Dealer Type</label><select class="form-input-custom" id="dealerType">
+                        <option value="">Select Dealer Type</option>
+                        <option value="Registered">Registered</option>
+                        <option value="Unregistered">Unregistered</option>
+                      </select></div>
+                    <div class="col-md-3"><label>GSTIN No</label><input type="text" class="form-input-custom" id="gstinNo"></div>
+                    <div class="col-md-3"><label>PAN No</label><input type="text" class="form-input-custom" id="panNo"></div>
+                    <div class="col-md-3"><label>CIN No</label><input type="text" class="form-input-custom" id="cinNo"></div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="addressInfo">
+                  <div class="row g-3">
+                    <div class="col-md-6"><label>Billing Address</label><textarea class="form-input-custom" id="billAddr" rows="3"></textarea></div>
+                    <div class="col-md-6">
+                      <div class="d-flex justify-content-between">
+                        <label>Shipping Address</label>
+                        <div class="form-check form-check-inline m-0 p-0" style="font-size: 12px; transform: translateY(-2px);">
+                          <input class="form-check-input" type="checkbox" id="sameAsBilling" style="margin-right: 4px; cursor: pointer;">
+                          <label class="form-check-label" for="sameAsBilling" style="cursor: pointer; text-transform: none;">Same as Billing</label>
+                        </div>
+                      </div>
+                      <textarea class="form-input-custom" id="shipAddr" rows="3"></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="creditControl">
+                  <div class="row g-3">
+                    <div class="col-md-3"><label>Credit Days</label><input type="number" class="form-input-custom" id="creditDays"></div>
+                    <div class="col-md-3"><label>Credit Limit Value</label><input type="number" class="form-input-custom" id="creditLimitVal"></div>
+                    <div class="col-md-3"><label>Outstanding Alert</label><select class="form-input-custom" id="outAlert">
+                        <option value="">Select</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select></div>
+                    <div class="col-md-3"><label>Block Sales</label><select class="form-input-custom" id="blockSales">
+                        <option value="">Select</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select></div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="documents">
+                  <div class="row g-3">
+                    <div class="col-md-4"><label>PAN Upload</label><input type="file" class="form-input-custom" id="panFile" accept=".jpg,.jpeg,.png"></div>
+                    <div class="col-md-4"><label>GST Certificate</label><input type="file" class="form-input-custom" id="gstFile" accept=".jpg,.jpeg,.png"></div>
+                    <div class="col-md-4"><label>MSME Certificate</label><input type="file" class="form-input-custom" id="msmeFile" accept=".jpg,.jpeg,.png"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Save Account</button>
+                <button type="button" class="btn btn-secondary">Reset</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="master-card" id="accountListCard">
+          <div class="master-card-header d-flex justify-content-between align-items-center flex-wrap gap-3 p-3">
+            <div class="d-flex align-items-center gap-2">
+              <h2 class="master-title m-0">📊 Account List</h2>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary" id="addAccountBtn">
+                <i class="fa-solid fa-plus me-1"></i> Add Account Master
+              </button>
+
+              <div class="d-flex gap-2 align-items-center">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name..." style="width: 200px;">
+              </div>
+
+              <button class="btn btn-action btn-import" id="importAccountBtn">
+                <i class="fa-solid fa-upload me-1"></i> Import
+              </button>
+
+              <input type="file" id="importFile" accept=".xlsx, .xls" style="display: none;">
+
+              <button class="btn btn-action btn-export" id="exportAccountBtn">
+                <i class="fa-solid fa-download me-1"></i> Export
+              </button>
+            </div>
+          </div>
+
+          <div class="master-card-body p-0">
+            <div class="table-responsive-custom">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Group</th>
+                    <th>Opening Bal</th>
+                    <th>Dr/Cr</th>
+                    <th>Credit Limit</th>
+                    <th>Email ID</th>
+                    <th>Mobile No</th>
+                    <th>WhatsApp</th>
+                    <th>Telephone</th>
+                    <th>Transport</th>
+                    <th>Station</th>
+                    <th>Pin Code</th>
+                    <th>MSME Type</th>
+                    <th>Dealer Type</th>
+                    <th>GST No</th>
+                    <th>PAN No</th>
+                    <th>CIN No</th>
+                    <th>Billing Addr</th>
+                    <th>Shipping Addr</th>
+                    <th>Credit Days</th>
+                    <th>Credit Limit Val</th>
+                    <th>Out Alert</th>
+                    <th>Block Sales</th>
+                    <th>PAN Doc</th>
+                    <th>GST Doc</th>
+                    <th>MSME Doc</th>
+                    <th>Status</th>
+                    <th style="width: 170px; text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="accountTableBody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <div class="modal fade" id="editAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content custom-modal">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Account Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editAccountForm" novalidate>
+            <input type="hidden" id="editRowIndex">
+            <div class="row g-3">
+              <div class="col-md-6"><label>Name</label><input type="text" class="form-control" id="editPrintName"></div>
+              <div class="col-md-6"><label>Group</label><input type="text" class="form-control" id="editAccGroup"></div>
+              <div class="col-md-6"><label>Opening Bal</label><input type="text" class="form-control" id="editOpBal"></div>
+              <div class="col-md-6"><label>Dr/Cr</label><input type="text" class="form-control" id="editBalType"></div>
+              <div class="col-md-6"><label>Credit Limit</label><input type="text" class="form-control" id="editCreditLimit"></div>
+              <div class="col-md-6"><label>Email ID</label><input type="email" class="form-control" id="editEmailId"></div>
+              <div class="col-md-6"><label>Mobile No</label><input type="text" class="form-control" id="editMobileNo"></div>
+              <div class="col-md-6"><label>WhatsApp</label><input type="text" class="form-control" id="editWhatsapp"></div>
+              <div class="col-md-6"><label>Telephone</label><input type="text" class="form-control" id="editTelNo"></div>
+              <div class="col-md-6"><label>Transport</label><input type="text" class="form-control" id="editTransport"></div>
+              <div class="col-md-6"><label>Station</label><input type="text" class="form-control" id="editStation"></div>
+              <div class="col-md-6"><label>Pin Code</label><input type="text" class="form-control" id="editPinCode"></div>
+              <div class="col-md-6"><label>MSME Type</label><input type="text" class="form-control" id="editMsmeType"></div>
+              <div class="col-md-6"><label>Dealer Type</label><input type="text" class="form-control" id="editDealerType"></div>
+              <div class="col-md-6"><label>GST No</label><input type="text" class="form-control" id="editGstinNo"></div>
+              <div class="col-md-6"><label>PAN No</label><input type="text" class="form-control" id="editPanNo"></div>
+              <div class="col-md-6"><label>CIN No</label><input type="text" class="form-control" id="editCinNo"></div>
+              <div class="col-md-6"><label>Billing Address</label><textarea class="form-control" id="editBillAddr" rows="2"></textarea></div>
+              <div class="col-md-6"><label>Shipping Address</label><textarea class="form-control" id="editShipAddr" rows="2"></textarea></div>
+              <div class="col-md-6"><label>Credit Days</label><input type="number" class="form-control" id="editCreditDays"></div>
+              <div class="col-md-6"><label>Credit Limit Val</label><input type="number" class="form-control" id="editCreditLimitVal"></div>
+              <div class="col-md-6"><label>Outstanding Alert</label><input type="text" class="form-control" id="editOutAlert"></div>
+              <div class="col-md-6"><label>Block Sales</label><input type="text" class="form-control" id="editBlockSales"></div>
+            </div>
+            <div class="modal-footer mt-3">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary btn-update-submit">Update Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Libraries and Controller -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="account-master.js"></script>
+</body>
+
+</html>
