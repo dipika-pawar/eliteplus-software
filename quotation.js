@@ -1,6 +1,6 @@
 /**
  * ElitePlus ERP Voucher Calculation & Print Synchronization Engine
- * Full Stack System Integration Matrix - Fixed Dynamic Autocomplete & Company Media Assets
+ * Full Stack System Integration Matrix - Quotation & Dynamic Catalog Print Pipeline
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -170,7 +170,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("modalItemPrice").value = matchedItem.sales_price;
                 itemNameInp.dataset.hsn = matchedItem.hsn_sac_code;
                 itemNameInp.dataset.brand = matchedItem.brand || '-';
-                itemNameInp.dataset.taxRate = matchedItem.tax_category.match(/\d+/)?.[0] || 18;
+                itemNameInp.dataset.code = matchedItem.item_code || '-';
+                itemNameInp.dataset.image = matchedItem.image_path || '';
+                itemNameInp.dataset.spec = matchedItem.item_specification || '';
+                itemNameInp.dataset.taxRate = matchedItem.tax_category ? (matchedItem.tax_category.match(/\d+/)?.[0] || 18) : 18;
             }
          });
       }
@@ -179,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- 3. COMPANY MASTER DYNAMIC Letterhead, Logo, Scanner & Signature Binding ---
+  // --- 3. COMPANY MASTER DYNAMIC Letterhead, Logo, Scanner, Stamp & Signature Binding ---
   async function fetchActiveCompanyProfile() {
     try {
       const response = await fetch(COMPANY_API);
@@ -187,13 +190,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if(data && data.length > 0) {
          systemCompanyProfile = data[0]; 
          
-         // 1. Top Header Logo Binding
-         const logoImg = document.querySelector(".pdf-header-logo");
-         if(logoImg && systemCompanyProfile.logo_file) {
-            logoImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`;
-         }
+         const logoImages = document.querySelectorAll(".pdf-header-logo");
+         logoImages.forEach(logoImg => {
+            if(systemCompanyProfile.logo_file) {
+               logoImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`;
+            }
+         });
          
-         // 2. UPI QR Code Scanner Binding (Main & Mini)
          const qrImages = document.querySelectorAll(".pdf-scanner-img");
          qrImages.forEach(img => {
             if(systemCompanyProfile.qr_file) {
@@ -201,38 +204,38 @@ document.addEventListener("DOMContentLoaded", () => {
             }
          });
 
-         // 3. Authorized Signature Binding
          const signImg = document.querySelector(".pdf-signature-real-img");
          if(signImg && systemCompanyProfile.signature_file) {
             signImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.signature_file}`;
          }
 
-         // 4. Authorized Stamp/Seal Binding (If applicable, using signature_file or logo as fallback, or custom mapping)
          const stampImg = document.querySelector(".pdf-stamp-real-img");
-         if(stampImg && systemCompanyProfile.logo_file) {
+         if(stampImg && systemCompanyProfile.stamp_file) {
+            stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.stamp_file}`; 
+         } else if (stampImg && systemCompanyProfile.logo_file) {
             stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`; 
          }
 
-         // 5. Letterhead Dynamic Company Legal Fields Mapping
-         const companyTitleHeader = document.querySelector(".pt-0.text-dark.fw-bold.text-uppercase");
+         const companyTitleHeader = document.querySelector(".signature-stamp-frame .fw-bold");
          if(companyTitleHeader) {
             companyTitleHeader.textContent = `for ${systemCompanyProfile.company_name}`;
          }
 
-         const addressDiv = document.querySelector(".legal-address-column .opacity-90");
-         if(addressDiv) {
-            addressDiv.innerHTML = `<i class="fa-solid fa-location-dot me-1 text-info"></i> ${systemCompanyProfile.registered_address}`;
-         }
-         const contactDiv = document.querySelector(".legal-address-column .fw-medium");
-         if(contactDiv) {
-            contactDiv.innerHTML = `
+         const addressDivs = document.querySelectorAll(".legal-address-column .opacity-90");
+         addressDivs.forEach(div => {
+            div.innerHTML = `<i class="fa-solid fa-location-dot me-1 text-info"></i> ${systemCompanyProfile.registered_address}`;
+         });
+
+         const contactDivs = document.querySelectorAll(".legal-address-column .fw-medium");
+         contactDivs.forEach(div => {
+            div.innerHTML = `
                <i class="fa-solid fa-phone me-1 text-info"></i> ${systemCompanyProfile.company_mobile}
                <span class="mx-1">|</span>
                <i class="fa-solid fa-envelope me-1 text-info"></i> ${systemCompanyProfile.company_email}
                <span class="mx-1">|</span>
                <i class="fa-solid fa-globe me-1 text-info"></i> ${systemCompanyProfile.company_website || '-'}
             `;
-         }
+         });
          
          const bankBlock = document.querySelector(".pdf-bank-details-plain .font-monospace");
          if(bankBlock && systemCompanyProfile.bank_accounts) {
@@ -551,6 +554,9 @@ document.addEventListener("DOMContentLoaded", () => {
                  gstRate: parseFloat(item.tax_rate),
                  hsn: item.hsn_sac_code || '',
                  brand: item.brand || '-',
+                 code: item.item_code || '-',
+                 image: item.image_path || '',
+                 spec: item.item_specification || '',
                  taxableAmount: parseFloat(item.taxable_amount),
                  taxAmount: parseFloat(item.tax_amount),
                  discountValue: 0
@@ -601,8 +607,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const gstRate = parseFloat(targetInput.dataset.taxRate) || 18;
       const hsn = targetInput.dataset.hsn || "";
       const brand = targetInput.dataset.brand || "-";
+      const code = targetInput.dataset.code || "-";
+      const image = targetInput.dataset.image || "";
+      const spec = targetInput.dataset.spec || "";
 
-      const payload = { name, qty, unit, price, gstRate, hsn, brand, discountValue: 0 };
+      const payload = { name, qty, unit, price, gstRate, hsn, brand, code, image, spec, discountValue: 0 };
 
       if (editIndexValue !== "") {
         currentItemsList[parseInt(editIndexValue)] = payload;
@@ -668,7 +677,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
       }
 
-      // लोड लाइव्ह डेटा थेट प्रिंट लेआउटमध्ये पाठवणे
       document.getElementById("pdfClientInstitution").textContent = partyInp.value || "The Principal";
       document.getElementById("pdfClientSubName").textContent = partyInp.dataset.sub || 'Sundry Debtors Division';
       document.getElementById("pdfClientLocation").textContent = partyInp.dataset.location || 'Pune, Maharashtra';
@@ -712,6 +720,101 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- 9. DYNAMIC PRINT CATALOG GENERATOR PIPELINE ---
+  if (document.getElementById("btnPrintCatalog")) {
+    document.getElementById("btnPrintCatalog").addEventListener("click", () => {
+      let catalogList = currentItemsList.length > 0 ? currentItemsList : lastSavedItemsSnapshot;
+      if (catalogList.length === 0) return alert("Validation Error: No dynamic item configurations available to print catalog.");
+
+      const catalogContainer = document.getElementById("catalogPrintTargetArea");
+      if (!catalogContainer) return;
+
+      catalogContainer.innerHTML = ""; // जुना स्टॅटिक डेटा क्लिअर करा
+
+      catalogList.forEach((item, index) => {
+        // आयटम मास्टरमधून अतिरिक्त तपशील (Code, Image, Specification) मॅच करा
+        const matchedMaster = systemItemsMasterList.find(x => x.item_name.toLowerCase() === item.name.toLowerCase());
+        
+        const itemCode = matchedMaster?.item_code || item.code || 'N/A';
+        const itemSpec = matchedMaster?.item_specification || item.spec || 'No specification available for this item.';
+        
+        let imageSrc = 'Images/advanced-practi-man-cpr-manikin-254.jpg'; // फॉलबॅक इमेज
+        if (matchedMaster && matchedMaster.image_path) {
+          imageSrc = matchedMaster.image_path.startsWith('http') || matchedMaster.image_path.startsWith('data:') 
+                     ? matchedMaster.image_path 
+                     : `http://localhost:5000${matchedMaster.image_path}`;
+        } else if (item.image) {
+          imageSrc = item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`;
+        }
+
+        const logoSrc = (systemCompanyProfile && systemCompanyProfile.logo_file) 
+                          ? `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}` 
+                          : 'Images/Eliteplus-logo.png';
+        
+        const qrSrc = (systemCompanyProfile && systemCompanyProfile.qr_file) 
+                        ? `http://localhost:5000/uploads/${systemCompanyProfile.qr_file}` 
+                        : 'Images/scanner.png';
+
+        const regAddress = systemCompanyProfile?.registered_address || 'Sr.No 175, Fl No #116, Shivane, Pune - 411023';
+        const mobileNo = systemCompanyProfile?.company_mobile || '9890017812';
+        const emailId = systemCompanyProfile?.company_email || 'elite.pune@gmail.com';
+        const websiteUrl = systemCompanyProfile?.company_website || 'www.eliteplus.in';
+
+        // प्रत्येक प्रॉडक्टसाठी स्वतंत्र A4 पेज लेआउट तयार करा
+        const pageDiv = document.createElement("div");
+        pageDiv.className = `catalog-page ${index > 0 ? 'catalog-page-break' : ''}`;
+        
+        pageDiv.innerHTML = `
+          <div class="pdf-inner-border-wrapper">
+            <div class="pdf-letterhead-container mb-2">
+              <div class="logo-wrapper">
+                <img src="${logoSrc}" alt="Company Logo" class="pdf-header-logo">
+              </div>
+            </div>
+
+            <div class="catalog-product-row px-2 py-3">
+              <h1 class="catalog-screenshot-title">${item.name}</h1>
+              <div class="catalog-screenshot-code">Code: ${itemCode}</div>
+
+              <div class="product-img-box-clean">
+                <img src="${imageSrc}" alt="${item.name}" onerror="this.onerror=null; this.src='Images/advanced-practi-man-cpr-manikin-254.jpg';">
+              </div>
+
+              <p class="catalog-screenshot-desc mt-2">
+                ${itemSpec}
+              </p>
+            </div>
+
+            <div class="pdf-bottom-pinned-group mt-auto">
+              <div class="pdf-corporate-footer-blue-bar text-white d-flex justify-content-between align-items-center">
+                <div class="legal-address-column small text-start">
+                  <div class="opacity-90 mb-1" style="max-width: 540px; color: #cbd5e1; font-size: 11px;">
+                    <i class="fa-solid fa-location-dot me-1 text-info"></i> ${regAddress}
+                  </div>
+                  <div class="fw-medium font-monospace text-white-50" style="font-size: 10.5px;">
+                    <i class="fa-solid fa-phone me-1 text-info"></i> ${mobileNo}
+                    <span class="mx-1">|</span>
+                    <i class="fa-solid fa-envelope me-1 text-info"></i> ${emailId}
+                    <span class="mx-1">|</span>
+                    <i class="fa-solid fa-globe me-1 text-info"></i> ${websiteUrl}
+                  </div>
+                </div>
+                <div class="footer-right-side-qr-area bg-white p-1 rounded">
+                  <div class="embedded-qr-placeholder-box-real mini-qr-box">
+                    <img src="${qrSrc}" alt="Mini Scanner" class="pdf-scanner-img">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        catalogContainer.appendChild(pageDiv);
+      });
+
+      catalogPreviewModal.show();
+    });
+  }
+
   function translateAmountIntoWords(amount) {
     let primaryValue = Math.floor(amount);
     let unitsList = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
@@ -736,9 +839,21 @@ document.addEventListener("DOMContentLoaded", () => {
       html2pdf().set({ margin: 0, filename: `Quotation-${cleanVch}.pdf`, image: { type: "jpeg", quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: "pt", format: "a4", orientation: "portrait" } }).from(el).save();
   });
 
+  document.getElementById("modalDownloadCatalogBtn")?.addEventListener("click", () => {
+      const catalogElement = document.getElementById("catalogPrintTargetArea");
+      const catalogOptions = {
+        margin: 0,
+        filename: "Product-Catalog.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, scrollX: 0 },
+        jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"], before: ".catalog-page-break" }
+      };
+      html2pdf().set(catalogOptions).from(catalogElement).save();
+  });
+
   document.getElementById("topVchDetailBtn")?.addEventListener("click", () => document.getElementById("voucherDirectoryCard").scrollIntoView({ behavior: "smooth" }));
   document.getElementById("openAddModalBtn")?.addEventListener("click", () => bootstrapItemModal.show());
-  document.getElementById("btnPrintCatalog")?.addEventListener("click", () => catalogPreviewModal.show());
   document.getElementById("btnWhatsAppConfig")?.addEventListener("click", () => window.open(`https://web.whatsapp.com/send?phone=7721092805&text=Hello`, "_blank"));
   document.getElementById("btnEmailConfig")?.addEventListener("click", () => window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=kalpande402@gmail.com&su=Quotation`, "_blank"));
 
