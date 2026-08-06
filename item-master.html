@@ -367,11 +367,11 @@
         </div>
     </main>
 
-    <!-- ★ FULL COMPREHENSIVE EDIT MODAL ASSEMBLY ★ -->
+    <!-- ★ परिपूर्ण सर्वसमावेशक एडिट मॉडेल रचना (All 20 Columns Supported) ★ -->
     <div id="editModal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 900px; width: 90%;">
+        <div class="modal-content" style="max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 25px;">
             <h3>Edit Item Details</h3>
-            <form id="editForm" class="modal-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;" novalidate>
+            <form id="editForm" class="modal-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;" novalidate>
                 <input type="hidden" id="editIndex">
 
                 <div class="form-group-custom">
@@ -434,6 +434,7 @@
                 <div class="form-group-custom">
                     <label>Tax Category</label>
                     <select class="input-field-custom" id="editTaxCategory">
+                        <option value="">Select Tax</option>
                         <option value="Central-12%">Central-12%</option>
                         <option value="Central-18%">Central-18%</option>
                         <option value="Central-28%">Central-28%</option>
@@ -490,43 +491,43 @@
 
                 <div class="form-group-custom">
                     <label>Purchase Price</label>
-                    <input type="text" id="editPurchasePrice" class="input-field-custom" placeholder="0.00">
+                    <input type="text" id="editPurchasePrice" class="input-field-custom">
                     <div class="error-msg" id="editPurchasePriceError"></div>
                 </div>
                 
                 <div class="form-group-custom">
                     <label>Sales Price</label>
-                    <input type="text" id="editPrice" class="input-field-custom" placeholder="0.00">
+                    <input type="text" id="editPrice" class="input-field-custom">
                     <div class="error-msg" id="editPriceError"></div>
                 </div>
 
                 <div class="form-group-custom">
                     <label>MRP</label>
-                    <input type="text" id="editMrp" class="input-field-custom" placeholder="0.00">
+                    <input type="text" id="editMrp" class="input-field-custom">
                     <div class="error-msg" id="editMrpError"></div>
                 </div>
 
                 <div class="form-group-custom">
                     <label>Packing Dimension</label>
-                    <input type="text" id="editPacking" class="input-field-custom" placeholder="14 cm * 15 cm">
+                    <input type="text" id="editPacking" class="input-field-custom">
                     <div class="error-msg" id="editPackingError"></div>
                 </div>
 
                 <div class="form-group-custom">
                     <label>Video Link</label>
-                    <input type="url" id="editVideoLink" class="input-field-custom" placeholder="https://youtube.com/...">
+                    <input type="url" id="editVideoLink" class="input-field-custom">
                     <div class="error-msg" id="editVideoLinkError"></div>
                 </div>
                 
                 <div class="form-group-custom">
-                    <label>Current Stock (Qty)</label>
+                    <label>Current Stock</label>
                     <input type="text" id="editStock" class="input-field-custom">
                     <div class="error-msg" id="editStockError"></div>
                 </div>
 
                 <div class="form-group-custom" style="grid-column: span 2;">
                     <label>Item Specification</label>
-                    <textarea id="editDescription" class="textarea-field-custom" rows="2" maxlength="1000"></textarea>
+                    <textarea id="editDescription" class="textarea-field-custom" rows="3" maxlength="1000"></textarea>
                     <div class="error-msg" id="editDescriptionError"></div>
                 </div>
                 
@@ -545,7 +546,7 @@
                     <div class="error-msg" id="editImgError"></div>
                 </div>
 
-                <div style="grid-column: span 2; margin-top: 15px; display: flex; gap: 10px;">
+                <div style="grid-column: span 2; margin-top: 20px; display: flex; gap: 10px;">
                     <button type="submit" class="action-btn-submit" style="flex:1;"><i class="fa-solid fa-check"></i> Update</button>
                     <button type="button" id="closeModal" class="action-btn-cancel" style="flex:1; background:#64748b;"><i class="fa-solid fa-xmark"></i> Cancel</button>
                 </div>

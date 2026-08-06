@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const editImgInput = document.getElementById('editImg');
     const editImgLabel = document.getElementById('editImgLabel');
 
-    // ग्लोबल आयटम्स लिस्ट होल्डर (डेटाबेस नसताना बॅकअप म्हणून वापरण्यासाठी)
+    // ग्लोबल आयटम्स लिस्ट होल्डर
     let items = [];
 
     // ★ GET: डेटाबेसवरून सर्व आयटम फेच करा
@@ -62,16 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 items = await response.json();
                 renderTable(items);
             } else {
-                // डेटाबेस रिस्पॉन्स मिळाला नाही तर लोकल डेटा दाखवा
                 renderTable(items);
             }
         } catch (error) {
             console.warn("डेटाबेस कनेक्ट नाही, लोकल मेमरी डेटा वापरत आहे.");
-            renderTable(items); // सर्व्हर बंद असेल तरी टेबलमध्ये डेटा दिसेल
+            renderTable(items);
         }
     }
 
-    // पेज लोड झाल्यावर लगेच डेटा फेच करा
     fetchItems();
 
     // --- Enter Key Navigation System ---
@@ -115,7 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
         printNameInp.value = nameInp.value;
     });
 
-    // Real-time Calculation & Service Check
     typeInp.addEventListener('change', () => {
         if (typeInp.value === 'Service') {
             stockInp.value = "0"; stockInp.disabled = true; stockValInp.value = "0.00";
@@ -133,13 +130,11 @@ document.addEventListener("DOMContentLoaded", () => {
     stockInp.addEventListener('input', autoCalculateStockValue);
     purchaseInp.addEventListener('input', autoCalculateStockValue);
 
-    // Block Non-Numeric HSN Input
     hsnInp.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') return; 
         if (e.which < 48 || e.target.value.length >= 10) e.preventDefault();
     });
 
-    // --- File Input Labels ---
     itemImgInput.addEventListener('change', function () {
         if (this.files && this.files[0]) {
             imgLabel.innerHTML = `<i class="fa-solid fa-check"></i> ${this.files[0].name}`;
@@ -154,7 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Edit Modal file input listener
     editImgInput.addEventListener('change', function () {
         if (this.files && this.files[0]) {
             editImgLabel.innerHTML = `<i class="fa-solid fa-check"></i> ${this.files[0].name}`;
@@ -173,10 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return isValid;
     }
 
-    // ★ POST: नवीन आयटम डेटाबेस किंवा लोकल टेबलमध्ये सेव्ह करा
     itemForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         if (!validateMainForm()) return;
 
         const generatedId = Date.now();
@@ -238,7 +230,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Error: " + result.message);
             }
         } catch (err) {
-            // जर डेटाबेस बंद असेल, तरी लोकल टेबलमध्ये डेटा जोडा आणि दाखवा
             console.error("Database not present. Saving to local table UI.");
             items.push(localItemObj);
             renderTable(items);
@@ -247,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ★ PUT: आयटम एडिट मॉडेल उघडणे (सर्व १६ उपलब्ध फील्ड्स बाइंड केल्या आहेत)
+    // ★ PUT: आयटम एडिट मॉडेल उघडणे (आता सर्व २० कॉलम्स व्हेरिएबल्स लोड होतील)
     window.openEditModal = (id) => {
         const item = items.find(x => x.id.toString() === id.toString());
         if (!item) return;
@@ -267,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('editMrp').value = item.mrp || '0.00';
         document.getElementById('editPacking').value = item.packing_dimension || '';
         document.getElementById('editVideoLink').value = item.video_link || '';
-        document.getElementById('editStock').value = item.current_stock || item.stock || '0';
+        document.getElementById('editStock').value = item.current_stock || '0';
         document.getElementById('editDescription').value = item.item_specification || '';
         
         if (item.image_path && item.image_path.startsWith('http')) {
@@ -281,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editModal.style.display = 'flex';
     };
 
-    // ★ PUT Submit: सर्व डेटा एडिट मॉडेल वरून सर्व्हरवर अपडेट करणे
+    // ★ PUT Submit: डेटा अपडेट करणे (सर्व फिल्ड्स समाविष्ट केल्या आहेत)
     editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('editIndex').value;
@@ -361,7 +352,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     alert('Item deleted from database!'); fetchItems();
                 }
             } catch (err) {
-                // डेटाबेस नसल्यास लोकल डिलीट चालवा
                 items = items.filter(x => x.id.toString() !== id.toString());
                 renderTable(items);
                 alert('आयटम लोकल टेबलमधून काढून टाकला!');
@@ -369,7 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Table UI Renderer Logic
+    // Table UI Renderer Logic (Displays all 20 layout values)
     function renderTable(list) {
         itemTableBody.innerHTML = '';
         if(!list || list.length === 0) {
