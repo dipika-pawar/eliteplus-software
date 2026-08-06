@@ -100,107 +100,96 @@
           </div>
 
           <div class="master-card-body">
-            <ul class="nav nav-tabs mb-4" id="accountTabs" role="tablist">
-              <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#basicInfo">Basic Info</button></li>
-              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#taxInfo">Tax Info</button></li>
-              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#addressInfo">Address</button></li>
-              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#creditControl">Credit Control</button></li>
-              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">Documents</button></li>
-            </ul>
-
             <form id="accountForm" novalidate>
-              <div class="tab-content">
-                <div class="tab-pane fade show active" id="basicInfo">
-                  <div class="row g-3">
-                    <div class="col-md-4"><label>Print Name</label><input type="text" class="form-input-custom" id="printName"></div>
-                    <div class="col-md-4"><label>Group</label><select class="form-input-custom" id="accGroup">
-                        <option value="">Select Group</option>
-                        <option value="Sundry Debtors">Sundry Debtors</option>
-                        <option value="Sundry Creditors">Sundry Creditors</option>
-                        <option value="Bank Accounts">Bank Accounts</option>
-                        <option value="Cash-in-Hand">Cash-in-Hand</option>
-                      </select></div>
-                    <div class="col-md-2"><label>Opening Bal</label><input type="text" class="form-input-custom" id="opBal"></div>
-                    <div class="col-md-2"><label>Dr/Cr</label><select class="form-input-custom" id="balType">
-                        <option value="">Select</option>
-                        <option value="Dr">Dr</option>
-                        <option value="Cr">Cr</option>
-                      </select></div>
-                    <div class="col-md-3"><label>Credit Limit</label><input type="text" class="form-input-custom" id="creditLimit"></div>
-                    <div class="col-md-3"><label>Email ID</label><input type="email" class="form-input-custom" id="emailId"></div>
-                    <div class="col-md-3"><label>Mobile No</label><input type="text" class="form-input-custom" id="mobileNo"></div>
-                    <div class="col-md-3"><label>WhatsApp No</label><input type="text" class="form-input-custom" id="whatsappNo"></div>
-                    <div class="col-md-3"><label>Telephone</label><input type="text" class="form-input-custom" id="telNo"></div>
-                    <div class="col-md-3"><label>Transport</label><input type="text" class="form-input-custom" id="transport"></div>
-                    <div class="col-md-3"><label>Station</label><input type="text" class="form-input-custom" id="station"></div>
-                    <div class="col-md-3"><label>Pin Code</label><input type="text" class="form-input-custom" id="pinCode"></div>
-                    <div class="col-md-4"><label>MSME Type</label><select class="form-input-custom" id="msmeType">
-                        <option value="">Select MSME Type</option>
-                        <option value="Micro">Micro</option>
-                        <option value="Small">Small</option>
-                        <option value="Medium">Medium</option>
-                      </select></div>
-                  </div>
-                </div>
+              
+              <!-- 1. Basic Info Section -->
+              <div class="form-section-title"><i class="fa-solid fa-info-circle me-2"></i>Basic Information</div>
+              <div class="row g-3">
+                <div class="col-md-4"><label>Party Name</label><input type="text" class="form-input-custom" id="printName"></div>
+                <div class="col-md-4"><label>Group</label><select class="form-input-custom" id="accGroup">
+                    <option value="">Select Group</option>
+                    <option value="Sundry Debtors">Sundry Debtors</option>
+                    <option value="Sundry Creditors">Sundry Creditors</option>
+                  </select></div>
+                <div class="col-md-2"><label>Opening Bal</label><input type="text" class="form-input-custom" id="opBal"></div>
+                <div class="col-md-2"><label>Dr/Cr</label><select class="form-input-custom" id="balType">
+                    <option value="">Select</option>
+                    <option value="Dr">Dr</option>
+                    <option value="Cr">Cr</option>
+                  </select></div>
+                <div class="col-md-3"><label>Credit Limit</label><input type="text" class="form-input-custom" id="creditLimit"></div>
+                <div class="col-md-3"><label>Email ID</label><input type="email" class="form-input-custom" id="emailId"></div>
+                <div class="col-md-3"><label>Mobile No</label><input type="text" class="form-input-custom" id="mobileNo" maxlength="10"></div>
+                <div class="col-md-3"><label>WhatsApp No</label><input type="text" class="form-input-custom" id="whatsappNo" maxlength="10"></div>
+                <div class="col-md-3"><label>Telephone</label><input type="text" class="form-input-custom" id="telNo"></div>
+                <div class="col-md-3"><label>Transport</label><input type="text" class="form-input-custom" id="transport"></div>
+                <div class="col-md-3"><label>Station</label><input type="text" class="form-input-custom" id="station"></div>
+                <div class="col-md-3"><label>Pin Code</label><input type="text" class="form-input-custom" id="pinCode" maxlength="6"></div>
+                <div class="col-md-4"><label>MSME Type</label><select class="form-input-custom" id="msmeType">
+                    <option value="">Select MSME Type</option>
+                    <option value="Micro">Micro</option>
+                    <option value="Small">Small</option>
+                    <option value="Medium">Medium</option>
+                  </select></div>
+              </div>
 
-                <div class="tab-pane fade" id="taxInfo">
-                  <div class="row g-3">
-                    <div class="col-md-3"><label>Dealer Type</label><select class="form-input-custom" id="dealerType">
-                        <option value="">Select Dealer Type</option>
-                        <option value="Registered">Registered</option>
-                        <option value="Unregistered">Unregistered</option>
-                      </select></div>
-                    <div class="col-md-3"><label>GSTIN No</label><input type="text" class="form-input-custom" id="gstinNo"></div>
-                    <div class="col-md-3"><label>PAN No</label><input type="text" class="form-input-custom" id="panNo"></div>
-                    <div class="col-md-3"><label>CIN No</label><input type="text" class="form-input-custom" id="cinNo"></div>
-                  </div>
-                </div>
+              <!-- 2. Tax Info Section -->
+              <div class="form-section-title"><i class="fa-solid fa-receipt me-2"></i>Tax Information</div>
+              <div class="row g-3">
+                <div class="col-md-3"><label>Dealer Type</label><select class="form-input-custom" id="dealerType">
+                    <option value="">Select Dealer Type</option>
+                    <option value="Registered">Registered</option>
+                    <option value="Unregistered">Unregistered</option>
+                  </select></div>
+                <div class="col-md-3"><label>GSTIN No</label><input type="text" class="form-input-custom" id="gstinNo" maxlength="15"></div>
+                <div class="col-md-3"><label>PAN No</label><input type="text" class="form-input-custom" id="panNo" maxlength="10"></div>
+                <div class="col-md-3"><label>CIN No</label><input type="text" class="form-input-custom" id="cinNo"></div>
+              </div>
 
-                <div class="tab-pane fade" id="addressInfo">
-                  <div class="row g-3">
-                    <div class="col-md-6"><label>Billing Address</label><textarea class="form-input-custom" id="billAddr" rows="3"></textarea></div>
-                    <div class="col-md-6">
-                      <div class="d-flex justify-content-between">
-                        <label>Shipping Address</label>
-                        <div class="form-check form-check-inline m-0 p-0" style="font-size: 12px; transform: translateY(-2px);">
-                          <input class="form-check-input" type="checkbox" id="sameAsBilling" style="margin-right: 4px; cursor: pointer;">
-                          <label class="form-check-label" for="sameAsBilling" style="cursor: pointer; text-transform: none;">Same as Billing</label>
-                        </div>
-                      </div>
-                      <textarea class="form-input-custom" id="shipAddr" rows="3"></textarea>
+              <!-- 3. Address Info Section -->
+              <div class="form-section-title"><i class="fa-solid fa-location-dot me-2"></i>Address Details</div>
+              <div class="row g-3">
+                <div class="col-md-6"><label>Billing Address</label><textarea class="form-input-custom" id="billAddr" rows="3"></textarea></div>
+                <div class="col-md-6">
+                  <div class="d-flex justify-content-between">
+                    <label>Shipping Address</label>
+                    <div class="form-check form-check-inline m-0 p-0" style="font-size: 12px; transform: translateY(-2px);">
+                      <input class="form-check-input" type="checkbox" id="sameAsBilling" style="margin-right: 4px; cursor: pointer;">
+                      <label class="form-check-label" for="sameAsBilling" style="cursor: pointer; text-transform: none;">Same as Billing</label>
                     </div>
                   </div>
-                </div>
-
-                <div class="tab-pane fade" id="creditControl">
-                  <div class="row g-3">
-                    <div class="col-md-3"><label>Credit Days</label><input type="number" class="form-input-custom" id="creditDays"></div>
-                    <div class="col-md-3"><label>Credit Limit Value</label><input type="number" class="form-input-custom" id="creditLimitVal"></div>
-                    <div class="col-md-3"><label>Outstanding Alert</label><select class="form-input-custom" id="outAlert">
-                        <option value="">Select</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select></div>
-                    <div class="col-md-3"><label>Block Sales</label><select class="form-input-custom" id="blockSales">
-                        <option value="">Select</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select></div>
-                  </div>
-                </div>
-
-                <div class="tab-pane fade" id="documents">
-                  <div class="row g-3">
-                    <div class="col-md-4"><label>PAN Upload</label><input type="file" class="form-input-custom" id="panFile" accept=".jpg,.jpeg,.png"></div>
-                    <div class="col-md-4"><label>GST Certificate</label><input type="file" class="form-input-custom" id="gstFile" accept=".jpg,.jpeg,.png"></div>
-                    <div class="col-md-4"><label>MSME Certificate</label><input type="file" class="form-input-custom" id="msmeFile" accept=".jpg,.jpeg,.png"></div>
-                  </div>
+                  <textarea class="form-input-custom" id="shipAddr" rows="3"></textarea>
                 </div>
               </div>
 
-              <div class="mt-4">
-                <button type="submit" class="btn btn-primary">Save Account</button>
-                <button type="button" class="btn btn-secondary">Reset</button>
+              <!-- 4. Credit Control Section -->
+              <div class="form-section-title"><i class="fa-solid fa-sliders me-2"></i>Credit Control</div>
+              <div class="row g-3">
+                <div class="col-md-3"><label>Credit Days</label><input type="number" class="form-input-custom" id="creditDays"></div>
+                <div class="col-md-3"><label>Credit Limit Value</label><input type="number" class="form-input-custom" id="creditLimitVal"></div>
+                <div class="col-md-3"><label>Outstanding Alert</label><select class="form-input-custom" id="outAlert">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select></div>
+                <div class="col-md-3"><label>Block Sales</label><select class="form-input-custom" id="blockSales">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select></div>
+              </div>
+
+              <!-- 5. Documents Upload Section (Only Image Files Allowed) -->
+              <div class="form-section-title"><i class="fa-solid fa-folder-open me-2"></i>Documents</div>
+              <div class="row g-3">
+                <div class="col-md-4"><label>PAN Upload</label><input type="file" class="form-input-custom" id="panFile" accept="image/*"></div>
+                <div class="col-md-4"><label>GST Certificate</label><input type="file" class="form-input-custom" id="gstFile" accept="image/*"></div>
+                <div class="col-md-4"><label>MSME Certificate</label><input type="file" class="form-input-custom" id="msmeFile" accept="image/*"></div>
+              </div>
+
+              <div class="mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary me-2">Save Account</button>
+                <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
               </div>
             </form>
           </div>
@@ -217,7 +206,7 @@
               </button>
 
               <div class="d-flex gap-2 align-items-center">
-                <input type="text" id="searchInput" class="form-control" placeholder="Search by name..." style="width: 200px;">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by party name..." style="width: 200px;">
               </div>
 
               <button class="btn btn-action btn-import" id="importAccountBtn">
@@ -237,7 +226,7 @@
               <table class="table-custom">
                 <thead>
                   <tr>
-                    <th>Name</th>
+                    <th>Party Name</th>
                     <th>Group</th>
                     <th>Opening Bal</th>
                     <th>Dr/Cr</th>
@@ -290,7 +279,7 @@
           <form id="editAccountForm" novalidate>
             <input type="hidden" id="editRowIndex">
             <div class="row g-3">
-              <div class="col-md-6"><label>Name</label><input type="text" class="form-control" id="editPrintName"></div>
+              <div class="col-md-6"><label>Party Name</label><input type="text" class="form-control" id="editPrintName"></div>
               <div class="col-md-6"><label>Group</label><input type="text" class="form-control" id="editAccGroup"></div>
               <div class="col-md-6"><label>Opening Bal</label><input type="text" class="form-control" id="editOpBal"></div>
               <div class="col-md-6"><label>Dr/Cr</label><input type="text" class="form-control" id="editBalType"></div>
@@ -324,9 +313,11 @@
     </div>
   </div>
 
-  <!-- Script Libraries and Controller -->
+  <!-- Script Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <!-- Custom Application Script -->
   <script src="account-master.js"></script>
 </body>
 
