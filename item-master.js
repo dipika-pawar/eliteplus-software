@@ -167,6 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return isValid;
     }
 
+    // ★ POST: नवीन आयटम डेटाबेस किंवा लोकल टेबलमध्ये सेव्ह करा
     itemForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!validateMainForm()) return;
@@ -192,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
             video_link: videoInp.value.trim(),
             item_specification: descInp.value.trim(),
             image_path: imgUrlInp.value.trim(),
+            pdf_path: itemPdfInput.files[0] ? itemPdfInput.files[0].name : '',
             current_stock: stockInp.value.trim()
         };
 
@@ -238,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ★ PUT: आयटम एडिट मॉडेल उघडणे (आता सर्व २० कॉलम्स व्हेरिएबल्स लोड होतील)
+    // ★ PUT: आयटम एडिट मॉडेल उघडणे (सर्व कॉलम्स लोड होतील)
     window.openEditModal = (id) => {
         const item = items.find(x => x.id.toString() === id.toString());
         if (!item) return;
@@ -272,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editModal.style.display = 'flex';
     };
 
-    // ★ PUT Submit: डेटा अपडेट करणे (सर्व फिल्ड्स समाविष्ट केल्या आहेत)
+    // ★ PUT Submit: सर्व्हिस ग्रिड डेटा रिफ्लेक्शन अपडेट पाइपलाइन
     editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('editIndex').value;
@@ -359,11 +361,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Table UI Renderer Logic (Displays all 20 layout values)
+    // Table UI Renderer Logic (२० व्या कॉलममध्ये Brochure PDF चा पाथ/लिंक दाखवणे)
     function renderTable(list) {
         itemTableBody.innerHTML = '';
         if(!list || list.length === 0) {
-            itemTableBody.innerHTML = `<tr><td colspan="20" style="text-align:center; padding:20px; color:#64748b;">No items available.</td></tr>`;
+            itemTableBody.innerHTML = `<tr><td colspan="21" style="text-align:center; padding:20px; color:#64748b;">No items available.</td></tr>`;
             return;
         }
 
@@ -372,6 +374,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (item.image_path && item.image_path.trim() !== "") {
                 const srcPath = item.image_path.startsWith('http') || item.image_path.startsWith('data:') ? item.image_path : `http://localhost:5000${item.image_path}`;
                 imgHtml = `<img src="${srcPath}" alt="${item.item_name}" class="table-item-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'table-item-icon-placeholder\'><i class=\'fa-solid fa-image-broken\'></i></div>';">`;
+            }
+
+            // २० व्या कॉलमसाठी Brochure PDF पाथ किंवा डाउनलोड लिंक मॅपिंग
+            let pdfHtml = '-';
+            if (item.pdf_path && item.pdf_path.trim() !== "" && item.pdf_path !== "-") {
+                const pdfUrl = item.pdf_path.startsWith('http') ? item.pdf_path : `http://localhost:5000${item.pdf_path}`;
+                const pdfFileName = item.pdf_path.split('/').pop();
+                pdfHtml = `<a href="${pdfUrl}" target="_blank" style="color:#ef4444; font-weight:600; text-decoration:none;" title="${pdfFileName}"><i class="fa-solid fa-file-pdf me-1"></i> View PDF</a>`;
             }
 
             const tr = document.createElement('tr');
@@ -395,6 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${item.video_link ? `<a href="${item.video_link}" target="_blank" style="color:#2563eb; text-decoration:none;"><i class="fa-solid fa-video"></i> View</a>` : '-'}</td>
                 <td title="${item.item_specification || ''}">${item.item_specification ? (item.item_specification.length > 15 ? item.item_specification.substring(0, 15) + '...' : item.item_specification) : '-'}</td>
                 <td><span class="stock-td highlight-stock">${item.current_stock || '0'}</span></td>
+                <td>${pdfHtml}</td> <!-- २० वा कॉलम: Brochure PDF पाथ -->
                 <td class="action-td-buttons">
                     <button class="t-btn btn-edit" onclick="openEditModal(${item.id})"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
                     <button class="t-btn btn-delete" onclick="deleteItem(${item.id})"><i class="fa-solid fa-trash"></i> Delete</button>
@@ -480,7 +491,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                 video_link: item["Video Link"] || item.videoLink || "",
                                 item_specification: item["Item Specification"] || item.description || "",
                                 current_stock: (item.Stock || item.stock || 0).toString(),
-                                image_path: item.Image || item.image || item["Image URL"] || ""
+                                image_path: item.Image || item.image || item["Image URL"] || "",
+                                pdf_path: item.Brochure || item["Brochure (PDF)"] || ""
                             });
                         }
                     });
@@ -509,7 +521,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Opening Stock Qty": item.opening_stock_qty, "Opening Stock Value": item.opening_stock_value,
                 "Purchase Price": item.purchase_price, "Sales Price": item.sales_price, "MRP": item.mrp,
                 "Packing Dimension": item.packing_dimension, "Video Link": item.video_link,
-                "Item Specification": item.item_specification, "Stock": item.current_stock, "Image URL": item.image_path
+                "Item Specification": item.item_specification, "Stock": item.current_stock, "Image URL": item.image_path,
+                "Brochure (PDF)": item.pdf_path
             }));
             const worksheet = XLSX.utils.json_to_sheet(exportCleanList);
             const workbook = XLSX.utils.book_new();
