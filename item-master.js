@@ -83,11 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const nextElement = formFocusableElements[index + 1];
                 if (nextElement) {
                     nextElement.focus();
-                    if (nextElement.tagName === 'SELECT') {
-                        if (typeof nextElement.showPicker === 'function') {
-                            try { nextElement.showPicker(); } catch (err) { console.log(err); }
-                        }
-                    }
                     if (nextElement.tagName === 'INPUT' || nextElement.tagName === 'TEXTAREA') {
                         nextElement.select();
                     }
