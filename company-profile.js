@@ -111,6 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const tr = document.createElement('tr');
         tr.setAttribute('data-id', company.id);
         
+        // स्वल्पविराम ऐवजी '|' चा वापर करून बँक डिटेल मॅप करणे
+        const formattedBankAccounts = company.bank_accounts ? company.bank_accounts.replaceAll(',', ' |') : '-';
+
         tr.innerHTML = `
           <td class="fw-semibold t-compName">${company.company_name}</td>
           <td class="t-printName">${company.print_name}</td>
@@ -124,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td class="t-compEmail">${company.company_email}</td>
           <td class="t-compMobile">${company.company_mobile}</td>
           <td class="t-compWebsite">${company.company_website || '-'}</td>
-          <td class="t-bankAccounts" title="${company.bank_accounts || '-'}">${company.bank_accounts || '-'}</td>
+          <td class="t-bankAccounts" title="${formattedBankAccounts}">${formattedBankAccounts}</td>
           <td class="t-regAddress" title="${company.registered_address}">${company.registered_address}</td>
           <td class="t-logoFile"><span class="table-file-badge" title="${company.logo_file}">${company.logo_file}</span></td>
           <td class="t-qrFile"><span class="table-file-badge" title="${company.qr_file}">${company.qr_file}</span></td>
@@ -189,7 +192,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const compEmail = document.getElementById('compEmail').value.trim();
     const compMobile = document.getElementById('compMobile').value.trim();
     const compWebsite = document.getElementById('compWebsite').value.trim();
-    const bankAccounts = document.getElementById('bankAccounts').value.trim();
+    
+    // युझरने कॉमा टाकल्यास तो डेटा '|' ने सेपरेट होईल
+    let bankAccounts = document.getElementById('bankAccounts').value.trim();
+    bankAccounts = bankAccounts.replaceAll(',', ' |');
+
     const regAddress = document.getElementById('regAddress').value.trim();
 
     const isEditMode = editRowIdInput.value !== '';
@@ -333,8 +340,11 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const webVal = row.querySelector('.t-compWebsite').innerText;
       document.getElementById('compWebsite').value = webVal === '-' ? '' : webVal;
+      
+      // एडिट करताना कॉमा असला तरी '|' ने रिप्लेस करणे
       const bankVal = row.querySelector('.t-bankAccounts').getAttribute('title');
-      document.getElementById('bankAccounts').value = bankVal === '-' ? '' : bankVal;
+      document.getElementById('bankAccounts').value = bankVal === '-' ? '' : bankVal.replaceAll(',', ' |');
+      
       document.getElementById('regAddress').value = row.querySelector('.t-regAddress').getAttribute('title');
 
       const currentLogo = row.querySelector('.t-logoFile span').getAttribute('title');
