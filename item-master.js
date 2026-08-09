@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     
-    // बॅकएंड एपीआय मुख्य URL मॅपिंग
+    // Backend API Main URL Mapping
     const API_URL = 'http://localhost:5000/api/item';
-    const UNIT_API_URL = 'http://localhost:5000/api/unit'; // डायनॅमिक युनिट एपीआय
+    const UNIT_API_URL = 'http://localhost:5000/api/unit'; // Dynamic Unit API
 
     // --- 1. Sidebar Toggle ---
     const menuToggle = document.getElementById("menuToggle");
@@ -61,9 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const newUnitNameInp = document.getElementById('newUnitName');
     const editUnitInp = document.getElementById('editUnit');
 
-    let targetUnitDropdown = unitInp; 
+    let targetUnitDropdown = unitInp; // Used to determine which dropdown to set the unit in upon adding
 
-    // ग्लोबल आयटम्स लिस्ट होल्डर
+    // Global Items List Holder
     let items = [];
 
     // --- Dynamic Custom Units Management System (Backend Integrated) ---
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ★ Save Unit: डेटाबेसमध्ये युनिट सेव्ह करा आणि ड्रॉपडाउनमध्ये जोडा
+    // ★ Save Unit: Save unit to database and add to dropdown
     if (btnSaveUnit) {
         btnSaveUnit.addEventListener('click', async () => {
             const unitVal = newUnitNameInp.value.trim();
@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     showError(newUnitNameInp, 'newUnitNameError', result.message || 'Error saving unit.');
                 }
             } catch (err) {
-                // डेटाबेस बंद असल्यास लोकल फॉलबॅक
+                // Fallback to local memory if database is offline
                 addUnitOptionToSelect(unitInp, unitVal);
                 addUnitOptionToSelect(editUnitInp, unitVal);
 
@@ -182,12 +182,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 addUnitModal.style.display = 'none';
-                alert('सर्व्हर बंद असल्यामुळे Unit तात्पुरता लोकल मेमरीमध्ये जोडला गेला आहे.');
+                alert('Server is offline. Unit added temporarily to local memory.');
             }
         });
     }
 
-    // ★ GET: डेटाबेसवरून सर्व आयटम फेच करा
+    // ★ GET: Fetch all items from the database
     async function fetchItems() {
         try {
             const response = await fetch(API_URL);
@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderTable(items);
             }
         } catch (error) {
-            console.warn("डेटाबेस कनेक्ट नाही, लोकल मेमरी डेटा वापरत आहे.");
+            console.warn("Database not connected. Using local memory data.");
             renderTable(items);
         }
     }
@@ -284,6 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // ★ Validation logic for 6 mandatory fields
     function validateMainForm() {
         let isValid = true;
         
@@ -297,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return isValid;
     }
 
-    // ★ POST: नवीन आयटम सेव्ह करणे
+    // ★ POST: Save new item
     itemForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!validateMainForm()) return;
@@ -364,12 +365,12 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Database not present. Saving to local table UI.");
             items.push(localItemObj);
             renderTable(items);
-            alert('सर्व्हर बंद आहे! आयटम तात्पुरता स्क्रीन टेबलमध्ये सेव्ह केला गेला आहे.');
+            alert('Server is offline! Item saved temporarily in table.');
             itemForm.reset(); resetLabels();
         }
     });
 
-    // ★ PUT: आयटम एडिट मॉडेल उघडणे
+    // ★ PUT: Open edit item modal
     window.openEditModal = (id) => {
         const item = items.find(x => x.id.toString() === id.toString());
         if (!item) return;
@@ -382,6 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('editGroup').value = item.item_group || 'General';
         document.getElementById('editBrand').value = item.brand || '';
         
+        // If it's a newly added custom unit, append to options first
         if (item.unit) {
             addUnitOptionToSelect(editUnitInp, item.unit);
             editUnitInp.value = item.unit;
@@ -410,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editModal.style.display = 'flex';
     };
 
-    // ★ PUT Submit: डेटा अपडेट करणे
+    // ★ PUT Submit: Data update pipeline
     editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('editIndex').value;
@@ -434,7 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const image = document.getElementById('editImageUrl').value.trim();
 
         if (!name || !type || !group || !unit || !taxCategory || !hsn) {
-            alert('कृपया सर्व आवश्यक स्टार (*) असलेल्या फील्ड्स भरा.');
+            alert('Please fill in all required fields marked with an asterisk (*).');
             return;
         }
 
@@ -479,13 +481,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     item_specification: description, image_path: image 
                 };
                 renderTable(items);
-                alert('तात्पुरते लोकल चेंजेस अपडेट झाले!');
+                alert('Local changes updated temporarily!');
             }
             editModal.style.display = 'none';
         }
     });
 
-    // ★ DELETE: आयटम डिलीट करणे
+    // ★ DELETE: Delete Item
     window.deleteItem = async (id) => {
         if (confirm('Are you sure you want to delete this item?')) {
             try {
@@ -496,7 +498,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (err) {
                 items = items.filter(x => x.id.toString() !== id.toString());
                 renderTable(items);
-                alert('आयटम लोकल टेबलमधून काढून टाकला!');
+                alert('Item removed from local table!');
             }
         }
     };
@@ -516,6 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 imgHtml = `<img src="${srcPath}" alt="${item.item_name}" class="table-item-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'table-item-icon-placeholder\'><i class=\'fa-solid fa-image-broken\'></i></div>';">`;
             }
 
+            // Brochure PDF path or download link mapping
             let pdfHtml = '-';
             if (item.pdf_path && item.pdf_path.trim() !== "" && item.pdf_path !== "-") {
                 const pdfUrl = item.pdf_path.startsWith('http') ? item.pdf_path : `http://localhost:5000${item.pdf_path}`;
@@ -606,6 +609,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         const hsnValImport = item["HSN / SAC"] || item["HSN / SAC Code"] || item.hsn || item.HSN || "N/A";
                         const unitVal = item.Unit || item.unit || "Pcs";
                         
+                        // Automatically add new unit to dropdown during import
                         if (unitVal) {
                             addUnitOptionToSelect(unitInp, unitVal);
                             addUnitOptionToSelect(editUnitInp, unitVal);
