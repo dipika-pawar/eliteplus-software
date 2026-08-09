@@ -20,6 +20,34 @@ document.addEventListener('DOMContentLoaded', () => {
   setupAutoDrCr('accGroup', 'balType');
   setupAutoDrCr('editAccGroup', 'editBalType');
 
+  // AUTO FETCH MOBILE NO TO WHATSAPP NO (WITH CUSTOM EDIT ALLOWED)
+  const setupAutoWhatsapp = (mobileId, whatsappId) => {
+    const mobileInput = document.getElementById(mobileId);
+    const whatsappInput = document.getElementById(whatsappId);
+
+    if (mobileInput && whatsappInput) {
+      let isCustomWhatsapp = false;
+
+      mobileInput.addEventListener('input', () => {
+        if (!isCustomWhatsapp) {
+          whatsappInput.value = mobileInput.value;
+        }
+      });
+
+      whatsappInput.addEventListener('input', () => {
+        // User enters a custom WhatsApp number
+        isCustomWhatsapp = true;
+        // If user clears WhatsApp input manually, sync it again with mobile number
+        if (whatsappInput.value.trim() === '') {
+          isCustomWhatsapp = false;
+        }
+      });
+    }
+  };
+
+  setupAutoWhatsapp('mobileNo', 'whatsappNo');
+  setupAutoWhatsapp('editMobileNo', 'editWhatsapp');
+
   // Enter Key Navigation & Auto File/Select Picker Logic
   const setupEnterNavigation = (container) => {
     container.addEventListener('keydown', (e) => {
@@ -266,7 +294,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5. Dealer Type & GSTIN Validation
-    if (dealerType === 'Registered') {
+    if (!dealerType) {
+      showFieldError('dealerType', 'Dealer Type selection is required.');
+      isValid = false;
+    } else if (dealerType === 'Registered') {
       if (!gstinNo) {
         showFieldError('gstinNo', 'GSTIN Number is required for Registered dealers.');
         isValid = false;
@@ -361,8 +392,8 @@ document.addEventListener('DOMContentLoaded', () => {
       cinNo: document.getElementById('cinNo').value.trim().toUpperCase(),
       billAddr: document.getElementById('billAddr').value.trim(),
       shipAddr: document.getElementById('shipAddr').value.trim(),
-      creditDays: document.getElementById('creditDays').value,
-      creditLimitVal: document.getElementById('creditLimitVal').value,
+      creditDays: document.getElementById('creditDays').value.trim(),
+      creditLimitVal: document.getElementById('creditLimitVal').value.trim(),
       outAlert: document.getElementById('outAlert').value,
       blockSales: document.getElementById('blockSales').value,
       panFileName: panFile ? panFile.name : '-',
@@ -565,8 +596,8 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('cinNo', document.getElementById('editCinNo').value.trim());
     formData.append('billAddr', document.getElementById('editBillAddr').value.trim());
     formData.append('shipAddr', document.getElementById('editShipAddr').value.trim());
-    formData.append('creditDays', document.getElementById('editCreditDays').value);
-    formData.append('creditLimitVal', document.getElementById('editCreditLimitVal').value);
+    formData.append('creditDays', document.getElementById('editCreditDays').value.trim());
+    formData.append('creditLimitVal', document.getElementById('editCreditLimitVal').value.trim());
     formData.append('outAlert', document.getElementById('editOutAlert').value);
     formData.append('blockSales', document.getElementById('editBlockSales').value);
 
@@ -587,7 +618,8 @@ document.addEventListener('DOMContentLoaded', () => {
           balType: document.getElementById('editBalType').value,
           creditLimit: document.getElementById('editCreditLimit').value.trim(),
           emailId: document.getElementById('editEmailId').value.trim(),
-          mobileNo: document.getElementById('editMobileNo').value.trim()
+          mobileNo: document.getElementById('editMobileNo').value.trim(),
+          whatsapp: document.getElementById('editWhatsapp').value.trim()
         };
         saveData(); renderTable(searchInput ? searchInput.value : '');
         if (editModal) editModal.hide();

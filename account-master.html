@@ -105,8 +105,8 @@
               <!-- 1. Basic Info Section -->
               <div class="form-section-title"><i class="fa-solid fa-info-circle me-2"></i>Basic Information</div>
               <div class="row g-3">
-                <div class="col-md-4"><label>Party Name</label><input type="text" class="form-input-custom" id="printName"></div>
-                <div class="col-md-4"><label>Group</label><select class="form-input-custom" id="accGroup">
+                <div class="col-md-4"><label>Party Name <span class="text-danger">*</span></label><input type="text" class="form-input-custom" id="printName"></div>
+                <div class="col-md-4"><label>Group <span class="text-danger">*</span></label><select class="form-input-custom" id="accGroup">
                     <option value="">Select Group</option>
                     <option value="Sundry Debtors">Sundry Debtors</option>
                     <option value="Sundry Creditors">Sundry Creditors</option>
@@ -119,7 +119,7 @@
                   </select></div>
                 <div class="col-md-3"><label>Credit Limit</label><input type="text" class="form-input-custom" id="creditLimit"></div>
                 <div class="col-md-3"><label>Email ID</label><input type="email" class="form-input-custom" id="emailId"></div>
-                <div class="col-md-3"><label>Mobile No</label><input type="text" class="form-input-custom" id="mobileNo" maxlength="10"></div>
+                <div class="col-md-3"><label>Mobile No <span class="text-danger">*</span></label><input type="text" class="form-input-custom" id="mobileNo" maxlength="10"></div>
                 <div class="col-md-3"><label>WhatsApp No</label><input type="text" class="form-input-custom" id="whatsappNo" maxlength="10"></div>
                 <div class="col-md-3"><label>Telephone</label><input type="text" class="form-input-custom" id="telNo"></div>
                 <div class="col-md-3"><label>Transport</label><input type="text" class="form-input-custom" id="transport"></div>
@@ -136,7 +136,7 @@
               <!-- 2. Tax Info Section -->
               <div class="form-section-title"><i class="fa-solid fa-receipt me-2"></i>Tax Information</div>
               <div class="row g-3">
-                <div class="col-md-3"><label>Dealer Type</label><select class="form-input-custom" id="dealerType">
+                <div class="col-md-3"><label>Dealer Type <span class="text-danger">*</span></label><select class="form-input-custom" id="dealerType">
                     <option value="">Select Dealer Type</option>
                     <option value="Registered">Registered</option>
                     <option value="Unregistered">Unregistered</option>
@@ -149,10 +149,10 @@
               <!-- 3. Address Info Section -->
               <div class="form-section-title"><i class="fa-solid fa-location-dot me-2"></i>Address Details</div>
               <div class="row g-3">
-                <div class="col-md-6"><label>Billing Address</label><textarea class="form-input-custom" id="billAddr" rows="3"></textarea></div>
+                <div class="col-md-6"><label>Billing Address <span class="text-danger">*</span></label><textarea class="form-input-custom" id="billAddr" rows="3"></textarea></div>
                 <div class="col-md-6">
                   <div class="d-flex justify-content-between">
-                    <label>Shipping Address</label>
+                    <label>Shipping Address <span class="text-danger">*</span></label>
                     <div class="form-check form-check-inline m-0 p-0" style="font-size: 12px; transform: translateY(-2px);">
                       <input class="form-check-input" type="checkbox" id="sameAsBilling" style="margin-right: 4px; cursor: pointer;">
                       <label class="form-check-label" for="sameAsBilling" style="cursor: pointer; text-transform: none;">Same as Billing</label>
@@ -165,8 +165,8 @@
               <!-- 4. Credit Control Section -->
               <div class="form-section-title"><i class="fa-solid fa-sliders me-2"></i>Credit Control</div>
               <div class="row g-3">
-                <div class="col-md-3"><label>Credit Days</label><input type="number" class="form-input-custom" id="creditDays"></div>
-                <div class="col-md-3"><label>Credit Limit Value</label><input type="number" class="form-input-custom" id="creditLimitVal"></div>
+                <div class="col-md-3"><label>Credit Days</label><input type="text" class="form-input-custom" id="creditDays"></div>
+                <div class="col-md-3"><label>Credit Limit Value</label><input type="text" class="form-input-custom" id="creditLimitVal"></div>
                 <div class="col-md-3"><label>Outstanding Alert</label><select class="form-input-custom" id="outAlert">
                     <option value="">Select</option>
                     <option value="Yes">Yes</option>
@@ -279,27 +279,27 @@
           <form id="editAccountForm" novalidate>
             <input type="hidden" id="editRowIndex">
             <div class="row g-3">
-              <div class="col-md-6"><label>Party Name</label><input type="text" class="form-control" id="editPrintName"></div>
-              <div class="col-md-6"><label>Group</label><input type="text" class="form-control" id="editAccGroup"></div>
+              <div class="col-md-6"><label>Party Name <span class="text-danger">*</span></label><input type="text" class="form-control" id="editPrintName"></div>
+              <div class="col-md-6"><label>Group <span class="text-danger">*</span></label><input type="text" class="form-control" id="editAccGroup"></div>
               <div class="col-md-6"><label>Opening Bal</label><input type="text" class="form-control" id="editOpBal"></div>
               <div class="col-md-6"><label>Dr/Cr</label><input type="text" class="form-control" id="editBalType"></div>
               <div class="col-md-6"><label>Credit Limit</label><input type="text" class="form-control" id="editCreditLimit"></div>
               <div class="col-md-6"><label>Email ID</label><input type="email" class="form-control" id="editEmailId"></div>
-              <div class="col-md-6"><label>Mobile No</label><input type="text" class="form-control" id="editMobileNo"></div>
+              <div class="col-md-6"><label>Mobile No <span class="text-danger">*</span></label><input type="text" class="form-control" id="editMobileNo"></div>
               <div class="col-md-6"><label>WhatsApp</label><input type="text" class="form-control" id="editWhatsapp"></div>
               <div class="col-md-6"><label>Telephone</label><input type="text" class="form-control" id="editTelNo"></div>
               <div class="col-md-6"><label>Transport</label><input type="text" class="form-control" id="editTransport"></div>
               <div class="col-md-6"><label>Station</label><input type="text" class="form-control" id="editStation"></div>
               <div class="col-md-6"><label>Pin Code</label><input type="text" class="form-control" id="editPinCode"></div>
               <div class="col-md-6"><label>MSME Type</label><input type="text" class="form-control" id="editMsmeType"></div>
-              <div class="col-md-6"><label>Dealer Type</label><input type="text" class="form-control" id="editDealerType"></div>
+              <div class="col-md-6"><label>Dealer Type <span class="text-danger">*</span></label><input type="text" class="form-control" id="editDealerType"></div>
               <div class="col-md-6"><label>GST No</label><input type="text" class="form-control" id="editGstinNo"></div>
               <div class="col-md-6"><label>PAN No</label><input type="text" class="form-control" id="editPanNo"></div>
               <div class="col-md-6"><label>CIN No</label><input type="text" class="form-control" id="editCinNo"></div>
-              <div class="col-md-6"><label>Billing Address</label><textarea class="form-control" id="editBillAddr" rows="2"></textarea></div>
-              <div class="col-md-6"><label>Shipping Address</label><textarea class="form-control" id="editShipAddr" rows="2"></textarea></div>
-              <div class="col-md-6"><label>Credit Days</label><input type="number" class="form-control" id="editCreditDays"></div>
-              <div class="col-md-6"><label>Credit Limit Val</label><input type="number" class="form-control" id="editCreditLimitVal"></div>
+              <div class="col-md-6"><label>Billing Address <span class="text-danger">*</span></label><textarea class="form-control" id="editBillAddr" rows="2"></textarea></div>
+              <div class="col-md-6"><label>Shipping Address <span class="text-danger">*</span></label><textarea class="form-control" id="editShipAddr" rows="2"></textarea></div>
+              <div class="col-md-6"><label>Credit Days</label><input type="text" class="form-control" id="editCreditDays"></div>
+              <div class="col-md-6"><label>Credit Limit Val</label><input type="text" class="form-control" id="editCreditLimitVal"></div>
               <div class="col-md-6"><label>Outstanding Alert</label><input type="text" class="form-control" id="editOutAlert"></div>
               <div class="col-md-6"><label>Block Sales</label><input type="text" class="form-control" id="editBlockSales"></div>
             </div>
