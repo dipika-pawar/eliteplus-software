@@ -70,17 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
             nextElement.select();
           }
 
-          // Dropdown Open Logic
-          if (nextElement.tagName.toLowerCase() === 'select') {
-            if (typeof nextElement.showPicker === 'function') {
-              try {
-                nextElement.showPicker();
-              } catch (err) {
-                console.log("Unable to auto-open select picker", err);
-              }
-            }
-          }
-
           // File Input Open Logic (Folder Dialog Open)
           if (nextElement.tagName.toLowerCase() === 'input' && nextElement.type === 'file') {
             if (typeof nextElement.showPicker === 'function') {
@@ -229,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // CUSTOM VALIDATION ENGINE (STRICT IMAGE ONLY VALIDATION)
+  // UPDATED VALIDATION ENGINE (ONLY 6 REQUIRED FIELDS ARE MANDATORY)
   function validateAccountForm() {
     clearAllErrors();
     let isValid = true;
@@ -245,6 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailId = document.getElementById('emailId').value.trim();
     const opBal = document.getElementById('opBal').value.trim();
     const creditLimit = document.getElementById('creditLimit').value.trim();
+    const billAddr = document.getElementById('billAddr').value.trim();
+    const shipAddr = document.getElementById('shipAddr').value.trim();
 
     // Regex Patterns
     const mobileRegex = /^[6-9]\d{9}$/;
@@ -254,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const numberRegex = /^\d*(\.\d+)?$/;
 
-    // 1. Party Name Validation
+    // 1. Party Name Validation (REQUIRED)
     if (!printName) {
       showFieldError('printName', 'Party Name is required.');
       isValid = false;
@@ -263,13 +254,13 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    // 2. Group Validation
+    // 2. Group Validation (REQUIRED)
     if (!accGroup) {
       showFieldError('accGroup', 'Group selection is required.');
       isValid = false;
     }
 
-    // 3. Mobile Number Validation
+    // 3. Mobile Number Validation (REQUIRED)
     if (!mobileNo) {
       showFieldError('mobileNo', 'Mobile Number is required.');
       isValid = false;
@@ -278,51 +269,60 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    // WhatsApp Number Validation (Optional but if entered)
+    // 4. Dealer Type Validation (REQUIRED)
+    if (!dealerType) {
+      showFieldError('dealerType', 'Dealer Type selection is required.');
+      isValid = false;
+    }
+
+    // 5. Billing Address Validation (REQUIRED)
+    if (!billAddr) {
+      showFieldError('billAddr', 'Billing Address is required.');
+      isValid = false;
+    }
+
+    // 6. Shipping Address Validation (REQUIRED)
+    if (!shipAddr) {
+      showFieldError('shipAddr', 'Shipping Address is required.');
+      isValid = false;
+    }
+
+    // OPTIONAL FIELDS VALIDATION (Runs only if value is entered)
+
+    // WhatsApp Validation (Optional)
     if (whatsappNo && !mobileRegex.test(whatsappNo)) {
       showFieldError('whatsappNo', 'Enter a valid 10-digit WhatsApp Number.');
       isValid = false;
     }
 
-    // 4. Pin Code Validation
-    if (!pinCode) {
-      showFieldError('pinCode', 'Pin Code is required.');
-      isValid = false;
-    } else if (!pinRegex.test(pinCode)) {
+    // Pin Code Validation (Optional)
+    if (pinCode && !pinRegex.test(pinCode)) {
       showFieldError('pinCode', 'Enter a valid 6-digit Pin Code.');
       isValid = false;
     }
 
-    // 5. Dealer Type & GSTIN Validation
-    if (!dealerType) {
-      showFieldError('dealerType', 'Dealer Type selection is required.');
+    // GSTIN Validation (Optional or if Registered)
+    if (dealerType === 'Registered' && !gstinNo) {
+      showFieldError('gstinNo', 'GSTIN Number is required for Registered dealers.');
       isValid = false;
-    } else if (dealerType === 'Registered') {
-      if (!gstinNo) {
-        showFieldError('gstinNo', 'GSTIN Number is required for Registered dealers.');
-        isValid = false;
-      } else if (!gstRegex.test(gstinNo)) {
-        showFieldError('gstinNo', 'Enter a valid 15-digit GSTIN Number.');
-        isValid = false;
-      }
     } else if (gstinNo && !gstRegex.test(gstinNo)) {
       showFieldError('gstinNo', 'Enter a valid 15-digit GSTIN Number.');
       isValid = false;
     }
 
-    // 6. PAN Number Validation
+    // PAN Validation (Optional)
     if (panNo && !panRegex.test(panNo)) {
       showFieldError('panNo', 'Enter a valid 10-character PAN Number (e.g., ABCDE1234F).');
       isValid = false;
     }
 
-    // 7. Email Validation
+    // Email Validation (Optional)
     if (emailId && !emailRegex.test(emailId)) {
       showFieldError('emailId', 'Enter a valid Email Address.');
       isValid = false;
     }
 
-    // 8. Opening Bal & Credit Limit Numeric Validation
+    // Numeric Validations (Optional)
     if (opBal && (!numberRegex.test(opBal) || parseFloat(opBal) < 0)) {
       showFieldError('opBal', 'Enter a valid positive number for Opening Balance.');
       isValid = false;
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    // 9. File Upload Validations - STRICTLY IMAGES ONLY (.jpg, .jpeg, .png)
+    // File Upload Validations - STRICTLY IMAGES ONLY (.jpg, .jpeg, .png)
     const allowedImageExtensions = ['jpg', 'jpeg', 'png'];
     const validateImageFile = (fileInputId) => {
       const fileInput = document.getElementById(fileInputId);
@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = fileInput.files[0];
         const ext = file.name.split('.').pop().toLowerCase();
         if (!allowedImageExtensions.includes(ext) || !file.type.startsWith('image/')) {
-          showFieldError(fileInputId, 'Only image files (.jpg, .jpeg, .png) are allowed. PDF or other documents are not accepted.');
+          showFieldError(fileInputId, 'Only image files (.jpg, .jpeg, .png) are allowed.');
           isValid = false;
         } else if (file.size > 2 * 1024 * 1024) {
           showFieldError(fileInputId, 'Image file size must be less than 2MB.');
@@ -468,8 +468,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     filteredAccounts.forEach((acc) => {
-      const originalIndex = accounts.indexOf(acc);
-
       const tr = document.createElement('tr');
       tr.className = "table-row-hover";
       tr.setAttribute('data-id', acc.id);
