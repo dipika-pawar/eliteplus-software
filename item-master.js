@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Backend API Main URL Mapping
     const API_URL = 'http://localhost:5000/api/item';
     const UNIT_API_URL = 'http://localhost:5000/api/unit'; // Dynamic Unit API
+    const TAX_API_URL = 'http://localhost:5000/api/tax'; // Dynamic Tax Category API
 
     // --- 1. Sidebar Toggle ---
     const menuToggle = document.getElementById("menuToggle");
@@ -61,12 +62,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const newUnitNameInp = document.getElementById('newUnitName');
     const editUnitInp = document.getElementById('editUnit');
 
-    let targetUnitDropdown = unitInp; // Used to determine which dropdown to set the unit in upon adding
+    // Add Tax Modal Elements
+    const addTaxModal = document.getElementById('addTaxModal');
+    const openAddTaxModalBtn = document.getElementById('openAddTaxModalBtn');
+    const openAddTaxModalEditBtn = document.getElementById('openAddTaxModalEditBtn');
+    const btnCloseTaxModal = document.getElementById('btnCloseTaxModal');
+    const btnSaveTax = document.getElementById('btnSaveTax');
+    const newTaxNameInp = document.getElementById('newTaxName');
+    const editTaxInp = document.getElementById('editTaxCategory');
+
+    let targetUnitDropdown = unitInp;
+    let targetTaxDropdown = taxInp;
 
     // Global Items List Holder
     let items = [];
 
-    // --- Dynamic Custom Units Management System (Backend Integrated) ---
+    // --- Dynamic Custom Units Management System ---
     async function loadSavedUnits() {
         try {
             const response = await fetch(UNIT_API_URL);
@@ -74,8 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const dbUnits = await response.json();
                 dbUnits.forEach(u => {
                     const unitVal = u.unit_name;
-                    addUnitOptionToSelect(unitInp, unitVal);
-                    addUnitOptionToSelect(editUnitInp, unitVal);
+                    addOptionToSelect(unitInp, unitVal);
+                    addOptionToSelect(editUnitInp, unitVal);
                 });
             } else {
                 loadLocalUnitsFallback();
@@ -89,24 +100,54 @@ document.addEventListener("DOMContentLoaded", () => {
     function loadLocalUnitsFallback() {
         const savedUnits = JSON.parse(localStorage.getItem('customUnits')) || [];
         savedUnits.forEach(unitVal => {
-            addUnitOptionToSelect(unitInp, unitVal);
-            addUnitOptionToSelect(editUnitInp, unitVal);
+            addOptionToSelect(unitInp, unitVal);
+            addOptionToSelect(editUnitInp, unitVal);
         });
     }
 
-    function addUnitOptionToSelect(selectEl, unitVal) {
+    // --- Dynamic Custom Tax Categories Management System ---
+    async function loadSavedTaxCategories() {
+        try {
+            const response = await fetch(TAX_API_URL);
+            if (response.ok) {
+                const dbTaxes = await response.json();
+                dbTaxes.forEach(t => {
+                    const taxVal = t.tax_name;
+                    addOptionToSelect(taxInp, taxVal);
+                    addOptionToSelect(editTaxInp, taxVal);
+                });
+            } else {
+                loadLocalTaxesFallback();
+            }
+        } catch (err) {
+            console.warn("Tax API Offline. Loading fallback local taxes.");
+            loadLocalTaxesFallback();
+        }
+    }
+
+    function loadLocalTaxesFallback() {
+        const savedTaxes = JSON.parse(localStorage.getItem('customTaxes')) || [];
+        savedTaxes.forEach(taxVal => {
+            addOptionToSelect(taxInp, taxVal);
+            addOptionToSelect(editTaxInp, taxVal);
+        });
+    }
+
+    function addOptionToSelect(selectEl, val) {
         if (!selectEl) return;
-        const exists = Array.from(selectEl.options).some(opt => opt.value.toLowerCase() === unitVal.toLowerCase());
+        const exists = Array.from(selectEl.options).some(opt => opt.value.toLowerCase() === val.toLowerCase());
         if (!exists) {
             const opt = document.createElement('option');
-            opt.value = unitVal;
-            opt.textContent = unitVal;
+            opt.value = val;
+            opt.textContent = val;
             selectEl.appendChild(opt);
         }
     }
 
     loadSavedUnits();
+    loadSavedTaxCategories();
 
+    // Unit Modal Triggers
     if (openAddUnitModalBtn) {
         openAddUnitModalBtn.addEventListener('click', () => {
             targetUnitDropdown = unitInp;
@@ -133,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ★ Save Unit: Save unit to database and add to dropdown
+    // Save Unit Button Handler
     if (btnSaveUnit) {
         btnSaveUnit.addEventListener('click', async () => {
             const unitVal = newUnitNameInp.value.trim();
@@ -152,8 +193,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = await response.json();
 
                 if (response.ok || response.status === 201) {
-                    addUnitOptionToSelect(unitInp, unitVal);
-                    addUnitOptionToSelect(editUnitInp, unitVal);
+                    addOptionToSelect(unitInp, unitVal);
+                    addOptionToSelect(editUnitInp, unitVal);
 
                     if (targetUnitDropdown) {
                         targetUnitDropdown.value = unitVal;
@@ -166,9 +207,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     showError(newUnitNameInp, 'newUnitNameError', result.message || 'Error saving unit.');
                 }
             } catch (err) {
-                // Fallback to local memory if database is offline
-                addUnitOptionToSelect(unitInp, unitVal);
-                addUnitOptionToSelect(editUnitInp, unitVal);
+                addOptionToSelect(unitInp, unitVal);
+                addOptionToSelect(editUnitInp, unitVal);
 
                 let savedUnits = JSON.parse(localStorage.getItem('customUnits')) || [];
                 if (!savedUnits.some(u => u.toLowerCase() === unitVal.toLowerCase())) {
@@ -187,7 +227,87 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ★ GET: Fetch all items from the database
+    // Tax Modal Triggers
+    if (openAddTaxModalBtn) {
+        openAddTaxModalBtn.addEventListener('click', () => {
+            targetTaxDropdown = taxInp;
+            newTaxNameInp.value = '';
+            clearError(newTaxNameInp, 'newTaxNameError');
+            addTaxModal.style.display = 'flex';
+            newTaxNameInp.focus();
+        });
+    }
+
+    if (openAddTaxModalEditBtn) {
+        openAddTaxModalEditBtn.addEventListener('click', () => {
+            targetTaxDropdown = editTaxInp;
+            newTaxNameInp.value = '';
+            clearError(newTaxNameInp, 'newTaxNameError');
+            addTaxModal.style.display = 'flex';
+            newTaxNameInp.focus();
+        });
+    }
+
+    if (btnCloseTaxModal) {
+        btnCloseTaxModal.addEventListener('click', () => {
+            addTaxModal.style.display = 'none';
+        });
+    }
+
+    // Save Tax Category Button Handler
+    if (btnSaveTax) {
+        btnSaveTax.addEventListener('click', async () => {
+            const taxVal = newTaxNameInp.value.trim();
+            if (taxVal === '') {
+                showError(newTaxNameInp, 'newTaxNameError', 'Please enter a tax category name.');
+                return;
+            }
+
+            try {
+                const response = await fetch(TAX_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ taxName: taxVal })
+                });
+
+                const result = await response.json();
+
+                if (response.ok || response.status === 201) {
+                    addOptionToSelect(taxInp, taxVal);
+                    addOptionToSelect(editTaxInp, taxVal);
+
+                    if (targetTaxDropdown) {
+                        targetTaxDropdown.value = taxVal;
+                        clearError(targetTaxDropdown, targetTaxDropdown.id === 'itemTaxCategory' ? 'itemTaxCategoryError' : 'editTaxCategoryError');
+                    }
+
+                    addTaxModal.style.display = 'none';
+                    alert(result.message || 'Tax Category added successfully!');
+                } else {
+                    showError(newTaxNameInp, 'newTaxNameError', result.message || 'Error saving tax category.');
+                }
+            } catch (err) {
+                addOptionToSelect(taxInp, taxVal);
+                addOptionToSelect(editTaxInp, taxVal);
+
+                let savedTaxes = JSON.parse(localStorage.getItem('customTaxes')) || [];
+                if (!savedTaxes.some(t => t.toLowerCase() === taxVal.toLowerCase())) {
+                    savedTaxes.push(taxVal);
+                    localStorage.setItem('customTaxes', JSON.stringify(savedTaxes));
+                }
+
+                if (targetTaxDropdown) {
+                    targetTaxDropdown.value = taxVal;
+                    clearError(targetTaxDropdown, targetTaxDropdown.id === 'itemTaxCategory' ? 'itemTaxCategoryError' : 'editTaxCategoryError');
+                }
+
+                addTaxModal.style.display = 'none';
+                alert('Server is offline. Tax Category added temporarily to local memory.');
+            }
+        });
+    }
+
+    // ★ GET: Fetch all items from database
     async function fetchItems() {
         try {
             const response = await fetch(API_URL);
@@ -284,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ★ Validation logic for 6 mandatory fields
+    // Validation logic for 6 mandatory fields
     function validateMainForm() {
         let isValid = true;
         
@@ -383,15 +503,20 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('editGroup').value = item.item_group || 'General';
         document.getElementById('editBrand').value = item.brand || '';
         
-        // If it's a newly added custom unit, append to options first
         if (item.unit) {
-            addUnitOptionToSelect(editUnitInp, item.unit);
+            addOptionToSelect(editUnitInp, item.unit);
             editUnitInp.value = item.unit;
         } else {
             editUnitInp.value = 'Pcs';
         }
 
-        document.getElementById('editTaxCategory').value = item.tax_category || '';
+        if (item.tax_category) {
+            addOptionToSelect(editTaxInp, item.tax_category);
+            editTaxInp.value = item.tax_category;
+        } else {
+            editTaxInp.value = '';
+        }
+
         document.getElementById('editHsnCode').value = item.hsn_sac_code || '';
         document.getElementById('editPurchasePrice').value = item.purchase_price || '0.00';
         document.getElementById('editPrice').value = item.sales_price || '0.00';
@@ -518,7 +643,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 imgHtml = `<img src="${srcPath}" alt="${item.item_name}" class="table-item-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'table-item-icon-placeholder\'><i class=\'fa-solid fa-image-broken\'></i></div>';">`;
             }
 
-            // Brochure PDF path or download link mapping
             let pdfHtml = '-';
             if (item.pdf_path && item.pdf_path.trim() !== "" && item.pdf_path !== "-") {
                 const pdfUrl = item.pdf_path.startsWith('http') ? item.pdf_path : `http://localhost:5000${item.pdf_path}`;
@@ -608,11 +732,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         const printNameVal = item["Print Name"] || item.printName || nameVal;
                         const hsnValImport = item["HSN / SAC"] || item["HSN / SAC Code"] || item.hsn || item.HSN || "N/A";
                         const unitVal = item.Unit || item.unit || "Pcs";
+                        const taxVal = item["Tax Category"] || item.taxCategory || "";
                         
-                        // Automatically add new unit to dropdown during import
                         if (unitVal) {
-                            addUnitOptionToSelect(unitInp, unitVal);
-                            addUnitOptionToSelect(editUnitInp, unitVal);
+                            addOptionToSelect(unitInp, unitVal);
+                            addOptionToSelect(editUnitInp, unitVal);
+                        }
+
+                        if (taxVal) {
+                            addOptionToSelect(taxInp, taxVal);
+                            addOptionToSelect(editTaxInp, taxVal);
                         }
 
                         const nameExists = items.some(x => x.item_name.toLowerCase() === nameVal.toLowerCase());
@@ -629,7 +758,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 brand: item.Brand || item.brand || "",
                                 item_group: item.Group || item.group || "",
                                 unit: unitVal,
-                                tax_category: item["Tax Category"] || item.taxCategory || "",
+                                tax_category: taxVal,
                                 opening_stock_qty: item["Opening Stock Qty"] || item.openingStock || "0",
                                 opening_stock_value: item["Opening Stock Value"] || item.stockValue || "0.00",
                                 purchase_price: item["Purchase Price"] || item.purchasePrice || "0",
