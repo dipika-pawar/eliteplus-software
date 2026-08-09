@@ -11,6 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- External CSS Link -->
     <link rel="stylesheet" href="item-master.css">
+    <style>
+        .required-star {
+            color: #ef4444;
+            font-weight: bold;
+            margin-left: 2px;
+        }
+    </style>
 </head>
 
 <body>
@@ -102,7 +109,7 @@
 
                 <form id="itemMasterForm" class="master-grid-form" novalidate>
                     <div class="form-group-custom">
-                        <label>Item Name</label>
+                        <label>Item Name <span class="required-star">*</span></label>
                         <input type="text" id="itemName" class="input-field-custom" maxlength="100" placeholder="Item Name">
                         <div class="error-msg" id="itemNameError"></div>
                     </div>
@@ -120,7 +127,7 @@
                     </div>
 
                     <div class="form-group-custom">
-                        <label>Item Type</label>
+                        <label>Item Type <span class="required-star">*</span></label>
                         <select class="input-field-custom" id="itemType">
                             <option value="">Select Type</option>
                             <option value="Product">Product</option>
@@ -130,7 +137,7 @@
                     </div>
 
                     <div class="form-group-custom">
-                        <label>Group / Category</label>
+                        <label>Group / Category <span class="required-star">*</span></label>
                         <select class="input-field-custom" id="itemGroup">
                             <option value="">Select Group</option>
                             <option value="General">General</option>
@@ -148,7 +155,7 @@
                     </div>
                     
                     <div class="form-group-custom">
-                        <label>Unit</label>
+                        <label>Unit <span class="required-star">*</span></label>
                         <select class="input-field-custom" id="itemUnit">
                             <option value="">Select Unit</option>
                             <option value="Pcs">Pcs</option>
@@ -162,7 +169,7 @@
                     </div>
 
                     <div class="form-group-custom">
-                        <label>Tax Category</label>
+                        <label>Tax Category <span class="required-star">*</span></label>
                         <select class="input-field-custom" id="itemTaxCategory">
                             <option value="">Select Tax</option>
                             <option value="Central-12%">Central-12%</option>
@@ -214,7 +221,7 @@
                     </div>
                     
                     <div class="form-group-custom">
-                        <label>HSN / SAC Code</label>
+                        <label>HSN / SAC Code <span class="required-star">*</span></label>
                         <input type="text" id="itemHsnCode" class="input-field-custom" placeholder="HSN/SAC Code">
                         <div class="error-msg" id="itemHsnCodeError"></div>
                     </div>
@@ -354,8 +361,7 @@
                                 <th>Packing</th>
                                 <th>Video</th>
                                 <th>Specification</th>
-                                <th>Stock</th>
-                                <th>Brochure (PDF)</th> <!-- २० वा कॉलम जोडून अपडेट केला आहे -->
+                                <th>Brochure (PDF)</th>
                                 <th style="text-align: center;">Action</th>
                             </tr>
                         </thead>
@@ -376,14 +382,14 @@
                 <input type="hidden" id="editIndex">
 
                 <div class="form-group-custom">
-                    <label>Item Name</label>
+                    <label>Item Name <span class="required-star">*</span></label>
                     <input type="text" id="editName" class="input-field-custom" maxlength="100" required>
                     <div class="error-msg" id="editNameError"></div>
                 </div>
                 
                 <div class="form-group-custom">
                     <label>Item Code</label>
-                    <input type="text" id="editCode" class="input-field-custom" maxlength="20" required>
+                    <input type="text" id="editCode" class="input-field-custom" maxlength="20">
                     <div class="error-msg" id="editCodeError"></div>
                 </div>
 
@@ -394,7 +400,7 @@
                 </div>
 
                 <div class="form-group-custom">
-                    <label>Item Type</label>
+                    <label>Item Type <span class="required-star">*</span></label>
                     <select class="input-field-custom" id="editType">
                         <option value="Product">Product</option>
                         <option value="Service">Service</option>
@@ -403,7 +409,7 @@
                 </div>
 
                 <div class="form-group-custom">
-                    <label>Group / Category</label>
+                    <label>Group / Category <span class="required-star">*</span></label>
                     <select class="input-field-custom" id="editGroup">
                         <option value="General">General</option>
                         <option value="Electronics">Electronics</option>
@@ -420,7 +426,7 @@
                 </div>
 
                 <div class="form-group-custom">
-                    <label>Unit</label>
+                    <label>Unit <span class="required-star">*</span></label>
                     <select class="input-field-custom" id="editUnit">
                         <option value="Pcs">Pcs</option>
                         <option value="Kg">Kg</option>
@@ -433,7 +439,7 @@
                 </div>
 
                 <div class="form-group-custom">
-                    <label>Tax Category</label>
+                    <label>Tax Category <span class="required-star">*</span></label>
                     <select class="input-field-custom" id="editTaxCategory">
                         <option value="">Select Tax</option>
                         <option value="Central-12%">Central-12%</option>
@@ -485,7 +491,7 @@
                 </div>
 
                 <div class="form-group-custom">
-                    <label>HSN / SAC Code</label>
+                    <label>HSN / SAC Code <span class="required-star">*</span></label>
                     <input type="text" id="editHsnCode" class="input-field-custom">
                     <div class="error-msg" id="editHsnCodeError"></div>
                 </div>
@@ -518,12 +524,6 @@
                     <label>Video Link</label>
                     <input type="url" id="editVideoLink" class="input-field-custom">
                     <div class="error-msg" id="editVideoLinkError"></div>
-                </div>
-                
-                <div class="form-group-custom">
-                    <label>Current Stock</label>
-                    <input type="text" id="editStock" class="input-field-custom">
-                    <div class="error-msg" id="editStockError"></div>
                 </div>
 
                 <div class="form-group-custom" style="grid-column: span 2;">

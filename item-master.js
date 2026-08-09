@@ -156,13 +156,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // ★ फक्त ६ महत्त्वाच्या फील्ड्ससाठी व्हॅलिडेशन लॉजिक
     function validateMainForm() {
         let isValid = true;
+        
         if (nameInp.value.trim() === "") { showError(nameInp, 'itemNameError', 'Item Name is required.'); isValid = false; } else clearError(nameInp, 'itemNameError');
-        if (codeInp.value.trim() === "") { showError(codeInp, 'itemCodeError', 'Item Code is required.'); isValid = false; } else clearError(codeInp, 'itemCodeError');
         if (typeInp.value === "") { showError(typeInp, 'itemTypeError', 'Item Type is required.'); isValid = false; } else clearError(typeInp, 'itemTypeError');
+        if (groupInp.value === "") { showError(groupInp, 'itemGroupError', 'Group / Category is required.'); isValid = false; } else clearError(groupInp, 'itemGroupError');
         if (unitInp.value === "") { showError(unitInp, 'itemUnitError', 'Unit selection is required.'); isValid = false; } else clearError(unitInp, 'itemUnitError');
         if (taxInp.value === "") { showError(taxInp, 'itemTaxCategoryError', 'Tax Category is required.'); isValid = false; } else clearError(taxInp, 'itemTaxCategoryError');
+        if (hsnInp.value.trim() === "") { showError(hsnInp, 'itemHsnCodeError', 'HSN / SAC Code is required.'); isValid = false; } else clearError(hsnInp, 'itemHsnCodeError');
         
         return isValid;
     }
@@ -184,17 +187,17 @@ document.addEventListener("DOMContentLoaded", () => {
             unit: unitInp.value,
             tax_category: taxInp.value,
             hsn_sac_code: hsnInp.value.trim(),
-            opening_stock_qty: stockInp.value.trim(),
-            opening_stock_value: stockValInp.value.trim(),
-            purchase_price: purchaseInp.value.trim(),
-            sales_price: salesInp.value.trim(),
-            mrp: mrpInp.value.trim(),
+            opening_stock_qty: stockInp.value.trim() || "0",
+            opening_stock_value: stockValInp.value.trim() || "0.00",
+            purchase_price: purchaseInp.value.trim() || "0.00",
+            sales_price: salesInp.value.trim() || "0.00",
+            mrp: mrpInp.value.trim() || "0.00",
             packing_dimension: packingInp.value.trim(),
             video_link: videoInp.value.trim(),
             item_specification: descInp.value.trim(),
             image_path: imgUrlInp.value.trim(),
             pdf_path: itemPdfInput.files[0] ? itemPdfInput.files[0].name : '',
-            current_stock: stockInp.value.trim()
+            current_stock: stockInp.value.trim() || "0"
         };
 
         const formData = new FormData();
@@ -216,7 +219,6 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append('videoLink', localItemObj.video_link);
         formData.append('description', localItemObj.item_specification);
         formData.append('image', localItemObj.image_path);
-        formData.append('stock', localItemObj.current_stock);
 
         if (itemImgInput.files[0]) formData.append('itemImg', itemImgInput.files[0]);
         if (itemPdfInput.files[0]) formData.append('itemPdf', itemPdfInput.files[0]);
@@ -247,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById('editIndex').value = item.id;
         document.getElementById('editName').value = item.item_name;
-        document.getElementById('editCode').value = item.item_code;
+        document.getElementById('editCode').value = item.item_code || '';
         document.getElementById('editPrintName').value = item.print_name || '';
         document.getElementById('editType').value = item.item_type || 'Product';
         document.getElementById('editGroup').value = item.item_group || 'General';
@@ -260,7 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('editMrp').value = item.mrp || '0.00';
         document.getElementById('editPacking').value = item.packing_dimension || '';
         document.getElementById('editVideoLink').value = item.video_link || '';
-        document.getElementById('editStock').value = item.current_stock || '0';
         document.getElementById('editDescription').value = item.item_specification || '';
         
         if (item.image_path && item.image_path.startsWith('http')) {
@@ -293,9 +294,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const mrp = document.getElementById('editMrp').value.trim();
         const packing = document.getElementById('editPacking').value.trim();
         const videoLink = document.getElementById('editVideoLink').value.trim();
-        const stock = document.getElementById('editStock').value.trim();
         const description = document.getElementById('editDescription').value.trim();
         const image = document.getElementById('editImageUrl').value.trim();
+
+        // Modal Validation for essential fields
+        if (!name || !type || !group || !unit || !taxCategory || !hsn) {
+            alert('कृपया सर्व आवश्यक स्टार (*) असलेल्या फील्ड्स भरा.');
+            return;
+        }
 
         const formData = new FormData();
         formData.append('name', name);
@@ -312,7 +318,6 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append('mrp', mrp);
         formData.append('packing', packing);
         formData.append('videoLink', videoLink);
-        formData.append('stock', stock);
         formData.append('description', description);
         formData.append('image', image);
 
@@ -335,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     item_name: name, item_code: code, print_name: printName, item_type: type, 
                     item_group: group, brand: brand, unit: unit, tax_category: taxCategory, 
                     hsn_sac_code: hsn, purchase_price: purchasePrice, sales_price: price, mrp: mrp, 
-                    packing_dimension: packing, video_link: videoLink, current_stock: stock, 
+                    packing_dimension: packing, video_link: videoLink, 
                     item_specification: description, image_path: image 
                 };
                 renderTable(items);
@@ -361,11 +366,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Table UI Renderer Logic (२० व्या कॉलममध्ये Brochure PDF चा पाथ/लिंक दाखवणे)
+    // Table UI Renderer Logic (Stock Column काढलेला आहे)
     function renderTable(list) {
         itemTableBody.innerHTML = '';
         if(!list || list.length === 0) {
-            itemTableBody.innerHTML = `<tr><td colspan="21" style="text-align:center; padding:20px; color:#64748b;">No items available.</td></tr>`;
+            itemTableBody.innerHTML = `<tr><td colspan="20" style="text-align:center; padding:20px; color:#64748b;">No items available.</td></tr>`;
             return;
         }
 
@@ -376,7 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 imgHtml = `<img src="${srcPath}" alt="${item.item_name}" class="table-item-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'table-item-icon-placeholder\'><i class=\'fa-solid fa-image-broken\'></i></div>';">`;
             }
 
-            // २० व्या कॉलमसाठी Brochure PDF पाथ किंवा डाउनलोड लिंक मॅपिंग
+            // Brochure PDF पाथ किंवा डाउनलोड लिंक मॅपिंग
             let pdfHtml = '-';
             if (item.pdf_path && item.pdf_path.trim() !== "" && item.pdf_path !== "-") {
                 const pdfUrl = item.pdf_path.startsWith('http') ? item.pdf_path : `http://localhost:5000${item.pdf_path}`;
@@ -404,8 +409,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${item.packing_dimension || '-'}</td>
                 <td>${item.video_link ? `<a href="${item.video_link}" target="_blank" style="color:#2563eb; text-decoration:none;"><i class="fa-solid fa-video"></i> View</a>` : '-'}</td>
                 <td title="${item.item_specification || ''}">${item.item_specification ? (item.item_specification.length > 15 ? item.item_specification.substring(0, 15) + '...' : item.item_specification) : '-'}</td>
-                <td><span class="stock-td highlight-stock">${item.current_stock || '0'}</span></td>
-                <td>${pdfHtml}</td> <!-- २० वा कॉलम: Brochure PDF पाथ -->
+                <td>${pdfHtml}</td>
                 <td class="action-td-buttons">
                     <button class="t-btn btn-edit" onclick="openEditModal(${item.id})"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
                     <button class="t-btn btn-delete" onclick="deleteItem(${item.id})"><i class="fa-solid fa-trash"></i> Delete</button>
@@ -463,12 +467,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     importedData.forEach(item => {
                         const nameVal = item["Item Name"] || item.name || item.Name || "N/A";
-                        const codeVal = item.Code || item.code || "N/A";
+                        const codeVal = item.Code || item.code || "";
                         const printNameVal = item["Print Name"] || item.printName || nameVal;
                         const hsnValImport = item["HSN / SAC"] || item["HSN / SAC Code"] || item.hsn || item.HSN || "N/A";
                         
                         const nameExists = items.some(x => x.item_name.toLowerCase() === nameVal.toLowerCase());
-                        const codeExists = items.some(x => x.item_code && x.item_code.toLowerCase() === codeVal.toString().toLowerCase());
+                        const codeExists = codeVal && items.some(x => x.item_code && x.item_code.toLowerCase() === codeVal.toString().toLowerCase());
 
                         if(!nameExists && !codeExists) {
                             items.push({
@@ -490,7 +494,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                 packing_dimension: item["Packing Dimension"] || item.packing || "",
                                 video_link: item["Video Link"] || item.videoLink || "",
                                 item_specification: item["Item Specification"] || item.description || "",
-                                current_stock: (item.Stock || item.stock || 0).toString(),
                                 image_path: item.Image || item.image || item["Image URL"] || "",
                                 pdf_path: item.Brochure || item["Brochure (PDF)"] || ""
                             });
@@ -521,7 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Opening Stock Qty": item.opening_stock_qty, "Opening Stock Value": item.opening_stock_value,
                 "Purchase Price": item.purchase_price, "Sales Price": item.sales_price, "MRP": item.mrp,
                 "Packing Dimension": item.packing_dimension, "Video Link": item.video_link,
-                "Item Specification": item.item_specification, "Stock": item.current_stock, "Image URL": item.image_path,
+                "Item Specification": item.item_specification, "Image URL": item.image_path,
                 "Brochure (PDF)": item.pdf_path
             }));
             const worksheet = XLSX.utils.json_to_sheet(exportCleanList);
