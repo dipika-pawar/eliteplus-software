@@ -22,6 +22,35 @@
         select.input-field-custom {
             position: relative;
         }
+
+        /* Add Unit Header Button Style with Border */
+        .label-with-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .btn-add-unit-inline {
+            background-color: #eff6ff;
+            border: 1px solid #2563eb;
+            color: #2563eb;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 3px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-add-unit-inline:hover {
+            background-color: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+        }
     </style>
 </head>
 
@@ -160,7 +189,10 @@
                     </div>
                     
                     <div class="form-group-custom">
-                        <label>Unit <span class="required-star">*</span></label>
+                        <div class="label-with-action">
+                            <label>Unit <span class="required-star">*</span></label>
+                            <button type="button" class="btn-add-unit-inline" id="openAddUnitModalBtn"><i class="fa-solid fa-plus"></i> Add Unit</button>
+                        </div>
                         <select class="input-field-custom" id="itemUnit">
                             <option value="">Select Unit</option>
                             <option value="Pcs">Pcs</option>
@@ -398,7 +430,10 @@
                 </div>
 
                 <div class="form-group-custom">
-                    <label>Unit <span class="required-star">*</span></label>
+                    <div class="label-with-action">
+                        <label>Unit <span class="required-star">*</span></label>
+                        <button type="button" class="btn-add-unit-inline" id="openAddUnitModalEditBtn"><i class="fa-solid fa-plus"></i> Add Unit</button>
+                    </div>
                     <select class="input-field-custom" id="editUnit">
                         <option value="Pcs">Pcs</option>
                         <option value="Kg">Kg</option>
@@ -491,6 +526,22 @@
                     <button type="button" id="closeModal" class="action-btn-cancel" style="flex:1; background:#64748b;"><i class="fa-solid fa-xmark"></i> Cancel</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ★ Add Unit Popup Modal ★ -->
+    <div id="addUnitModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; width: 90%; padding: 20px;">
+            <h3>Add New Unit</h3>
+            <div class="form-group-custom" style="margin-bottom: 15px;">
+                <label>Unit Name <span class="required-star">*</span></label>
+                <input type="text" id="newUnitName" class="input-field-custom" placeholder="e.g. Set, Bundle, Dozen" maxlength="20">
+                <div class="error-msg" id="newUnitNameError"></div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="button" id="btnSaveUnit" class="action-btn-submit" style="flex:1;"><i class="fa-solid fa-plus"></i> Add Unit</button>
+                <button type="button" id="btnCloseUnitModal" class="action-btn-cancel" style="flex:1; background:#64748b;"><i class="fa-solid fa-xmark"></i> Cancel</button>
+            </div>
         </div>
     </div>
 

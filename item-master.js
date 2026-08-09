@@ -51,8 +51,94 @@ document.addEventListener("DOMContentLoaded", () => {
     const editImgInput = document.getElementById('editImg');
     const editImgLabel = document.getElementById('editImgLabel');
 
+    // Add Unit Modal Elements
+    const addUnitModal = document.getElementById('addUnitModal');
+    const openAddUnitModalBtn = document.getElementById('openAddUnitModalBtn');
+    const openAddUnitModalEditBtn = document.getElementById('openAddUnitModalEditBtn');
+    const btnCloseUnitModal = document.getElementById('btnCloseUnitModal');
+    const btnSaveUnit = document.getElementById('btnSaveUnit');
+    const newUnitNameInp = document.getElementById('newUnitName');
+    const editUnitInp = document.getElementById('editUnit');
+
+    let targetUnitDropdown = unitInp; // ॲड करताना कोणत्या ड्रॉपडाउनमध्ये सेट करायचे ते ठरवण्यासाठी
+
     // ग्लोबल आयटम्स लिस्ट होल्डर
     let items = [];
+
+    // --- Dynamic Custom Units Management System ---
+    function loadSavedUnits() {
+        const savedUnits = JSON.parse(localStorage.getItem('customUnits')) || [];
+        savedUnits.forEach(unitVal => {
+            addUnitOptionToSelect(unitInp, unitVal);
+            addUnitOptionToSelect(editUnitInp, unitVal);
+        });
+    }
+
+    function addUnitOptionToSelect(selectEl, unitVal) {
+        if (!selectEl) return;
+        const exists = Array.from(selectEl.options).some(opt => opt.value.toLowerCase() === unitVal.toLowerCase());
+        if (!exists) {
+            const opt = document.createElement('option');
+            opt.value = unitVal;
+            opt.textContent = unitVal;
+            selectEl.appendChild(opt);
+        }
+    }
+
+    loadSavedUnits();
+
+    if (openAddUnitModalBtn) {
+        openAddUnitModalBtn.addEventListener('click', () => {
+            targetUnitDropdown = unitInp;
+            newUnitNameInp.value = '';
+            clearError(newUnitNameInp, 'newUnitNameError');
+            addUnitModal.style.display = 'flex';
+            newUnitNameInp.focus();
+        });
+    }
+
+    if (openAddUnitModalEditBtn) {
+        openAddUnitModalEditBtn.addEventListener('click', () => {
+            targetUnitDropdown = editUnitInp;
+            newUnitNameInp.value = '';
+            clearError(newUnitNameInp, 'newUnitNameError');
+            addUnitModal.style.display = 'flex';
+            newUnitNameInp.focus();
+        });
+    }
+
+    if (btnCloseUnitModal) {
+        btnCloseUnitModal.addEventListener('click', () => {
+            addUnitModal.style.display = 'none';
+        });
+    }
+
+    if (btnSaveUnit) {
+        btnSaveUnit.addEventListener('click', () => {
+            const unitVal = newUnitNameInp.value.trim();
+            if (unitVal === '') {
+                showError(newUnitNameInp, 'newUnitNameError', 'Please enter a unit name.');
+                return;
+            }
+
+            addUnitOptionToSelect(unitInp, unitVal);
+            addUnitOptionToSelect(editUnitInp, unitVal);
+
+            // LocalStorage मध्ये युनिट सेव्ह करणे
+            let savedUnits = JSON.parse(localStorage.getItem('customUnits')) || [];
+            if (!savedUnits.some(u => u.toLowerCase() === unitVal.toLowerCase())) {
+                savedUnits.push(unitVal);
+                localStorage.setItem('customUnits', JSON.stringify(savedUnits));
+            }
+
+            if (targetUnitDropdown) {
+                targetUnitDropdown.value = unitVal;
+                clearError(targetUnitDropdown, targetUnitDropdown.id === 'itemUnit' ? 'itemUnitError' : 'editUnitError');
+            }
+
+            addUnitModal.style.display = 'none';
+        });
+    }
 
     // ★ GET: डेटाबेसवरून सर्व आयटम फेच करा
     async function fetchItems() {
@@ -249,7 +335,15 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('editType').value = item.item_type || 'Product';
         document.getElementById('editGroup').value = item.item_group || 'General';
         document.getElementById('editBrand').value = item.brand || '';
-        document.getElementById('editUnit').value = item.unit || 'Pcs';
+        
+        // जर ॲड केलेले कस्टम युनिट असेल तर आधी ऑप्शन्स मध्ये जोडा
+        if (item.unit) {
+            addUnitOptionToSelect(editUnitInp, item.unit);
+            editUnitInp.value = item.unit;
+        } else {
+            editUnitInp.value = 'Pcs';
+        }
+
         document.getElementById('editTaxCategory').value = item.tax_category || '';
         document.getElementById('editHsnCode').value = item.hsn_sac_code || '';
         document.getElementById('editPurchasePrice').value = item.purchase_price || '0.00';
@@ -465,7 +559,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         const codeVal = item.Code || item.code || "";
                         const printNameVal = item["Print Name"] || item.printName || nameVal;
                         const hsnValImport = item["HSN / SAC"] || item["HSN / SAC Code"] || item.hsn || item.HSN || "N/A";
+                        const unitVal = item.Unit || item.unit || "Pcs";
                         
+                        // इम्पोर्ट करताना जर नवीन युनिट आले तर ऑटोमॅटिकली ड्रॉपडाउनमध्ये जोडणे
+                        if (unitVal) {
+                            addUnitOptionToSelect(unitInp, unitVal);
+                            addUnitOptionToSelect(editUnitInp, unitVal);
+                        }
+
                         const nameExists = items.some(x => x.item_name.toLowerCase() === nameVal.toLowerCase());
                         const codeExists = codeVal && items.some(x => x.item_code && x.item_code.toLowerCase() === codeVal.toString().toLowerCase());
 
@@ -479,7 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 item_type: item.Type || item.type || "Product",
                                 brand: item.Brand || item.brand || "",
                                 item_group: item.Group || item.group || "",
-                                unit: item.Unit || item.unit || "Pcs",
+                                unit: unitVal,
                                 tax_category: item["Tax Category"] || item.taxCategory || "",
                                 opening_stock_qty: item["Opening Stock Qty"] || item.openingStock || "0",
                                 opening_stock_value: item["Opening Stock Value"] || item.stockValue || "0.00",
