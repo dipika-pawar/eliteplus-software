@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // बॅकएंड एपीआय मुख्य URL मॅपिंग
     const API_URL = 'http://localhost:5000/api/item';
+    const UNIT_API_URL = 'http://localhost:5000/api/unit'; // डायनॅमिक युनिट एपीआय
 
     // --- 1. Sidebar Toggle ---
     const menuToggle = document.getElementById("menuToggle");
@@ -60,13 +61,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const newUnitNameInp = document.getElementById('newUnitName');
     const editUnitInp = document.getElementById('editUnit');
 
-    let targetUnitDropdown = unitInp; // ॲड करताना कोणत्या ड्रॉपडाउनमध्ये सेट करायचे ते ठरवण्यासाठी
+    let targetUnitDropdown = unitInp; 
 
     // ग्लोबल आयटम्स लिस्ट होल्डर
     let items = [];
 
-    // --- Dynamic Custom Units Management System ---
-    function loadSavedUnits() {
+    // --- Dynamic Custom Units Management System (Backend Integrated) ---
+    async function loadSavedUnits() {
+        try {
+            const response = await fetch(UNIT_API_URL);
+            if (response.ok) {
+                const dbUnits = await response.json();
+                dbUnits.forEach(u => {
+                    const unitVal = u.unit_name;
+                    addUnitOptionToSelect(unitInp, unitVal);
+                    addUnitOptionToSelect(editUnitInp, unitVal);
+                });
+            } else {
+                loadLocalUnitsFallback();
+            }
+        } catch (err) {
+            console.warn("Unit API Offline. Loading fallback local units.");
+            loadLocalUnitsFallback();
+        }
+    }
+
+    function loadLocalUnitsFallback() {
         const savedUnits = JSON.parse(localStorage.getItem('customUnits')) || [];
         savedUnits.forEach(unitVal => {
             addUnitOptionToSelect(unitInp, unitVal);
@@ -113,30 +133,57 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // ★ Save Unit: डेटाबेसमध्ये युनिट सेव्ह करा आणि ड्रॉपडाउनमध्ये जोडा
     if (btnSaveUnit) {
-        btnSaveUnit.addEventListener('click', () => {
+        btnSaveUnit.addEventListener('click', async () => {
             const unitVal = newUnitNameInp.value.trim();
             if (unitVal === '') {
                 showError(newUnitNameInp, 'newUnitNameError', 'Please enter a unit name.');
                 return;
             }
 
-            addUnitOptionToSelect(unitInp, unitVal);
-            addUnitOptionToSelect(editUnitInp, unitVal);
+            try {
+                const response = await fetch(UNIT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ unitName: unitVal })
+                });
 
-            // LocalStorage मध्ये युनिट सेव्ह करणे
-            let savedUnits = JSON.parse(localStorage.getItem('customUnits')) || [];
-            if (!savedUnits.some(u => u.toLowerCase() === unitVal.toLowerCase())) {
-                savedUnits.push(unitVal);
-                localStorage.setItem('customUnits', JSON.stringify(savedUnits));
+                const result = await response.json();
+
+                if (response.ok || response.status === 201) {
+                    addUnitOptionToSelect(unitInp, unitVal);
+                    addUnitOptionToSelect(editUnitInp, unitVal);
+
+                    if (targetUnitDropdown) {
+                        targetUnitDropdown.value = unitVal;
+                        clearError(targetUnitDropdown, targetUnitDropdown.id === 'itemUnit' ? 'itemUnitError' : 'editUnitError');
+                    }
+
+                    addUnitModal.style.display = 'none';
+                    alert(result.message || 'Unit added successfully!');
+                } else {
+                    showError(newUnitNameInp, 'newUnitNameError', result.message || 'Error saving unit.');
+                }
+            } catch (err) {
+                // डेटाबेस बंद असल्यास लोकल फॉलबॅक
+                addUnitOptionToSelect(unitInp, unitVal);
+                addUnitOptionToSelect(editUnitInp, unitVal);
+
+                let savedUnits = JSON.parse(localStorage.getItem('customUnits')) || [];
+                if (!savedUnits.some(u => u.toLowerCase() === unitVal.toLowerCase())) {
+                    savedUnits.push(unitVal);
+                    localStorage.setItem('customUnits', JSON.stringify(savedUnits));
+                }
+
+                if (targetUnitDropdown) {
+                    targetUnitDropdown.value = unitVal;
+                    clearError(targetUnitDropdown, targetUnitDropdown.id === 'itemUnit' ? 'itemUnitError' : 'editUnitError');
+                }
+
+                addUnitModal.style.display = 'none';
+                alert('सर्व्हर बंद असल्यामुळे Unit तात्पुरता लोकल मेमरीमध्ये जोडला गेला आहे.');
             }
-
-            if (targetUnitDropdown) {
-                targetUnitDropdown.value = unitVal;
-                clearError(targetUnitDropdown, targetUnitDropdown.id === 'itemUnit' ? 'itemUnitError' : 'editUnitError');
-            }
-
-            addUnitModal.style.display = 'none';
         });
     }
 
@@ -237,7 +284,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ★ फक्त ६ महत्त्वाच्या फील्ड्ससाठी व्हॅलिडेशन लॉजिक
     function validateMainForm() {
         let isValid = true;
         
@@ -251,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return isValid;
     }
 
-    // ★ POST: नवीन आयटम डेटाबेस किंवा लोकल टेबलमध्ये सेव्ह करा
+    // ★ POST: नवीन आयटम सेव्ह करणे
     itemForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!validateMainForm()) return;
@@ -323,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ★ PUT: आयटम एडिट मॉडेल उघडणे (सर्व कॉलम्स लोड होतील)
+    // ★ PUT: आयटम एडिट मॉडेल उघडणे
     window.openEditModal = (id) => {
         const item = items.find(x => x.id.toString() === id.toString());
         if (!item) return;
@@ -336,7 +382,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('editGroup').value = item.item_group || 'General';
         document.getElementById('editBrand').value = item.brand || '';
         
-        // जर ॲड केलेले कस्टम युनिट असेल तर आधी ऑप्शन्स मध्ये जोडा
         if (item.unit) {
             addUnitOptionToSelect(editUnitInp, item.unit);
             editUnitInp.value = item.unit;
@@ -351,6 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('editMrp').value = item.mrp || '0.00';
         document.getElementById('editPacking').value = item.packing_dimension || '';
         document.getElementById('editVideoLink').value = item.video_link || '';
+        document.getElementById('editStock').value = item.current_stock || '0';
         document.getElementById('editDescription').value = item.item_specification || '';
         
         if (item.image_path && item.image_path.startsWith('http')) {
@@ -364,7 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editModal.style.display = 'flex';
     };
 
-    // ★ PUT Submit: सर्व्हिस ग्रिड डेटा रिफ्लेक्शन अपडेट पाइपलाइन
+    // ★ PUT Submit: डेटा अपडेट करणे
     editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('editIndex').value;
@@ -383,10 +429,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const mrp = document.getElementById('editMrp').value.trim();
         const packing = document.getElementById('editPacking').value.trim();
         const videoLink = document.getElementById('editVideoLink').value.trim();
+        const stock = document.getElementById('editStock').value.trim();
         const description = document.getElementById('editDescription').value.trim();
         const image = document.getElementById('editImageUrl').value.trim();
 
-        // Modal Validation for essential fields
         if (!name || !type || !group || !unit || !taxCategory || !hsn) {
             alert('कृपया सर्व आवश्यक स्टार (*) असलेल्या फील्ड्स भरा.');
             return;
@@ -455,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Table UI Renderer Logic (Stock Column काढलेला आहे)
+    // Table UI Renderer Logic
     function renderTable(list) {
         itemTableBody.innerHTML = '';
         if(!list || list.length === 0) {
@@ -470,7 +516,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 imgHtml = `<img src="${srcPath}" alt="${item.item_name}" class="table-item-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'table-item-icon-placeholder\'><i class=\'fa-solid fa-image-broken\'></i></div>';">`;
             }
 
-            // Brochure PDF पाथ किंवा डाउनलोड लिंक मॅपिंग
             let pdfHtml = '-';
             if (item.pdf_path && item.pdf_path.trim() !== "" && item.pdf_path !== "-") {
                 const pdfUrl = item.pdf_path.startsWith('http') ? item.pdf_path : `http://localhost:5000${item.pdf_path}`;
@@ -561,7 +606,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         const hsnValImport = item["HSN / SAC"] || item["HSN / SAC Code"] || item.hsn || item.HSN || "N/A";
                         const unitVal = item.Unit || item.unit || "Pcs";
                         
-                        // इम्पोर्ट करताना जर नवीन युनिट आले तर ऑटोमॅटिकली ड्रॉपडाउनमध्ये जोडणे
                         if (unitVal) {
                             addUnitOptionToSelect(unitInp, unitVal);
                             addUnitOptionToSelect(editUnitInp, unitVal);
