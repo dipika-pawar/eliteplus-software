@@ -237,9 +237,11 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
          });
          
+         // Multiple Bank Accounts सेपरेटर अपडेट (Comma ऐवजी '|' ने सेपरेट करणे)
          const bankBlock = document.querySelector(".pdf-bank-details-plain .font-monospace");
          if(bankBlock && systemCompanyProfile.bank_accounts) {
-             bankBlock.innerHTML = `<div class="text-dark fw-semibold" style="font-size:11px">${systemCompanyProfile.bank_accounts}</div>`;
+             const formattedBankAccounts = systemCompanyProfile.bank_accounts.replaceAll(',', ' |');
+             bankBlock.innerHTML = `<div class="text-dark fw-semibold" style="font-size:11px">${formattedBankAccounts}</div>`;
          }
       }
     } catch (err) {
@@ -741,8 +743,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let imageSrc = 'Images/advanced-practi-man-cpr-manikin-254.jpg'; // फॉलबॅक इमेज
         if (matchedMaster && matchedMaster.image_path) {
           imageSrc = matchedMaster.image_path.startsWith('http') || matchedMaster.image_path.startsWith('data:') 
-                     ? matchedMaster.image_path 
-                     : `http://localhost:5000${matchedMaster.image_path}`;
+                      ? matchedMaster.image_path 
+                      : `http://localhost:5000${matchedMaster.image_path}`;
         } else if (item.image) {
           imageSrc = item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`;
         }
