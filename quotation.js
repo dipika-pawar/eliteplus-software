@@ -43,6 +43,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   initializeCurrentDate();
 
+  // --- AUTO VOUCHER NUMBER GENERATOR (1 March - 28/29 Feb Cycle) ---
+  async function fetchNextVoucherNumber() {
+    try {
+      const response = await fetch(`${API_URL}/next-voucher-no`);
+      const result = await response.json();
+      if (result.status === 'Success' && result.voucherNo) {
+        const vchInput = document.getElementById("qVchNo");
+        if (vchInput) {
+          vchInput.value = result.voucherNo;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch next auto voucher number:", err);
+    }
+  }
+
   // --- 1. PARTY SEARCH AUTOCOMPLETE (ACCOUNT MASTER LINK) ---
   const partyInput = document.getElementById("qParty");
   const suggestionsBox = document.getElementById("partySuggestionsList");
@@ -237,7 +253,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
          });
          
-         // Multiple Bank Accounts सेपरेटर अपडेट (Comma ऐवजी '|' ने सेपरेट करणे)
          const bankBlock = document.querySelector(".pdf-bank-details-plain .font-monospace");
          if(bankBlock && systemCompanyProfile.bank_accounts) {
              const formattedBankAccounts = systemCompanyProfile.bank_accounts.replaceAll(',', ' |');
@@ -532,7 +547,6 @@ document.addEventListener("DOMContentLoaded", () => {
              document.getElementById("qNarration").value = vch.narration || '';
              document.getElementById("manualDiscountPercentage").value = parseFloat(vch.discount_percentage).toFixed(2);
 
-             // अकाऊंट्स कीज मॅपिंग सिंक
              try {
                 const accRes = await fetch(ACCOUNT_API);
                 const accounts = await accRes.json();
@@ -652,6 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("formVoucherHeaderTitle").innerHTML = `<i class="fa-solid fa-file-signature text-success"></i> Voucher Entry Panel`;
     document.getElementById("mainVoucherSaveBtn").innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Voucher`;
     initializeCurrentDate();
+    fetchNextVoucherNumber(); // Auto-load next voucher number on clear/reset
     currentItemsList = [];
     renderItemsTable();
   };
@@ -731,16 +746,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const catalogContainer = document.getElementById("catalogPrintTargetArea");
       if (!catalogContainer) return;
 
-      catalogContainer.innerHTML = ""; // जुना स्टॅटिक डेटा क्लिअर करा
+      catalogContainer.innerHTML = "";
 
       catalogList.forEach((item, index) => {
-        // आयटम मास्टरमधून अतिरिक्त तपशील (Code, Image, Specification) मॅच करा
         const matchedMaster = systemItemsMasterList.find(x => x.item_name.toLowerCase() === item.name.toLowerCase());
         
         const itemCode = matchedMaster?.item_code || item.code || 'N/A';
         const itemSpec = matchedMaster?.item_specification || item.spec || 'No specification available for this item.';
         
-        let imageSrc = 'Images/advanced-practi-man-cpr-manikin-254.jpg'; // फॉलबॅक इमेज
+        let imageSrc = 'Images/advanced-practi-man-cpr-manikin-254.jpg';
         if (matchedMaster && matchedMaster.image_path) {
           imageSrc = matchedMaster.image_path.startsWith('http') || matchedMaster.image_path.startsWith('data:') 
                       ? matchedMaster.image_path 
@@ -762,7 +776,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const emailId = systemCompanyProfile?.company_email || 'elite.pune@gmail.com';
         const websiteUrl = systemCompanyProfile?.company_website || 'www.eliteplus.in';
 
-        // प्रत्येक प्रॉडक्टसाठी स्वतंत्र A4 पेज लेआउट तयार करा
         const pageDiv = document.createElement("div");
         pageDiv.className = `catalog-page ${index > 0 ? 'catalog-page-break' : ''}`;
         
@@ -862,4 +875,5 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchItemMasterData();
   fetchActiveCompanyProfile();
   fetchSavedVouchers();
+  fetchNextVoucherNumber(); // Intial call to fetch next voucher number
 });
