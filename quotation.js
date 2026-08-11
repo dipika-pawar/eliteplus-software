@@ -182,6 +182,11 @@ document.addEventListener("DOMContentLoaded", () => {
          itemNameInp.addEventListener("change", () => {
             const matchedItem = systemItemsMasterList.find(x => x.item_name === itemNameInp.value);
             if(matchedItem) {
+                // Item Master मधून डेटा सिलेक्ट केल्यावर Qty बाय डीफॉल्ट 1 सेट केली जाईल
+                const modalQtyInp = document.getElementById("modalItemQty");
+                if (modalQtyInp && (!modalQtyInp.value || parseFloat(modalQtyInp.value) === 0)) {
+                  modalQtyInp.value = "1";
+                }
                 document.getElementById("modalItemUnit").value = matchedItem.unit;
                 document.getElementById("modalItemPrice").value = matchedItem.sales_price;
                 itemNameInp.dataset.hsn = matchedItem.hsn_sac_code;
@@ -868,7 +873,17 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("topVchDetailBtn")?.addEventListener("click", () => document.getElementById("voucherDirectoryCard").scrollIntoView({ behavior: "smooth" }));
-  document.getElementById("openAddModalBtn")?.addEventListener("click", () => bootstrapItemModal.show());
+  
+  // Add Item बटन वर क्लिक केल्यावर देखील Qty इनपुट बॉक्समध्ये बाय डीफॉल्ट "1" व्हॅल्यू सेट होईल
+  document.getElementById("openAddModalBtn")?.addEventListener("click", () => {
+    document.getElementById("modalItemForm")?.reset();
+    document.getElementById("modalEditIndex").value = "";
+    document.getElementById("modalFormMode").textContent = "Add";
+    const modalQtyInp = document.getElementById("modalItemQty");
+    if (modalQtyInp) modalQtyInp.value = "1";
+    bootstrapItemModal.show();
+  });
+
   document.getElementById("btnWhatsAppConfig")?.addEventListener("click", () => window.open(`https://web.whatsapp.com/send?phone=7721092805&text=Hello`, "_blank"));
   document.getElementById("btnEmailConfig")?.addEventListener("click", () => window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=kalpande402@gmail.com&su=Quotation`, "_blank"));
 
