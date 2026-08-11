@@ -182,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
          itemNameInp.addEventListener("change", () => {
             const matchedItem = systemItemsMasterList.find(x => x.item_name === itemNameInp.value);
             if(matchedItem) {
-                // Item Master मधून डेटा सिलेक्ट केल्यावर Qty बाय डीफॉल्ट 1 सेट केली जाईल
                 const modalQtyInp = document.getElementById("modalItemQty");
                 if (modalQtyInp && (!modalQtyInp.value || parseFloat(modalQtyInp.value) === 0)) {
                   modalQtyInp.value = "1";
@@ -269,6 +268,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Helper Function: Reset and trigger Add Item Modal
+  function triggerAddItemModal() {
+    document.getElementById("modalItemForm")?.reset();
+    document.getElementById("modalEditIndex").value = "";
+    document.getElementById("modalFormMode").textContent = "Add";
+    const modalQtyInp = document.getElementById("modalItemQty");
+    if (modalQtyInp) modalQtyInp.value = "1";
+    bootstrapItemModal.show();
+    setTimeout(() => {
+      document.getElementById("modalItemName")?.focus();
+    }, 400);
+  }
+
   // Key down layout bindings
   const interactiveFormFields = ["qSeries", "qVchNo", "qSaleType", "qParty", "qMatCentre", "qNarration"];
   interactiveFormFields.forEach((id, currentIndex) => {
@@ -305,6 +317,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     });
+  });
+
+  // Global Enter Key Listener: आयटम ॲड झाल्यावर Enter दाबल्यास लगेच दुसरा आयटम ॲड करण्यासाठी मोडल ओपन होईल
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const addItemModalEl = document.getElementById("addItemModal");
+      const printModalEl = document.getElementById("printPreviewModal");
+      const catalogModalEl = document.getElementById("catalogPreviewModal");
+
+      const isModalOpen = (addItemModalEl && addItemModalEl.classList.contains("show")) ||
+                          (printModalEl && printModalEl.classList.contains("show")) ||
+                          (catalogModalEl && catalogModalEl.classList.contains("show"));
+
+      // जर मोडल आधीपासून उघडे नसेल आणि टेबलमध्ये किमान १ आयटम असेल, तर Enter दाबल्यावर पुढील आयटमसाठी मोडल उघडेल
+      if (!isModalOpen && currentItemsList.length > 0) {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+        if (activeTag !== "button" && activeTag !== "textarea") {
+          e.preventDefault();
+          triggerAddItemModal();
+        }
+      }
+    }
   });
 
   // DOM Caching Elements Setup
@@ -874,14 +908,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("topVchDetailBtn")?.addEventListener("click", () => document.getElementById("voucherDirectoryCard").scrollIntoView({ behavior: "smooth" }));
   
-  // Add Item बटन वर क्लिक केल्यावर देखील Qty इनपुट बॉक्समध्ये बाय डीफॉल्ट "1" व्हॅल्यू सेट होईल
+  // Add Item बटणावर क्लिक केल्यावर मोडल ओपन होणे
   document.getElementById("openAddModalBtn")?.addEventListener("click", () => {
-    document.getElementById("modalItemForm")?.reset();
-    document.getElementById("modalEditIndex").value = "";
-    document.getElementById("modalFormMode").textContent = "Add";
-    const modalQtyInp = document.getElementById("modalItemQty");
-    if (modalQtyInp) modalQtyInp.value = "1";
-    bootstrapItemModal.show();
+    triggerAddItemModal();
   });
 
   document.getElementById("btnWhatsAppConfig")?.addEventListener("click", () => window.open(`https://web.whatsapp.com/send?phone=7721092805&text=Hello`, "_blank"));
