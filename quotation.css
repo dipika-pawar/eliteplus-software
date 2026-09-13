@@ -1,0 +1,813 @@
+/* ==========================================================================
+       1. GLOBAL VARIABLES & RESET SETUP
+       ========================================================================== */
+:root {
+  --primary-color: #0f4c81;
+  --secondary-color: #1e88e5;
+  --accent-color: #00acc1;
+  --background-color: #f8fafc;
+  --text-color: #1f2937;
+  --border-color: #d1d5db;
+  --white: #ffffff;
+  --sidebar-width: 260px;
+  --logout-danger: #ef4444;
+  --whatsapp-green: #25d366;
+  --email-orange: #ea4335;
+  --save-green: #10b981;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+       2. SIDEBAR ENGINE
+       ========================================================================== */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--white);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 24px 16px;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #edf2f7;
+  margin-bottom: 24px;
+}
+
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--accent-color)
+  );
+  color: var(--white);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+}
+
+.brand-info h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.brand-info p {
+  font-size: 11px;
+  color: #718096;
+  margin: 0;
+}
+
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-menu ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+}
+
+.menu-item a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  color: #4a5568;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.3s;
+}
+
+.menu-item a:hover,
+.menu-item.active a {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  color: var(--white);
+}
+
+.menu-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.sidebar-footer {
+  padding-top: 16px;
+  border-top: 1px solid #edf2f7;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  color: var(--logout-danger);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+  background-color: #fef2f2;
+}
+
+/* ==========================================================================
+       3. WORKSPACE CORE & DASHBOARD
+       ========================================================================== */
+.main-content {
+  margin-left: var(--sidebar-width);
+  padding: 40px;
+  width: calc(100% - var(--sidebar-width));
+}
+
+.dashboard-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.dashboard-header p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.voucher-card {
+  background: var(--white);
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.parameter-section {
+  background-color: #f1f5f9;
+}
+
+/* ==========================================================================
+       4. FORM ELEMENTS & AUTOCOMPLETE SUGGESTIONS
+       ========================================================================== */
+.form-label-custom {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.form-control-custom {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: var(--white);
+  color: var(--text-color);
+}
+
+select.form-control-custom {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234B5563'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  padding-right: 35px;
+  cursor: pointer;
+}
+
+.rows-textarea {
+  resize: none;
+}
+
+.autocomplete-suggestions-box {
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  right: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  display: none;
+}
+
+.suggestion-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+  background-color: #f1f5f9;
+  color: var(--primary-color);
+}
+
+/* ==========================================================================
+       5. CUSTOM TABLES & SUMMARY LAYOUTS
+       ========================================================================== */
+.table-responsive-custom {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-custom {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 14px;
+}
+
+.table-custom th {
+  background-color: #0f4c81;
+  color: var(--white);
+  padding: 12px;
+  font-weight: 500;
+}
+
+.table-custom td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.table-custom tbody tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.small-table th,
+.small-table td,
+.sundry-table th,
+.sundry-table td {
+  padding: 8px;
+  font-size: 13px;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+.small-label {
+  font-size: 13px;
+}
+
+/* ==========================================================================
+       6. CUSTOM ACTION BUTTONS
+       ========================================================================== */
+.btn-outline-whatsapp {
+  background-color: var(--whatsapp-green) !important;
+  color: #ffffff !important;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  height: 38px;
+  transition: opacity 0.2s ease;
+}
+
+.btn-outline-whatsapp:hover {
+  opacity: 0.9;
+}
+
+.btn-outline-email {
+  background-color: var(--email-orange) !important;
+  color: #ffffff !important;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  height: 38px;
+  transition: opacity 0.2s ease;
+}
+
+.btn-outline-email:hover {
+  opacity: 0.9;
+}
+
+#btnPrintQuotation {
+  background-color: var(--secondary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  height: 38px;
+}
+
+#btnPrintQuotation:hover {
+  opacity: 0.9;
+}
+
+#btnPrintCatalog {
+  background-color: #15803d;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  height: 38px;
+}
+
+#btnPrintCatalog:hover {
+  opacity: 0.9;
+}
+
+.btn-save-voucher {
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  height: 38px;
+}
+
+.btn-save-voucher:hover {
+  opacity: 0.95;
+}
+
+.btn-quit {
+  background-color: var(--logout-danger);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  height: 38px;
+}
+
+.btn-quit:hover {
+  opacity: 0.9;
+}
+
+.btn-row-edit {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: none;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  margin-right: 5px;
+}
+
+.btn-row-delete {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.style-modal-box {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================================
+       7. MOBILE HEADER & RESPONSIVE DESIGN
+       ========================================================================== */
+.mobile-header {
+  display: none;
+  width: 100%;
+  height: 60px;
+  background-color: var(--white);
+  border-bottom: 1px solid var(--border-color);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1010;
+  padding: 0 20px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 18px;
+}
+
+.menu-toggle {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+@media (max-width: 991px) {
+  .mobile-header {
+    display: flex;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 80px 20px 20px 20px;
+  }
+}
+
+/* ==========================================================================
+       8. STRICT SINGLE A4 PAGE FORMATTING & PDF ENGINES
+       ========================================================================== */
+.pdf-render-isolation-wrapper {
+  position: relative;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.pdf-document-paper {
+  background-color: #ffffff !important;
+  width: 794px; /* Exact Standard A4 Width */
+  height: 1115px; /* Fixed A4 Height target */
+  padding: 25px 30px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  font-size: 12.5px;
+  color: #000000 !important;
+  line-height: 1.35;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.pdf-catalog-container {
+  background-color: #ffffff !important;
+  width: 794px;
+  padding: 0;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+}
+
+.catalog-page {
+  width: 794px;
+  height: 1115px;
+  padding: 25px 30px;
+  background-color: #ffffff !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.catalog-page-break {
+  page-break-before: always;
+}
+
+.pdf-inner-border-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.pdf-letterhead-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  border-bottom: none;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.pdf-header-logo {
+  max-width: 260px;
+  height: auto;
+  max-height: 75px;
+  object-fit: contain;
+  display: block;
+}
+
+.pdf-doc-title {
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #000000;
+  font-size: 17px;
+  margin: 2px 0 6px 0;
+}
+
+.pdf-meta-box-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  border: 1px solid #000000;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+.table-meta-specs td {
+  padding: 2px 0;
+  color: #000000;
+}
+
+.pdf-table-wrapper {
+  border: 1px solid #000000;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pdf-items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pdf-items-table th {
+  background-color: #a9b6e9 !important;
+  color: #000000 !important;
+  font-weight: 700;
+  border: 1px solid #000000;
+  padding: 6px 4px;
+  font-size: 11.5px;
+}
+
+.pdf-items-table td {
+  border: 1px solid #b5c2b7;
+  padding: 6px 6px;
+  font-size: 12px;
+  color: #000000 !important;
+}
+
+.pdf-empty-row-tr td {
+  height: 22px;
+  padding: 0;
+}
+
+.pdf-left-details-block {
+  text-align: left;
+  margin-top: 8px;
+}
+
+.pdf-words-amount {
+  font-size: 12px;
+  color: #000000;
+}
+
+.pdf-bank-details-plain {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* ==========================================================================
+       9. STAMP & SIGNATURE ALIGNMENTS (OVERLAPPING FIX)
+       ========================================================================== */
+.pdf-bottom-pinned-group {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-auth-terms-container-row {
+  display: grid;
+  grid-template-columns: 1.1fr 0.5fr 0.4fr;
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 10px;
+}
+
+.terms-and-conditions-box,
+.center-qr-code-holder,
+.signature-stamp-frame {
+  border: 1px solid #000000 !important;
+  border-radius: 4px;
+}
+
+.embedded-qr-placeholder-box-real {
+  width: 85px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.footer-right-side-qr-area .mini-qr-box {
+  width: 45px;
+  height: 45px;
+}
+
+.pdf-scanner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.overlap-stamp-signature-container {
+  position: relative;
+  width: 150px;
+  height: 70px;
+  margin: 0 auto;
+}
+
+.mock-seal-circle-absolute-image {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  top: -5px;
+  left: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.pdf-stamp-real-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mock-signature-overlay-image-line {
+  position: absolute;
+  top: 10px;
+  left: 5px;
+  width: 115px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.pdf-signature-real-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.signature-stamp-frame {
+  position: relative;
+  min-height: 120px;
+}
+
+/* ==========================================================================
+       10. CORPORATE FOOTER & PRODUCT CATALOG DETAILS
+       ========================================================================== */
+.pdf-corporate-footer-blue-bar {
+  background-color: #1d3557 !important;
+  border-radius: 4px;
+  padding: 10px 12px !important;
+}
+
+.pdf-corporate-footer-blue-bar .text-white {
+  color: #ffffff !important;
+}
+
+.opacity-90 {
+  opacity: 0.9;
+}
+
+.catalog-product-row {
+  padding-bottom: 15px;
+}
+
+.catalog-screenshot-title {
+  color: #ff0000 !important;
+  font-weight: 700;
+  font-size: 22px;
+  margin-top: 20px;
+  margin-bottom: 5px;
+}
+
+.catalog-screenshot-code {
+  color: #000000 !important;
+  font-size: 15px;
+  margin-bottom: 25px;
+}
+
+.catalog-screenshot-desc {
+  color: #000000 !important;
+  font-size: 14.5px;
+  line-height: 1.5;
+  text-align: justify;
+}
+
+.product-img-box-clean {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 25px;
+}
+
+.product-img-box-clean img {
+  max-width: 100%;
+  height: auto;
+  max-height: 340px;
+  object-fit: contain;
+}
+
+/* ==========================================================================
+       11. PRINT MEDIA ENGINE SPECIFICATIONS (STRICT A4 PRINT CORRECTIONS)
+       ========================================================================== */
+@media print {
+  html,
+  body {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .sidebar,
+  .mobile-header,
+  .main-content,
+  .modal-header,
+  .modal-footer {
+    display: none !important;
+  }
+
+  .modal,
+  .modal-dialog,
+  .modal-content,
+  .modal-body {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+  }
+
+  .pdf-render-isolation-wrapper,
+  .pdf-document-paper,
+  .pdf-catalog-container {
+    box-shadow: none !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: hidden !important;
+  }
+
+  .catalog-page {
+    box-shadow: none !important;
+    width: 100% !important;
+    height: 297mm !important;
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+  }
+}
