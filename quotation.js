@@ -252,30 +252,22 @@ document.addEventListener("DOMContentLoaded", () => {
   function selectMasterItem(matchedItem) {
     itemNameInp.value = matchedItem.item_name;
     
-    // Auto-fill Quantity (defaults to 1 if empty/0)
     const modalQtyInp = document.getElementById("modalItemQty");
     if (modalQtyInp && (!modalQtyInp.value || parseFloat(modalQtyInp.value) === 0)) {
       modalQtyInp.value = "1";
     }
     
-    // Auto-fill Unit and Price
     document.getElementById("modalItemUnit").value = matchedItem.unit || 'Pcs';
     document.getElementById("modalItemPrice").value = matchedItem.sales_price || 0;
     
-    // Bind existing Metadata exactly to dataset
     itemNameInp.dataset.hsn = matchedItem.hsn_sac_code || '';
     itemNameInp.dataset.brand = matchedItem.brand || '-';
     itemNameInp.dataset.code = matchedItem.item_code || '-';
     itemNameInp.dataset.image = matchedItem.image_path || '';
     itemNameInp.dataset.spec = matchedItem.item_specification || '';
-    
-    // Parse Tax Rate Logic from Category
     itemNameInp.dataset.taxRate = matchedItem.tax_category ? (matchedItem.tax_category.match(/\d+/)?.[0] || 18) : 18;
     
-    // Hide the custom suggestions dropdown
     if(itemSuggestionsBox) itemSuggestionsBox.style.display = "none";
-    
-    // Move focus directly to Quantity input
     if (modalQtyInp) { modalQtyInp.focus(); modalQtyInp.select(); }
   }
 
@@ -295,7 +287,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Extract unique, non-empty units directly from the Master list
       const allUnits = systemItemsMasterList
           .map(item => item.unit)
           .filter(unit => unit && unit.trim() !== "");
@@ -364,7 +355,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Global click listener to hide dropdowns when clicking outside
   document.addEventListener("click", (e) => {
     if (itemNameInp && itemSuggestionsBox && e.target !== itemNameInp && e.target !== itemSuggestionsBox) {
       itemSuggestionsBox.style.display = "none";
@@ -374,91 +364,93 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- 3. COMPANY MASTER DYNAMIC Binding (Letterhead, Address, Contact, Logo, QR, Stamp, Signature, Bank) ---
+  // --- 3. COMPANY MASTER DYNAMIC Binding (Fetch to DOM Elements) ---
   async function fetchActiveCompanyProfile() {
     try {
       const response = await fetch(COMPANY_API);
       const data = await response.json();
       if(data && data.length > 0) {
          systemCompanyProfile = data[0]; 
-         
-         // Binding Logo
-         const logoImages = document.querySelectorAll(".pdf-header-logo");
-         logoImages.forEach(logoImg => {
-            if(systemCompanyProfile.logo_file) {
-               logoImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`;
-            }
-         });
-         
-         // Binding QR Code
-         const qrImages = document.querySelectorAll(".pdf-scanner-img");
-         qrImages.forEach(img => {
-            if(systemCompanyProfile.qr_file) {
-               img.src = `http://localhost:5000/uploads/${systemCompanyProfile.qr_file}`;
-            }
-         });
-
-         // Binding Signature
-         const signImg = document.querySelector(".pdf-signature-real-img");
-         if(signImg && systemCompanyProfile.signature_file) {
-            signImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.signature_file}`;
-         }
-
-         // Binding Stamp
-         const stampImg = document.querySelector(".pdf-stamp-real-img");
-         if(stampImg && systemCompanyProfile.stamp_file) {
-            stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.stamp_file}`; 
-         } else if (stampImg && systemCompanyProfile.logo_file) {
-            stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`; 
-         }
-
-         // Binding Company Name above Authorized Signatory
-         const companyTitleHeader = document.querySelector(".signature-stamp-frame .fw-bold");
-         if(companyTitleHeader) {
-            companyTitleHeader.textContent = `for ${systemCompanyProfile.company_name || systemCompanyProfile.print_name}`;
-         }
-
-         // Binding Address
-         const addressDivs = document.querySelectorAll(".legal-address-column .opacity-90");
-         addressDivs.forEach(div => {
-            div.innerHTML = `<i class="fa-solid fa-location-dot me-1 text-info"></i> ${systemCompanyProfile.registered_address || ''}`;
-         });
-
-         // Binding Contact Details (Mobile, Email, Web)
-         const contactDivs = document.querySelectorAll(".legal-address-column .fw-medium");
-         contactDivs.forEach(div => {
-            div.innerHTML = `
-               <i class="fa-solid fa-phone me-1 text-info"></i> ${systemCompanyProfile.company_mobile || ''}
-               <span class="mx-1">|</span>
-               <i class="fa-solid fa-envelope me-1 text-info"></i> ${systemCompanyProfile.company_email || ''}
-               <span class="mx-1">|</span>
-               <i class="fa-solid fa-globe me-1 text-info"></i> ${systemCompanyProfile.company_website || ''}
-            `;
-         });
-         
-         // Binding 4 Bank Specific Fields
-         const bankBlockCol = document.querySelector(".pdf-bank-details-plain .col-12");
-         if(bankBlockCol && systemCompanyProfile) {
-             bankBlockCol.innerHTML = `
-                 <div><span class="text-muted">A/C Name:</span> <strong class="text-dark">${systemCompanyProfile.ac_name || 'N/A'}</strong></div>
-                 <div><span class="text-muted">A/C No:</span> <strong class="text-dark">${systemCompanyProfile.ac_no || 'N/A'}</strong></div>
-                 <div><span class="text-muted">IFSC Code:</span> <strong class="text-dark">${systemCompanyProfile.ifsc_code || 'N/A'}</strong></div>
-                 <div><span class="text-muted">Bank Name:</span> <strong class="text-dark">${systemCompanyProfile.bank_name || 'N/A'}</strong></div>
-             `;
-         }
+         applyCompanyProfileToDOM(); // We call a helper function to apply the data
       }
     } catch (err) {
        console.error("Company Profile loading fault:", err);
     }
   }
 
-  // Helper Function: Reset and trigger Add Item Modal
+  // This function applies fetched DB Company Profile directly to the Quotation Print Layout
+  function applyCompanyProfileToDOM() {
+      if(!systemCompanyProfile) return;
+
+      // 1. Binding Logos
+      const logoImages = document.querySelectorAll(".pdf-header-logo");
+      logoImages.forEach(logoImg => {
+          if(systemCompanyProfile.logo_file) logoImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`;
+      });
+      
+      // 2. Binding QR Code
+      const qrImages = document.querySelectorAll(".pdf-scanner-img");
+      qrImages.forEach(img => {
+          if(systemCompanyProfile.qr_file) img.src = `http://localhost:5000/uploads/${systemCompanyProfile.qr_file}`;
+      });
+
+      // 3. Binding Signature
+      const signImg = document.querySelector(".pdf-signature-real-img");
+      if(signImg && systemCompanyProfile.signature_file) {
+          signImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.signature_file}`;
+      }
+
+      // 4. Binding Stamp
+      const stampImg = document.querySelector(".pdf-stamp-real-img");
+      if(stampImg) {
+          if(systemCompanyProfile.stamp_file) {
+             stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.stamp_file}`; 
+          } else if (systemCompanyProfile.logo_file) {
+             stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`; 
+          }
+      }
+
+      // 5. Binding Company Name above Authorized Signatory
+      const companyTitleHeader = document.querySelector(".signature-stamp-frame .fw-bold");
+      if(companyTitleHeader) {
+          companyTitleHeader.textContent = `for ${systemCompanyProfile.company_name || systemCompanyProfile.print_name}`;
+      }
+
+      // 6. Binding Address
+      const addressDivs = document.querySelectorAll(".legal-address-column .opacity-90");
+      addressDivs.forEach(div => {
+          div.innerHTML = `<i class="fa-solid fa-location-dot me-1 text-info"></i> ${systemCompanyProfile.registered_address || ''}`;
+      });
+
+      // 7. Binding Contact Details
+      const contactDivs = document.querySelectorAll(".legal-address-column .fw-medium");
+      contactDivs.forEach(div => {
+          div.innerHTML = `
+              <i class="fa-solid fa-phone me-1 text-info"></i> ${systemCompanyProfile.company_mobile || ''}
+              <span class="mx-1">|</span>
+              <i class="fa-solid fa-envelope me-1 text-info"></i> ${systemCompanyProfile.company_email || ''}
+              <span class="mx-1">|</span>
+              <i class="fa-solid fa-globe me-1 text-info"></i> ${systemCompanyProfile.company_website || ''}
+          `;
+      });
+      
+      // 8. Binding Bank Details (Using print_name as A/C Name)
+      const bankBlockCol = document.querySelector(".pdf-bank-details-plain .col-12");
+      if(bankBlockCol) {
+          bankBlockCol.innerHTML = `
+              <div><span class="text-muted">A/C Name:</span> <strong class="text-dark">${systemCompanyProfile.print_name || 'N/A'}</strong></div>
+              <div><span class="text-muted">A/C No:</span> <strong class="text-dark">${systemCompanyProfile.ac_no || 'N/A'}</strong></div>
+              <div><span class="text-muted">IFSC Code:</span> <strong class="text-dark">${systemCompanyProfile.ifsc_code || 'N/A'}</strong></div>
+              <div><span class="text-muted">Bank Name:</span> <strong class="text-dark">${systemCompanyProfile.bank_name || 'N/A'}</strong></div>
+          `;
+      }
+  }
+
   function triggerAddItemModal() {
     document.getElementById("modalItemForm")?.reset();
     document.getElementById("modalEditIndex").value = "";
     document.getElementById("modalFormMode").textContent = "Add";
     
-    // Clear dataset so old item data doesn't stick when adding new manual items
     if(itemNameInp) {
         itemNameInp.dataset.hsn = '';
         itemNameInp.dataset.brand = '-';
@@ -503,7 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!modalElement) return;
     modalElement.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
-        // Prevent form submission if a custom dropdown is currently open and focused
         if (id === "modalItemName" && itemSuggestionsBox && itemSuggestionsBox.style.display === "block") return;
         if (id === "modalItemUnit" && unitSuggestionsBox && unitSuggestionsBox.style.display === "block") return;
         
@@ -519,7 +510,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Global Enter Key Listener
   document.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       const addItemModalEl = document.getElementById("addItemModal");
@@ -932,6 +922,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let printList = currentItemsList.length > 0 ? currentItemsList : lastSavedItemsSnapshot;
       if (printList.length === 0) return alert("Validation Error: No dynamic item configurations available to print.");
 
+      // Ensure Company Data is absolutely enforced into DOM right before opening print preview
+      applyCompanyProfileToDOM();
+
       const partyInp = document.getElementById("qParty");
       
       if(!partyInp.value && lastSavedItemsSnapshot.length > 0) {
@@ -979,6 +972,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const metrics = calculateQuotationTotals();
       document.getElementById("pdfAmountInWords").textContent = translateAmountIntoWords(metrics.grandTotal);
+      
       printPreviewModal.show();
     });
   }
