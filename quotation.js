@@ -252,22 +252,30 @@ document.addEventListener("DOMContentLoaded", () => {
   function selectMasterItem(matchedItem) {
     itemNameInp.value = matchedItem.item_name;
     
+    // Auto-fill Quantity (defaults to 1 if empty/0)
     const modalQtyInp = document.getElementById("modalItemQty");
     if (modalQtyInp && (!modalQtyInp.value || parseFloat(modalQtyInp.value) === 0)) {
       modalQtyInp.value = "1";
     }
     
+    // Auto-fill Unit and Price
     document.getElementById("modalItemUnit").value = matchedItem.unit || 'Pcs';
     document.getElementById("modalItemPrice").value = matchedItem.sales_price || 0;
     
+    // Bind existing Metadata exactly to dataset
     itemNameInp.dataset.hsn = matchedItem.hsn_sac_code || '';
     itemNameInp.dataset.brand = matchedItem.brand || '-';
     itemNameInp.dataset.code = matchedItem.item_code || '-';
     itemNameInp.dataset.image = matchedItem.image_path || '';
     itemNameInp.dataset.spec = matchedItem.item_specification || '';
+    
+    // Parse Tax Rate Logic from Category
     itemNameInp.dataset.taxRate = matchedItem.tax_category ? (matchedItem.tax_category.match(/\d+/)?.[0] || 18) : 18;
     
+    // Hide the custom suggestions dropdown
     if(itemSuggestionsBox) itemSuggestionsBox.style.display = "none";
+    
+    // Move focus directly to Quantity input
     if (modalQtyInp) { modalQtyInp.focus(); modalQtyInp.select(); }
   }
 
@@ -287,6 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Extract unique, non-empty units directly from the Master list
       const allUnits = systemItemsMasterList
           .map(item => item.unit)
           .filter(unit => unit && unit.trim() !== "");
@@ -355,6 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Global click listener to hide dropdowns when clicking outside
   document.addEventListener("click", (e) => {
     if (itemNameInp && itemSuggestionsBox && e.target !== itemNameInp && e.target !== itemSuggestionsBox) {
       itemSuggestionsBox.style.display = "none";
@@ -434,14 +444,25 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
       });
       
-      // 8. Binding Bank Details (Using print_name as A/C Name)
+      // 8. Binding Bank Details (Using print_name as A/C Name with inline separator)
       const bankBlockCol = document.querySelector(".pdf-bank-details-plain .col-12");
       if(bankBlockCol) {
+          const acName = systemCompanyProfile.print_name || 'N/A';
+          const acNo = systemCompanyProfile.ac_no || 'N/A';
+          const ifscCode = systemCompanyProfile.ifsc_code || 'N/A';
+          const bankName = systemCompanyProfile.bank_name || 'N/A';
+
           bankBlockCol.innerHTML = `
-              <div><span class="text-muted">A/C Name:</span> <strong class="text-dark">${systemCompanyProfile.print_name || 'N/A'}</strong></div>
-              <div><span class="text-muted">A/C No:</span> <strong class="text-dark">${systemCompanyProfile.ac_no || 'N/A'}</strong></div>
-              <div><span class="text-muted">IFSC Code:</span> <strong class="text-dark">${systemCompanyProfile.ifsc_code || 'N/A'}</strong></div>
-              <div><span class="text-muted">Bank Name:</span> <strong class="text-dark">${systemCompanyProfile.bank_name || 'N/A'}</strong></div>
+              <div>
+                  <span class="text-muted">A/C Name:</span> <strong class="text-dark">${acName}</strong> 
+                  <span class="mx-1 text-muted">|</span> 
+                  <span class="text-muted">A/C No:</span> <strong class="text-dark">${acNo}</strong>
+              </div>
+              <div>
+                  <span class="text-muted">IFSC Code:</span> <strong class="text-dark">${ifscCode}</strong> 
+                  <span class="mx-1 text-muted">|</span> 
+                  <span class="text-muted">Bank Name:</span> <strong class="text-dark">${bankName}</strong>
+              </div>
           `;
       }
   }
