@@ -155,9 +155,13 @@
               <input type="text" class="form-control-custom" value="Main Store" id="qMatCentre" required>
             </div>
 
-            <div class="col-md-12">
+            <div class="col-md-6">
               <label class="form-label-custom">Narration</label>
-              <textarea class="form-control-custom rows-textarea" rows="1" placeholder="Enter voucher narration..." id="qNarration"></textarea>
+              <textarea class="form-control-custom rows-textarea" rows="3" placeholder="Enter voucher narration..." id="qNarration"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom">Terms & Conditions</label>
+              <textarea class="form-control-custom rows-textarea" rows="3" placeholder="Enter terms & conditions for printing..." id="qTerms"></textarea>
             </div>
           </div>
 
@@ -328,7 +332,6 @@
           <input type="hidden" id="modalEditIndex" value="">
           <div class="modal-body p-4">
             
-            <!-- AUTOCOMPLETE WRAPPER FOR ITEM NAME -->
             <div class="mb-3 position-relative">
               <label class="form-label fw-semibold text-secondary">Item Description</label>
               <input type="text" id="modalItemName" class="form-control" placeholder="Enter item name..." autocomplete="off" required>
@@ -341,7 +344,6 @@
                 <input type="text" id="modalItemQty" class="form-control" placeholder="1.00" required>
               </div>
               
-              <!-- AUTOCOMPLETE WRAPPER FOR UNIT -->
               <div class="col-md-4 position-relative">
                 <label class="form-label fw-semibold text-secondary">Unit</label>
                 <input type="text" id="modalItemUnit" class="form-control" placeholder="Pcs. / Nos" autocomplete="off" required>
@@ -363,7 +365,6 @@
     </div>
   </div>
 
-  <!-- Modal components for Print & Catalog... -->
   <div class="modal fade" id="printPreviewModal" tabindex="-1" aria-labelledby="printPreviewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content text-dark">
@@ -389,9 +390,8 @@
                 <div class="pdf-meta-box-grid mb-2">
                   <div class="client-address-side p-2">
                     <span class="fw-bold d-block text-muted small mb-1">To,</span>
-                    <!-- REMOVED THE PRINCIPAL & GROUP NAME HERE -->
-                    <span class="d-block fw-semibold text-wrap text-dark" id="pdfClientInstitution">Maharshi Karve Stree Shikshan Samstha's</span>
-                    <span class="d-block text-muted" id="pdfClientLocation">Karvenagar, Pune 411052</span>
+                    <span class="d-block fw-semibold text-wrap text-dark" id="pdfClientInstitution">Client Name</span>
+                    <span class="d-block text-muted" id="pdfClientLocation">Location</span>
                     <span class="d-block text-dark small" style="margin-top: 2px;"><strong class="text-secondary">Mobile:</strong> <span id="pdfClientMobile">N/A</span></span>
                     <span class="d-block text-dark small"><strong class="text-secondary">Email:</strong> <span id="pdfClientEmail">N/A</span></span>
                     <span class="d-block text-dark small"><strong class="text-secondary">GST No:</strong> <span id="pdfClientGst">N/A</span></span>
@@ -436,16 +436,13 @@
                 </div>
                 <div class="pdf-left-details-block mb-2 px-1">
                   <div class="pdf-words-amount mb-2">
-                    <strong>INR :</strong> <span id="pdfAmountInWords" class="font-monospace text-dark">Twelve Lakh Ninety Eight Thousand Rupees Only</span>
+                    <strong>INR :</strong> <span id="pdfAmountInWords" class="font-monospace text-dark">Twelve Lakh Rupees Only</span>
                   </div>
                   <div class="pdf-bank-details-plain">
                     <div class="fw-bold text-secondary small border-bottom-0 pb-0 mb-1"><i class="fa-solid fa-building-columns me-1"></i> BANK DETAIL</div>
                     <div class="row font-monospace small g-0">
                       <div class="col-12">
-                        <div><span class="text-muted">A/C Name:</span> <strong class="text-dark">Elite Plus</strong></div>
-                        <div><span class="text-muted">A/C No:</span> <strong class="text-dark">0787102000005364</strong></div>
-                        <div><span class="text-muted">IFSC Code:</span> <strong class="text-dark">IBKL0000787</strong></div>
-                        <div><span class="text-muted">Bank Name:</span> <strong class="text-dark">IDBI Bank, Warje Pune</strong></div>
+                        <!-- Dynamic Bank Area -->
                       </div>
                     </div>
                   </div>
@@ -454,13 +451,7 @@
                   <div class="pdf-auth-terms-container-row">
                     <div class="terms-and-conditions-box p-2 bg-light text-dark">
                       <span class="fw-bold d-block text-secondary small border-bottom pb-1 mb-1"><i class="fa-solid fa-scale-balanced me-1"></i> TERMS & CONDITIONS</span>
-                      <ol class="m-0 ps-3 lh-base text-dark" style="font-size: 11px;">
-                        <li>Packing, Forwarding and Transport Charges inclusive.</li>
-                        <li>Delivery within 2 weeks after receipt of Purchase Order.</li>
-                        <li>Payment 50% advanced and 50% after delivery.</li>
-                        <li>Disputes, if any, are subject to Pune Jurisdiction.</li>
-                        <li>Quotation Validity 30 Days.</li>
-                      </ol>
+                      <div id="pdfTermsConditions" class="m-0 ps-2 lh-base text-dark" style="font-size: 11px; white-space: pre-wrap; font-family: inherit;"></div>
                     </div>
                     <div class="center-qr-code-holder border bg-light p-1 d-flex flex-column justify-content-center align-items-center">
                       <div class="embedded-qr-placeholder-box-real">
@@ -484,14 +475,10 @@
                   <div class="pdf-corporate-footer-blue-bar text-white d-flex justify-content-between align-items-center">
                     <div class="legal-address-column small text-start">
                       <div class="opacity-90 mb-1" style="max-width: 540px; color: #cbd5e1; font-size: 11px;">
-                        <i class="fa-solid fa-location-dot me-1 text-info"></i> Sr.No 175, Fl No #116, F Wing, Laxmi Shantiban, NDA Road, Near Walnut School, Shivane, Pune - 411023, Maharashtra
+                        <i class="fa-solid fa-location-dot me-1 text-info"></i> Sr.No 175, Pune
                       </div>
                       <div class="fw-medium font-monospace text-white-50" style="font-size: 10.5px;">
-                        <i class="fa-solid fa-phone me-1 text-info"></i> 9890017812, 020-25291213
-                        <span class="mx-1">|</span>
-                        <i class="fa-solid fa-envelope me-1 text-info"></i> elite.pune@gmail.com
-                        <span class="mx-1">|</span>
-                        <i class="fa-solid fa-globe me-1 text-info"></i> www.eliteplus.in
+                        <i class="fa-solid fa-phone me-1 text-info"></i> 9890017812
                       </div>
                     </div>
                     <div class="footer-right-side-qr-area bg-white p-1 rounded">
@@ -522,7 +509,6 @@
         <div class="modal-body bg-dark-subtle p-4 d-flex justify-content-center">
           <div class="pdf-render-isolation-wrapper">
             <div id="catalogPrintTargetArea" class="pdf-catalog-container">
-              <!-- Catalog content injected here by JS -->
             </div>
           </div>
         </div>

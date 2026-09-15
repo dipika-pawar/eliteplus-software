@@ -11,6 +11,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const ITEM_API = 'http://localhost:5000/api/item';
   const COMPANY_API = 'http://localhost:5000/api/company';
 
+  // Default Standard Terms & Conditions
+  const defaultTerms = `1. Packing, Forwarding and Transport Charges inclusive.
+2. Delivery within 2 weeks after receipt of Purchase Order.
+3. Payment 50% advanced and 50% after delivery.
+4. Disputes, if any, are subject to Pune Jurisdiction.
+5. Quotation Validity 30 Days.`;
+
   // State Management Systems
   let voucherDatabase = [];
   let currentItemsList = [];
@@ -43,7 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   initializeCurrentDate();
 
-  // --- AUTO VOUCHER NUMBER GENERATOR (1 March - 28/29 Feb Cycle) ---
+  // Load default terms on startup
+  const termsField = document.getElementById("qTerms");
+  if (termsField) termsField.value = defaultTerms;
+
+  // --- AUTO VOUCHER NUMBER GENERATOR ---
   async function fetchNextVoucherNumber() {
     try {
       const response = await fetch(`${API_URL}/next-voucher-no`);
@@ -59,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- 1. PARTY SEARCH AUTOCOMPLETE (ACCOUNT MASTER LINK) ---
+  // --- 1. PARTY SEARCH AUTOCOMPLETE ---
   const partyInput = document.getElementById("qParty");
   const suggestionsBox = document.getElementById("partySuggestionsList");
   let currentFocusIndex = -1;
@@ -93,7 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
               partyInput.value = partyObj.print_name;
               suggestionsBox.style.display = "none";
               
-              // Meta Data Binding for PDF Print Engine
               partyInput.dataset.location = partyObj.billing_address || partyObj.shipping_address || 'Pune, Maharashtra';
               partyInput.dataset.mobile = partyObj.mobile_no || 'N/A';
               partyInput.dataset.email = partyObj.email_id || 'N/A';
@@ -156,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- 2. LIVE ITEMS DATA LINK IN POPUP MODAL (CUSTOM AUTOCOMPLETE & CLICK TO FILL) ---
+  // --- 2. LIVE ITEMS DATA LINK IN POPUP MODAL ---
   let currentItemFocusIndex = -1;
 
   async function fetchItemMasterData() {
@@ -168,7 +178,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // A. Setup Custom Autocomplete Listener for Item Name
   const itemNameInp = document.getElementById("modalItemName");
   const itemSuggestionsBox = document.getElementById("itemSuggestionsList");
 
@@ -252,34 +261,25 @@ document.addEventListener("DOMContentLoaded", () => {
   function selectMasterItem(matchedItem) {
     itemNameInp.value = matchedItem.item_name;
     
-    // Auto-fill Quantity (defaults to 1 if empty/0)
     const modalQtyInp = document.getElementById("modalItemQty");
     if (modalQtyInp && (!modalQtyInp.value || parseFloat(modalQtyInp.value) === 0)) {
       modalQtyInp.value = "1";
     }
     
-    // Auto-fill Unit and Price
     document.getElementById("modalItemUnit").value = matchedItem.unit || 'Pcs';
     document.getElementById("modalItemPrice").value = matchedItem.sales_price || 0;
     
-    // Bind existing Metadata exactly to dataset
     itemNameInp.dataset.hsn = matchedItem.hsn_sac_code || '';
     itemNameInp.dataset.brand = matchedItem.brand || '-';
     itemNameInp.dataset.code = matchedItem.item_code || '-';
     itemNameInp.dataset.image = matchedItem.image_path || '';
     itemNameInp.dataset.spec = matchedItem.item_specification || '';
-    
-    // Parse Tax Rate Logic from Category
     itemNameInp.dataset.taxRate = matchedItem.tax_category ? (matchedItem.tax_category.match(/\d+/)?.[0] || 18) : 18;
     
-    // Hide the custom suggestions dropdown
     if(itemSuggestionsBox) itemSuggestionsBox.style.display = "none";
-    
-    // Move focus directly to Quantity input
     if (modalQtyInp) { modalQtyInp.focus(); modalQtyInp.select(); }
   }
 
-  // B. Setup Custom Autocomplete Listener for Unit Name
   const unitInp = document.getElementById("modalItemUnit");
   const unitSuggestionsBox = document.getElementById("unitSuggestionsList");
   let currentUnitFocusIndex = -1;
@@ -295,7 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Extract unique, non-empty units directly from the Master list
       const allUnits = systemItemsMasterList
           .map(item => item.unit)
           .filter(unit => unit && unit.trim() !== "");
@@ -364,7 +363,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Global click listener to hide dropdowns when clicking outside
   document.addEventListener("click", (e) => {
     if (itemNameInp && itemSuggestionsBox && e.target !== itemNameInp && e.target !== itemSuggestionsBox) {
       itemSuggestionsBox.style.display = "none";
@@ -374,43 +372,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- 3. COMPANY MASTER DYNAMIC Binding (Fetch to DOM Elements) ---
+  // --- 3. COMPANY MASTER DYNAMIC Binding ---
   async function fetchActiveCompanyProfile() {
     try {
       const response = await fetch(COMPANY_API);
       const data = await response.json();
       if(data && data.length > 0) {
          systemCompanyProfile = data[0]; 
-         applyCompanyProfileToDOM(); // We call a helper function to apply the data
+         applyCompanyProfileToDOM(); 
       }
     } catch (err) {
        console.error("Company Profile loading fault:", err);
     }
   }
 
-  // This function applies fetched DB Company Profile directly to the Quotation Print Layout
   function applyCompanyProfileToDOM() {
       if(!systemCompanyProfile) return;
 
-      // 1. Binding Logos
       const logoImages = document.querySelectorAll(".pdf-header-logo");
       logoImages.forEach(logoImg => {
           if(systemCompanyProfile.logo_file) logoImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`;
       });
       
-      // 2. Binding QR Code
       const qrImages = document.querySelectorAll(".pdf-scanner-img");
       qrImages.forEach(img => {
           if(systemCompanyProfile.qr_file) img.src = `http://localhost:5000/uploads/${systemCompanyProfile.qr_file}`;
       });
 
-      // 3. Binding Signature
       const signImg = document.querySelector(".pdf-signature-real-img");
       if(signImg && systemCompanyProfile.signature_file) {
           signImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.signature_file}`;
       }
 
-      // 4. Binding Stamp
       const stampImg = document.querySelector(".pdf-stamp-real-img");
       if(stampImg) {
           if(systemCompanyProfile.stamp_file) {
@@ -420,19 +413,16 @@ document.addEventListener("DOMContentLoaded", () => {
           }
       }
 
-      // 5. Binding Company Name above Authorized Signatory
       const companyTitleHeader = document.querySelector(".signature-stamp-frame .fw-bold");
       if(companyTitleHeader) {
           companyTitleHeader.textContent = `for ${systemCompanyProfile.company_name || systemCompanyProfile.print_name}`;
       }
 
-      // 6. Binding Address
       const addressDivs = document.querySelectorAll(".legal-address-column .opacity-90");
       addressDivs.forEach(div => {
           div.innerHTML = `<i class="fa-solid fa-location-dot me-1 text-info"></i> ${systemCompanyProfile.registered_address || ''}`;
       });
 
-      // 7. Binding Contact Details
       const contactDivs = document.querySelectorAll(".legal-address-column .fw-medium");
       contactDivs.forEach(div => {
           div.innerHTML = `
@@ -444,7 +434,6 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
       });
       
-      // 8. Binding Bank Details (Using print_name as A/C Name with inline separator)
       const bankBlockCol = document.querySelector(".pdf-bank-details-plain .col-12");
       if(bankBlockCol) {
           const acName = systemCompanyProfile.print_name || 'N/A';
@@ -490,13 +479,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 400);
   }
 
-  // Key down layout bindings
-  const interactiveFormFields = ["qSeries", "qVchNo", "qSaleType", "qParty", "qMatCentre", "qNarration"];
+  const interactiveFormFields = ["qSeries", "qVchNo", "qSaleType", "qParty", "qMatCentre", "qNarration", "qTerms"];
   interactiveFormFields.forEach((id, currentIndex) => {
     const element = document.getElementById(id);
     if (!element) return;
     element.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === "Tab") {
+      // For textareas, do not prevent default on Enter so users can type multiple lines
+      if (event.key === "Tab" || (event.key === "Enter" && element.tagName !== "TEXTAREA")) {
         if (id === "qParty" && suggestionsBox && suggestionsBox.style.display === "block") return;
         event.preventDefault(); 
         const nextIndex = currentIndex + 1;
@@ -551,7 +540,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // DOM Caching Elements Setup
   const itemTableBody = document.getElementById("itemTableBody");
   const voucherMasterTableBody = document.getElementById("voucherMasterTableBody");
   const modalItemForm = document.getElementById("modalItemForm");
@@ -581,6 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
                partyName: vch.party_name,
                matCentre: vch.material_centre,
                narration: vch.narration,
+               termsConditions: vch.terms_conditions,
                discountPercent: vch.discount_percentage,
                subtotal: vch.subtotal,
                taxableAmount: vch.taxable_amount,
@@ -735,6 +724,7 @@ document.addEventListener("DOMContentLoaded", () => {
          partyName: partyName,
          matCentre: document.getElementById("qMatCentre").value.trim(),
          narration: document.getElementById("qNarration").value.trim(),
+         termsConditions: document.getElementById("qTerms").value.trim(),
          discountPercent: parseFloat(manualDiscountInput.value) || 0,
          subtotal: metrics.subtotal,
          taxableAmount: metrics.taxableAmount,
@@ -794,6 +784,7 @@ document.addEventListener("DOMContentLoaded", () => {
              document.getElementById("qParty").value = activePartyName;
              document.getElementById("qMatCentre").value = vch.material_centre;
              document.getElementById("qNarration").value = vch.narration || '';
+             document.getElementById("qTerms").value = vch.terms_conditions || '';
              document.getElementById("manualDiscountPercentage").value = parseFloat(vch.discount_percentage).toFixed(2);
 
              try {
@@ -853,7 +844,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
   };
 
-  // --- 7. POPUP MODAL ITEMS STORAGE PIPELINE ---
   if (modalItemForm) {
     modalItemForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -889,7 +879,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Ensure Edit binds correct values into Dataset so they aren't lost on update
   window.editItemRow = (i) => {
      const item = currentItemsList[i];
      itemNameInp.value = item.name;
@@ -897,7 +886,6 @@ document.addEventListener("DOMContentLoaded", () => {
      document.getElementById("modalItemUnit").value = item.unit;
      document.getElementById("modalItemPrice").value = item.price;
      
-     // CRITICAL: Re-bind datasets to protect existing metadata during manual edit
      itemNameInp.dataset.hsn = item.hsn || '';
      itemNameInp.dataset.brand = item.brand || '-';
      itemNameInp.dataset.code = item.code || '-';
@@ -923,8 +911,14 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("qVoucherTrackIndex").value = "";
     document.getElementById("formVoucherHeaderTitle").innerHTML = `<i class="fa-solid fa-file-signature text-success"></i> Voucher Entry Panel`;
     document.getElementById("mainVoucherSaveBtn").innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Voucher`;
+    
+    // Set default Terms and Conditions on clear/new
+    if(document.getElementById("qTerms")) {
+       document.getElementById("qTerms").value = defaultTerms;
+    }
+    
     initializeCurrentDate();
-    fetchNextVoucherNumber(); // Auto-load next voucher number on clear/reset
+    fetchNextVoucherNumber(); 
     currentItemsList = [];
     renderItemsTable();
   };
@@ -963,6 +957,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       document.getElementById("pdfMetaDate").textContent = document.getElementById("qDate").value;
       document.getElementById("pdfMetaQtnNo").textContent = document.getElementById("qVchNo").value;
+
+      // Assign the text typed in the Terms box directly to the PDF preview element
+      document.getElementById("pdfTermsConditions").textContent = document.getElementById("qTerms").value.trim();
 
       const rowsTarget = document.getElementById("pdfItemRowsTarget");
       rowsTarget.innerHTML = "";
@@ -1131,14 +1128,13 @@ document.addEventListener("DOMContentLoaded", () => {
               onclone: function(clonedDoc) {
                   const target = clonedDoc.getElementById("pdfPrintTargetArea");
                   
-                  // 1. Isolate completely from Bootstrap modal layout
+                  // Isolate completely from Bootstrap modal layout
                   target.style.position = "fixed";
                   target.style.top = "0";
                   target.style.left = "0";
                   target.style.transform = "none";
                   target.style.margin = "0";
                   
-                  // 2. Force strict dimensions slightly less than 297mm to prevent fraction overflow
                   target.style.width = "210mm";
                   target.style.height = "296.5mm"; 
                   target.style.minWidth = "210mm";
@@ -1146,7 +1142,6 @@ document.addEventListener("DOMContentLoaded", () => {
                   target.style.minHeight = "296.5mm";
                   target.style.maxHeight = "296.5mm";
                   
-                  // 3. Prevent content from bleeding into a second page
                   target.style.overflow = "hidden"; 
                   target.style.boxSizing = "border-box";
               }
@@ -1154,7 +1149,6 @@ document.addEventListener("DOMContentLoaded", () => {
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" } 
       };
       
-      // Use toPdf().get('pdf') to forcibly intercept and eliminate the blank second page
       html2pdf()
           .set(opt)
           .from(el)
@@ -1162,14 +1156,12 @@ document.addEventListener("DOMContentLoaded", () => {
           .get('pdf')
           .then(function(pdf) {
               const totalPages = pdf.internal.getNumberOfPages();
-              // Iterate backwards to securely delete any page higher than 1
               for (let i = totalPages; i > 1; i--) {
                   pdf.deletePage(i);
               }
           })
           .save()
           .then(() => {
-              // Restore button text after download
               this.innerHTML = originalText;
               this.disabled = false;
           });
@@ -1216,7 +1208,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("topVchDetailBtn")?.addEventListener("click", () => document.getElementById("voucherDirectoryCard").scrollIntoView({ behavior: "smooth" }));
   
-  // Add Item बटणावर क्लिक केल्यावर मोडल ओपन होणे
   document.getElementById("openAddModalBtn")?.addEventListener("click", () => {
     triggerAddItemModal();
   });
@@ -1227,5 +1218,5 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchItemMasterData();
   fetchActiveCompanyProfile();
   fetchSavedVouchers();
-  fetchNextVoucherNumber(); // Intial call to fetch next voucher number
+  fetchNextVoucherNumber(); 
 });
