@@ -52,6 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const pdfLabel = document.querySelector('label[for="itemPdf"]');
     const editImgInput = document.getElementById('editImg');
     const editImgLabel = document.getElementById('editImgLabel');
+    const editPdfInput = document.getElementById('editPdf');
+    const editPdfLabel = document.getElementById('editPdfLabel');
 
     // Add Unit Modal Elements
     const addUnitModal = document.getElementById('addUnitModal');
@@ -327,21 +329,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Enter Key Navigation System ---
     const formFocusableElements = itemForm.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea, button[type="submit"]');
-    formFocusableElements.forEach((element, index) => {
-        element.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                if (element.type === 'submit') return;
-                e.preventDefault(); 
-                
-                const nextElement = formFocusableElements[index + 1];
-                if (nextElement) {
-                    nextElement.focus();
-                    if (nextElement.tagName === 'INPUT' || nextElement.tagName === 'TEXTAREA') {
-                        nextElement.select();
-                    }
+    const enterKeyListener = (e) => {
+        if (e.key === 'Enter') {
+            const element = e.target;
+            if (element.type === 'submit') return;
+            e.preventDefault(); 
+            
+            const index = Array.from(formFocusableElements).indexOf(element);
+            const nextElement = formFocusableElements[index + 1];
+            if (nextElement) {
+                nextElement.focus();
+                if (nextElement.tagName === 'INPUT' || nextElement.tagName === 'TEXTAREA') {
+                    nextElement.select();
                 }
             }
-        });
+        }
+    };
+    formFocusableElements.forEach((element) => {
+        element.addEventListener('keydown', enterKeyListener);
     });
 
     // --- Validation UI Helpers ---
@@ -370,6 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Stock Auto calculation for Main Form
     function autoCalculateStockValue() {
         const qty = parseFloat(stockInp.value) || 0;
         const pPrice = parseFloat(purchaseInp.value) || 0;
@@ -377,6 +383,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     stockInp.addEventListener('input', autoCalculateStockValue);
     purchaseInp.addEventListener('input', autoCalculateStockValue);
+
+    // Stock Auto calculation for Edit Modal
+    const editStockInpEl = document.getElementById('editStock');
+    const editStockValInpEl = document.getElementById('editOpeningStockValue');
+    const editPurchaseInpEl = document.getElementById('editPurchasePrice');
+
+    function autoCalculateEditStockValue() {
+        if (!editStockInpEl || !editStockValInpEl || !editPurchaseInpEl) return;
+        const qty = parseFloat(editStockInpEl.value) || 0;
+        const pPrice = parseFloat(editPurchaseInpEl.value) || 0;
+        if (qty >= 0 && pPrice >= 0) editStockValInpEl.value = (qty * pPrice).toFixed(2);
+    }
+    if (editStockInpEl) editStockInpEl.addEventListener('input', autoCalculateEditStockValue);
+    if (editPurchaseInpEl) editPurchaseInpEl.addEventListener('input', autoCalculateEditStockValue);
 
     hsnInp.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') return; 
@@ -397,12 +417,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    editImgInput.addEventListener('change', function () {
-        if (this.files && this.files[0]) {
-            editImgLabel.innerHTML = `<i class="fa-solid fa-check"></i> ${this.files[0].name}`;
-            editImgLabel.style.borderColor = "#10b981";
-        }
-    });
+    if (editImgInput) {
+        editImgInput.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                editImgLabel.innerHTML = `<i class="fa-solid fa-check"></i> ${this.files[0].name}`;
+                editImgLabel.style.borderColor = "#10b981";
+            }
+        });
+    }
+
+    if (editPdfInput) {
+        editPdfInput.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                editPdfLabel.innerHTML = `<i class="fa-solid fa-check"></i> ${this.files[0].name}`;
+                editPdfLabel.style.borderColor = "#10b981";
+            }
+        });
+    }
 
     // Validation logic for 6 mandatory fields
     function validateMainForm() {
@@ -496,7 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!item) return;
 
         document.getElementById('editIndex').value = item.id;
-        document.getElementById('editName').value = item.item_name;
+        document.getElementById('editName').value = item.item_name || '';
         document.getElementById('editCode').value = item.item_code || '';
         document.getElementById('editPrintName').value = item.print_name || '';
         document.getElementById('editType').value = item.item_type || 'Product';
@@ -518,12 +549,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         document.getElementById('editHsnCode').value = item.hsn_sac_code || '';
+        
+        // Populate Opening Stock Qty and Value
+        const editStockEl = document.getElementById('editStock');
+        if (editStockEl) { editStockEl.value = item.opening_stock_qty || item.current_stock || '0'; }
+        
+        const editStockValEl = document.getElementById('editOpeningStockValue');
+        if (editStockValEl) { editStockValEl.value = item.opening_stock_value || '0.00'; }
+
         document.getElementById('editPurchasePrice').value = item.purchase_price || '0.00';
         document.getElementById('editPrice').value = item.sales_price || '0.00';
         document.getElementById('editMrp').value = item.mrp || '0.00';
         document.getElementById('editPacking').value = item.packing_dimension || '';
         document.getElementById('editVideoLink').value = item.video_link || '';
-        document.getElementById('editStock').value = item.current_stock || '0';
         document.getElementById('editDescription').value = item.item_specification || '';
         
         if (item.image_path && item.image_path.startsWith('http')) {
@@ -532,8 +570,32 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('editImageUrl').value = '';
         }
 
-        editImgLabel.innerHTML = '<i class="fa-solid fa-image"></i> Choose Image';
-        editImgLabel.style.borderColor = "";
+        // Image Preview Display
+        if (item.image_path && !item.image_path.startsWith('http') && item.image_path.trim() !== '') {
+            const imgSrc = `http://localhost:5000${item.image_path}`;
+            editImgLabel.innerHTML = `<img src="${imgSrc}" style="width:24px; height:24px; border-radius:4px; object-fit:cover; margin-right:8px;"> <span style="color:#059669;">Existing Image (Click to change)</span>`;
+            editImgLabel.style.borderColor = "#10b981";
+        } else {
+            editImgLabel.innerHTML = '<i class="fa-solid fa-image"></i> Choose Image';
+            editImgLabel.style.borderColor = "";
+        }
+
+        // PDF Brochure Link Setup
+        const existingPdfLink = document.getElementById('existingPdfLink');
+        if (editPdfLabel) {
+            editPdfLabel.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Choose New PDF';
+            editPdfLabel.style.borderColor = "";
+        }
+        if (existingPdfLink) {
+            if (item.pdf_path && item.pdf_path !== '-') {
+                const pdfUrl = item.pdf_path.startsWith('http') ? item.pdf_path : `http://localhost:5000${item.pdf_path}`;
+                const pdfFileName = item.pdf_path.split('/').pop();
+                existingPdfLink.innerHTML = `<a href="${pdfUrl}" target="_blank" style="color:#2563eb; text-decoration:none; font-weight: 500;"><i class="fa-solid fa-eye me-1"></i> View Existing PDF: ${pdfFileName}</a>`;
+            } else {
+                existingPdfLink.innerHTML = '<span style="color:#64748b;">No existing PDF attached.</span>';
+            }
+        }
+
         editModal.style.display = 'flex';
     };
 
@@ -551,12 +613,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const unit = document.getElementById('editUnit').value;
         const taxCategory = document.getElementById('editTaxCategory').value;
         const hsn = document.getElementById('editHsnCode').value.trim();
+        const stock = document.getElementById('editStock') ? document.getElementById('editStock').value.trim() : '0';
         const purchasePrice = document.getElementById('editPurchasePrice').value.trim();
         const price = document.getElementById('editPrice').value.trim();
         const mrp = document.getElementById('editMrp').value.trim();
         const packing = document.getElementById('editPacking').value.trim();
         const videoLink = document.getElementById('editVideoLink').value.trim();
-        const stock = document.getElementById('editStock').value.trim();
         const description = document.getElementById('editDescription').value.trim();
         const image = document.getElementById('editImageUrl').value.trim();
 
@@ -575,6 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append('unit', unit);
         formData.append('taxCategory', taxCategory);
         formData.append('hsn', hsn);
+        formData.append('stock', stock);
         formData.append('purchasePrice', purchasePrice);
         formData.append('price', price);
         formData.append('mrp', mrp);
@@ -583,7 +646,8 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append('description', description);
         formData.append('image', image);
 
-        if (editImgInput.files[0]) formData.append('itemImg', editImgInput.files[0]);
+        if (editImgInput && editImgInput.files[0]) formData.append('itemImg', editImgInput.files[0]);
+        if (editPdfInput && editPdfInput.files[0]) formData.append('itemPdf', editPdfInput.files[0]);
 
         try {
             const response = await fetch(`${API_URL}/${id}`, { method: 'PUT', body: formData });
@@ -601,7 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ...items[idx], 
                     item_name: name, item_code: code, print_name: printName, item_type: type, 
                     item_group: group, brand: brand, unit: unit, tax_category: taxCategory, 
-                    hsn_sac_code: hsn, purchase_price: purchasePrice, sales_price: price, mrp: mrp, 
+                    hsn_sac_code: hsn, current_stock: stock, purchase_price: purchasePrice, sales_price: price, mrp: mrp, 
                     packing_dimension: packing, video_link: videoLink, 
                     item_specification: description, image_path: image 
                 };
@@ -632,7 +696,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderTable(list) {
         itemTableBody.innerHTML = '';
         if(!list || list.length === 0) {
-            itemTableBody.innerHTML = `<tr><td colspan="20" style="text-align:center; padding:20px; color:#64748b;">No items available.</td></tr>`;
+            itemTableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px; color:#64748b;">No items available.</td></tr>`;
             return;
         }
 
@@ -643,34 +707,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 imgHtml = `<img src="${srcPath}" alt="${item.item_name}" class="table-item-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'table-item-icon-placeholder\'><i class=\'fa-solid fa-image-broken\'></i></div>';">`;
             }
 
-            let pdfHtml = '-';
-            if (item.pdf_path && item.pdf_path.trim() !== "" && item.pdf_path !== "-") {
-                const pdfUrl = item.pdf_path.startsWith('http') ? item.pdf_path : `http://localhost:5000${item.pdf_path}`;
-                const pdfFileName = item.pdf_path.split('/').pop();
-                pdfHtml = `<a href="${pdfUrl}" target="_blank" style="color:#ef4444; font-weight:600; text-decoration:none;" title="${pdfFileName}"><i class="fa-solid fa-file-pdf me-1"></i> View PDF</a>`;
-            }
-
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${imgHtml}</td>
                 <td class="item-name-bold">${item.item_name}</td>
                 <td>${item.item_code || '-'}</td>
-                <td>${item.print_name || '-'}</td>
                 <td><span class="badge-type">${item.item_type || 'Product'}</span></td>
                 <td>${item.item_group || '-'}</td>
-                <td>${item.brand || '-'}</td>
                 <td>${item.unit || '-'}</td>
                 <td>${item.tax_category || '-'}</td>
                 <td>${item.hsn_sac_code || '-'}</td>
-                <td>${item.opening_stock_qty || '0'}</td>
-                <td>₹${parseFloat(item.opening_stock_value || 0).toFixed(2)}</td>
-                <td>₹${parseFloat(item.purchase_price || 0).toFixed(2)}</td>
-                <td class="price-td">₹${parseFloat(item.sales_price || 0).toFixed(2)}</td>
-                <td>₹${parseFloat(item.mrp || 0).toFixed(2)}</td>
-                <td>${item.packing_dimension || '-'}</td>
-                <td>${item.video_link ? `<a href="${item.video_link}" target="_blank" style="color:#2563eb; text-decoration:none;"><i class="fa-solid fa-video"></i> View</a>` : '-'}</td>
-                <td title="${item.item_specification || ''}">${item.item_specification ? (item.item_specification.length > 15 ? item.item_specification.substring(0, 15) + '...' : item.item_specification) : '-'}</td>
-                <td>${pdfHtml}</td>
                 <td class="action-td-buttons">
                     <button class="t-btn btn-edit" onclick="openEditModal(${item.id})"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
                     <button class="t-btn btn-delete" onclick="deleteItem(${item.id})"><i class="fa-solid fa-trash"></i> Delete</button>

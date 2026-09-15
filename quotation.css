@@ -461,7 +461,7 @@ select.form-control-custom {
 }
 
 /* ==========================================================================
-       8. STRICT SINGLE A4 PAGE FORMATTING & PDF ENGINES
+       8. STRICT SINGLE A4 PAGE FORMATTING & PDF ENGINES (UPDATED FOR EXACT A4 MATCH)
        ========================================================================== */
 .pdf-render-isolation-wrapper {
   position: relative;
@@ -473,9 +473,11 @@ select.form-control-custom {
 
 .pdf-document-paper {
   background-color: #ffffff !important;
-  width: 794px; /* Exact Standard A4 Width */
-  height: 1115px; /* Fixed A4 Height target */
-  padding: 25px 30px;
+  width: 210mm !important; /* Forces physical A4 Width globally */
+  height: 297mm !important; /* Forces physical A4 Height globally */
+  min-width: 210mm !important; /* Prevents Bootstrap shrinking */
+  max-width: 210mm !important;
+  padding: 10px 30px; /* Reduced top/bottom margin to maximize space */
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
   font-size: 12.5px;
@@ -489,15 +491,17 @@ select.form-control-custom {
 
 .pdf-catalog-container {
   background-color: #ffffff !important;
-  width: 794px;
+  width: 210mm !important;
   padding: 0;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
 }
 
 .catalog-page {
-  width: 794px;
-  height: 1115px;
+  width: 210mm !important;
+  height: 297mm !important;
+  min-width: 210mm !important;
+  max-width: 210mm !important;
   padding: 25px 30px;
   background-color: #ffffff !important;
   display: flex;
@@ -788,26 +792,28 @@ select.form-control-custom {
     display: block !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     width: 100% !important;
     max-width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
   }
 
   .pdf-render-isolation-wrapper,
   .pdf-document-paper,
   .pdf-catalog-container {
     box-shadow: none !important;
-    width: 100% !important;
-    height: auto !important;
+    width: 210mm !important; /* Matches exactly for Print */
+    height: 297mm !important;
     overflow: hidden !important;
+    margin: 0 !important;
   }
 
   .catalog-page {
     box-shadow: none !important;
-    width: 100% !important;
+    width: 210mm !important;
     height: 297mm !important;
     page-break-after: always !important;
     page-break-inside: avoid !important;
+    margin: 0 !important;
   }
 }

@@ -6,12 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel | Layout</title>
 
-  <!-- External Stylesheets -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Link to Custom Separate CSS -->
   <link rel="stylesheet" href="company-profile.css">
 </head>
 
@@ -192,13 +190,36 @@
               </div>
             </div>
 
-            <div class="col-md-12">
+            <!-- New 4 Distinct Fields for Bank Accounts -->
+            <div class="col-md-3">
               <div class="form-group-custom">
-                <label>Multiple Bank Accounts</label>
-                <textarea id="bankAccounts" class="form-control-custom" rows="2" placeholder="Bank Name | A/c No | IFSC (Separated by |)"></textarea>
-                <div class="error-feedback" id="err-bankAccounts"></div>
+                <label>A/C Name</label>
+                <input type="text" id="acName" class="form-control-custom" placeholder="Enter Account Name">
+                <div class="error-feedback" id="err-acName"></div>
               </div>
             </div>
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>A/C No</label>
+                <input type="text" id="acNo" class="form-control-custom" placeholder="Enter Account Number">
+                <div class="error-feedback" id="err-acNo"></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>IFSC Code</label>
+                <input type="text" id="ifscCode" class="form-control-custom" placeholder="Enter IFSC Code">
+                <div class="error-feedback" id="err-ifscCode"></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group-custom">
+                <label>Bank Name</label>
+                <input type="text" id="bankName" class="form-control-custom" placeholder="Enter Bank Name">
+                <div class="error-feedback" id="err-bankName"></div>
+              </div>
+            </div>
+
             <div class="col-md-12">
               <div class="form-group-custom">
                 <label>Registered Address</label>
@@ -207,7 +228,6 @@
               </div>
             </div>
 
-            <!-- फाईल अपलोडिंग ग्रिड (४ कॉलम्स) -->
             <div class="col-md-3">
               <div class="form-group-custom">
                 <label>Company Logo</label>

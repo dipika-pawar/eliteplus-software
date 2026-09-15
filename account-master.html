@@ -236,30 +236,10 @@
                   <tr>
                     <th>Party Name</th>
                     <th>Group</th>
-                    <th>Opening Bal</th>
-                    <th>Dr/Cr</th>
-                    <th>Credit Limit</th>
-                    <th>Email ID</th>
                     <th>Mobile No</th>
-                    <th>WhatsApp</th>
-                    <th>Telephone</th>
-                    <th>Transport</th>
-                    <th>Station</th>
-                    <th>Pin Code</th>
-                    <th>MSME Type</th>
-                    <th>Dealer Type</th>
+                    <th>Email ID</th>
                     <th>GST No</th>
-                    <th>PAN No</th>
-                    <th>CIN No</th>
-                    <th>Billing Addr</th>
-                    <th>Shipping Addr</th>
-                    <th>Credit Days</th>
-                    <th>Credit Limit Val</th>
-                    <th>Out Alert</th>
-                    <th>Block Sales</th>
-                    <th>PAN Doc</th>
-                    <th>GST Doc</th>
-                    <th>MSME Doc</th>
+                    <th>Opening Bal</th>
                     <th>Status</th>
                     <th style="width: 170px; text-align: center;">Action</th>
                   </tr>
@@ -310,6 +290,11 @@
               <div class="col-md-6"><label>Credit Limit Val</label><input type="text" class="form-control" id="editCreditLimitVal"></div>
               <div class="col-md-6"><label>Outstanding Alert</label><input type="text" class="form-control" id="editOutAlert"></div>
               <div class="col-md-6"><label>Block Sales</label><input type="text" class="form-control" id="editBlockSales"></div>
+              
+              <!-- ADDED MISSING FIELDS (TOTAL 26) -->
+              <div class="col-md-4"><label>PAN Upload (Optional)</label><input type="file" class="form-control" id="editPanFile" accept="image/*"></div>
+              <div class="col-md-4"><label>GST Certificate (Optional)</label><input type="file" class="form-control" id="editGstFile" accept="image/*"></div>
+              <div class="col-md-4"><label>MSME Certificate (Optional)</label><input type="file" class="form-control" id="editMsmeFile" accept="image/*"></div>
             </div>
             <div class="modal-footer mt-3">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

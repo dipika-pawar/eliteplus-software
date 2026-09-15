@@ -797,3 +797,181 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==========================================================================
+            MODERN EDIT MODAL SPECIFIC STYLES (SCOPED)
+========================================================================== */
+
+/* Darker, blurred modern overlay specifically for Edit Modal */
+#editModal.modal-overlay {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(5px);
+}
+
+/* Upgraded Modal Container */
+#editModal .modal-content {
+    background: #ffffff;
+    border-top: 5px solid var(--secondary-color);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 30px 35px !important;
+}
+
+/* Professional Header with Cyan Accent Line */
+#editModal .modal-content h3 {
+    color: var(--primary-color);
+    font-size: 22px;
+    font-weight: 700;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 12px;
+    margin-bottom: 25px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#editModal .modal-content h3::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 3px;
+    width: 80px;
+    background: var(--accent-color);
+    border-radius: 3px;
+}
+
+/* Input Field Styling inside Edit Modal */
+#editModal .input-field-custom,
+#editModal .textarea-field-custom {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+#editModal .input-field-custom:focus,
+#editModal .textarea-field-custom:focus {
+    background-color: #ffffff;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    outline: none;
+}
+
+/* Label Styling inside Edit Modal */
+#editModal .form-group-custom label {
+    color: #334155;
+    font-weight: 600;
+    font-size: 13.5px;
+    margin-bottom: 6px;
+}
+
+/* Update Button - Professional Green Gradient */
+#editModal .action-btn-submit {
+    background: linear-gradient(135deg, var(--card-green), #10b981);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    padding: 12px 20px;
+}
+
+#editModal .action-btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+    background: linear-gradient(135deg, #047857, var(--card-green));
+}
+
+/* Cancel Button - Professional Slate Color */
+#editModal .action-btn-cancel {
+    background: #64748b !important;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    padding: 12px 20px;
+}
+
+#editModal .action-btn-cancel:hover {
+    background: #475569 !important;
+    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.25);
+}
+
+/* File Mock Button (Upload Image) inside Edit Modal */
+#editModal .file-mock-btn {
+    background-color: #f0fdf4;
+    border: 1px dashed var(--card-green);
+    color: var(--card-green);
+    transition: all 0.3s ease;
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#editModal .file-mock-btn:hover {
+    background-color: #dcfce7;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.1);
+}
+
+/* Error Messages Specifics for Edit Modal */
+#editModal .error-msg {
+    color: var(--error-color);
+    font-weight: 600;
+    font-size: 11.5px;
+}
+
+/* Custom Scrollbar for the Edit Modal */
+#editModal .modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+#editModal .modal-content::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 8px;
+}
+#editModal .modal-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+#editModal .modal-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Responsive handling specifically for the Edit modal */
+@media (max-width: 600px) {
+    #editModal .modal-content {
+        padding: 20px !important;
+        width: 100%;
+        max-width: 100%;
+    }
+    #editModal .modal-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+    #editModal .form-group-custom[style*="grid-column: span 2"] {
+        grid-column: span 1 !important;
+    }
+    #editModal div[style*="grid-column: span 2"] {
+        grid-column: span 1 !important;
+        flex-direction: column;
+    }
+    #editModal .action-btn-submit,
+    #editModal .action-btn-cancel {
+        width: 100%;
+        margin-top: 5px;
+    }
+}

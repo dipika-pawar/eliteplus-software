@@ -353,22 +353,11 @@
                                 <th>Image</th>
                                 <th>Item Name</th>
                                 <th>Code</th>
-                                <th>Print Name</th>
                                 <th>Type</th>
-                                <th>Group</th>
-                                <th>Brand</th>
+                                <th>Group / Category</th>
                                 <th>Unit</th>
                                 <th>Tax Category</th>
                                 <th>HSN / SAC</th>
-                                <th>Opening Qty</th>
-                                <th>Stock Value</th>
-                                <th>Purchase Price</th>
-                                <th>Sales Price</th>
-                                <th>MRP</th>
-                                <th>Packing</th>
-                                <th>Video</th>
-                                <th>Specification</th>
-                                <th>Brochure (PDF)</th>
                                 <th style="text-align: center;">Action</th>
                             </tr>
                         </thead>
@@ -476,6 +465,19 @@
                     <div class="error-msg" id="editHsnCodeError"></div>
                 </div>
 
+                <!-- ADDED NEW FIELDS: Opening Stock Qty & Value -->
+                <div class="form-group-custom">
+                    <label>Opening Stock Qty</label>
+                    <input type="text" id="editStock" class="input-field-custom">
+                    <div class="error-msg" id="editStockError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Opening Stock Value</label>
+                    <input type="text" id="editOpeningStockValue" class="input-field-custom read-only-field" readonly>
+                    <div class="error-msg" id="editOpeningStockValueError"></div>
+                </div>
+
                 <div class="form-group-custom">
                     <label>Purchase Price</label>
                     <input type="text" id="editPurchasePrice" class="input-field-custom">
@@ -525,6 +527,17 @@
                         <label for="editImg" id="editImgLabel" class="file-mock-btn"><i class="fa-solid fa-image"></i> Choose Image</label>
                     </div>
                     <div class="error-msg" id="editImgError"></div>
+                </div>
+
+                <!-- ADDED NEW FIELD: Brochure (PDF) -->
+                <div class="form-group-custom" style="grid-column: span 2;">
+                    <label>Brochure (PDF)</label>
+                    <div class="modern-file-wrapper">
+                        <input type="file" id="editPdf" class="file-hidden" accept="application/pdf">
+                        <label for="editPdf" id="editPdfLabel" class="file-mock-btn mock-pdf"><i class="fa-solid fa-file-pdf"></i> Choose New PDF</label>
+                    </div>
+                    <div id="existingPdfLink" style="margin-top: 8px; font-size: 13px;"></div>
+                    <div class="error-msg" id="editPdfError"></div>
                 </div>
 
                 <div style="grid-column: span 2; margin-top: 20px; display: flex; gap: 10px;">

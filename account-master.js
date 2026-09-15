@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // UPDATED VALIDATION ENGINE (ONLY 6 REQUIRED FIELDS ARE MANDATORY)
+  // UPDATED VALIDATION ENGINE
   function validateAccountForm() {
     clearAllErrors();
     let isValid = true;
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const numberRegex = /^\d*(\.\d+)?$/;
 
-    // 1. Party Name Validation (REQUIRED)
+    // 1. Party Name Validation
     if (!printName) {
       showFieldError('printName', 'Party Name is required.');
       isValid = false;
@@ -254,13 +254,13 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    // 2. Group Validation (REQUIRED)
+    // 2. Group Validation
     if (!accGroup) {
       showFieldError('accGroup', 'Group selection is required.');
       isValid = false;
     }
 
-    // 3. Mobile Number Validation (REQUIRED)
+    // 3. Mobile Number Validation
     if (!mobileNo) {
       showFieldError('mobileNo', 'Mobile Number is required.');
       isValid = false;
@@ -269,39 +269,35 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    // 4. Dealer Type Validation (REQUIRED)
+    // 4. Dealer Type Validation
     if (!dealerType) {
       showFieldError('dealerType', 'Dealer Type selection is required.');
       isValid = false;
     }
 
-    // 5. Billing Address Validation (REQUIRED)
+    // 5. Billing Address Validation
     if (!billAddr) {
       showFieldError('billAddr', 'Billing Address is required.');
       isValid = false;
     }
 
-    // 6. Shipping Address Validation (REQUIRED)
+    // 6. Shipping Address Validation
     if (!shipAddr) {
       showFieldError('shipAddr', 'Shipping Address is required.');
       isValid = false;
     }
 
-    // OPTIONAL FIELDS VALIDATION (Runs only if value is entered)
-
-    // WhatsApp Validation (Optional)
+    // OPTIONAL FIELDS VALIDATION 
     if (whatsappNo && !mobileRegex.test(whatsappNo)) {
       showFieldError('whatsappNo', 'Enter a valid 10-digit WhatsApp Number.');
       isValid = false;
     }
 
-    // Pin Code Validation (Optional)
     if (pinCode && !pinRegex.test(pinCode)) {
       showFieldError('pinCode', 'Enter a valid 6-digit Pin Code.');
       isValid = false;
     }
 
-    // GSTIN Validation (Optional or if Registered)
     if (dealerType === 'Registered' && !gstinNo) {
       showFieldError('gstinNo', 'GSTIN Number is required for Registered dealers.');
       isValid = false;
@@ -310,19 +306,16 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    // PAN Validation (Optional)
     if (panNo && !panRegex.test(panNo)) {
       showFieldError('panNo', 'Enter a valid 10-character PAN Number (e.g., ABCDE1234F).');
       isValid = false;
     }
 
-    // Email Validation (Optional)
     if (emailId && !emailRegex.test(emailId)) {
       showFieldError('emailId', 'Enter a valid Email Address.');
       isValid = false;
     }
 
-    // Numeric Validations (Optional)
     if (opBal && (!numberRegex.test(opBal) || parseFloat(opBal) < 0)) {
       showFieldError('opBal', 'Enter a valid positive number for Opening Balance.');
       isValid = false;
@@ -333,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isValid = false;
     }
 
-    // File Upload Validations - STRICTLY IMAGES ONLY (.jpg, .jpeg, .png)
+    // File Upload Validations - STRICTLY IMAGES ONLY
     const allowedImageExtensions = ['jpg', 'jpeg', 'png'];
     const validateImageFile = (fileInputId) => {
       const fileInput = document.getElementById(fileInputId);
@@ -463,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
     if (filteredAccounts.length === 0) {
-      accountTableBody.innerHTML = `<tr><td colspan="28" class="text-center py-3 text-muted">No records found.</td></tr>`;
+      accountTableBody.innerHTML = `<tr><td colspan="8" class="text-center py-3 text-muted">No records found.</td></tr>`;
       return;
     }
 
@@ -471,33 +464,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const tr = document.createElement('tr');
       tr.className = "table-row-hover";
       tr.setAttribute('data-id', acc.id);
+      
       tr.innerHTML = `
         <td>${acc.name || '-'}</td>
         <td><span class="badge-group">${acc.group || '-'}</span></td>
-        <td>${acc.opBal || '0'}</td>
-        <td>${acc.balType || '-'}</td>
-        <td>${acc.creditLimit || '0'}</td>
-        <td>${acc.emailId || '-'}</td>
         <td>${acc.mobileNo || '-'}</td>
-        <td>${acc.whatsapp || '-'}</td>
-        <td>${acc.telNo || '-'}</td>
-        <td>${acc.transport || '-'}</td>
-        <td>${acc.station || '-'}</td>
-        <td>${acc.pinCode || '-'}</td>
-        <td>${acc.msmeType || '-'}</td>
-        <td>${acc.gstStatus || '-'}</td>
+        <td>${acc.emailId || '-'}</td>
         <td>${acc.gstNo || '-'}</td>
-        <td>${acc.panNo || '-'}</td>
-        <td>${acc.cinNo || '-'}</td>
-        <td>${acc.billAddr || '-'}</td>
-        <td>${acc.shipAddr || '-'}</td>
-        <td>${acc.creditDays || '0'}</td>
-        <td>${acc.creditLimitVal || '0'}</td>
-        <td>${acc.outAlert || '-'}</td>
-        <td>${acc.blockSales || '-'}</td>
-        <td><i class="fa-solid fa-file-image text-muted me-1"></i> ${acc.panFileName || '-'}</td>
-        <td><i class="fa-solid fa-file-image text-muted me-1"></i> ${acc.gstFileName || '-'}</td>
-        <td><i class="fa-solid fa-file-image text-muted me-1"></i> ${acc.msmeFileName || '-'}</td>
+        <td>${acc.opBal || '0'} ${acc.balType || ''}</td>
         <td><span class="badge-active">Active</span></td>
         <td>
             <div class="table-actions-btns">
@@ -505,12 +479,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="btn btn-table-delete btn-delete-hook"><i class="fa-solid fa-trash"></i></button>
             </div>
         </td>
-    `;
+      `;
       accountTableBody.appendChild(tr);
     });
   }
 
-  // Action Listeners
+  // Action Listeners (Edit & Delete)
   accountTableBody.addEventListener('click', async (e) => {
     const editBtn = e.target.closest('.btn-edit-hook');
     const deleteBtn = e.target.closest('.btn-delete-hook');
@@ -564,15 +538,25 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('editCreditLimitVal').value = acc.creditLimitVal || '0';
       document.getElementById('editOutAlert').value = acc.outAlert || '';
       document.getElementById('editBlockSales').value = acc.blockSales || '';
+      
+      // Clear the files input when opening modal
+      document.getElementById('editPanFile').value = '';
+      document.getElementById('editGstFile').value = '';
+      document.getElementById('editMsmeFile').value = '';
 
       if (editModal) editModal.show();
     }
   });
 
+  // PUT Submission Pipeline for Modal
   editAccountForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('editRowIndex').value;
     const index = accounts.findIndex(a => a.id.toString() === id.toString());
+
+    const editPanFile = document.getElementById('editPanFile').files[0];
+    const editGstFile = document.getElementById('editGstFile').files[0];
+    const editMsmeFile = document.getElementById('editMsmeFile').files[0];
 
     const formData = new FormData();
     formData.append('name', document.getElementById('editPrintName').value.trim());
@@ -598,6 +582,10 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('creditLimitVal', document.getElementById('editCreditLimitVal').value.trim());
     formData.append('outAlert', document.getElementById('editOutAlert').value);
     formData.append('blockSales', document.getElementById('editBlockSales').value);
+    
+    if (editPanFile) formData.append('panFile', editPanFile);
+    if (editGstFile) formData.append('gstFile', editGstFile);
+    if (editMsmeFile) formData.append('msmeFile', editMsmeFile);
 
     try {
       const response = await fetch(`${API_URL}/${id}`, { method: 'PUT', body: formData });
@@ -619,6 +607,11 @@ document.addEventListener('DOMContentLoaded', () => {
           mobileNo: document.getElementById('editMobileNo').value.trim(),
           whatsapp: document.getElementById('editWhatsapp').value.trim()
         };
+        
+        if (editPanFile) accounts[index].panFileName = editPanFile.name;
+        if (editGstFile) accounts[index].gstFileName = editGstFile.name;
+        if (editMsmeFile) accounts[index].msmeFileName = editMsmeFile.name;
+
         saveData(); renderTable(searchInput ? searchInput.value : '');
         if (editModal) editModal.hide();
         alert("Updated in local storage!");

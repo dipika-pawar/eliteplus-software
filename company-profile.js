@@ -111,8 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tr = document.createElement('tr');
         tr.setAttribute('data-id', company.id);
         
-        // स्वल्पविराम ऐवजी '|' चा वापर करून बँक डिटेल मॅप करणे
-        const formattedBankAccounts = company.bank_accounts ? company.bank_accounts.replaceAll(',', ' |') : '-';
+        const bankDetailText = company.bank_name ? `${company.bank_name} | ${company.ac_no} | ${company.ifsc_code} | ${company.ac_name}` : '-';
 
         tr.innerHTML = `
           <td class="fw-semibold t-compName">${company.company_name}</td>
@@ -127,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td class="t-compEmail">${company.company_email}</td>
           <td class="t-compMobile">${company.company_mobile}</td>
           <td class="t-compWebsite">${company.company_website || '-'}</td>
-          <td class="t-bankAccounts" title="${formattedBankAccounts}">${formattedBankAccounts}</td>
+          <td class="t-bankDetails" title="${bankDetailText}" data-acname="${company.ac_name || ''}" data-acno="${company.ac_no || ''}" data-ifsc="${company.ifsc_code || ''}" data-bank="${company.bank_name || ''}">${bankDetailText}</td>
           <td class="t-regAddress" title="${company.registered_address}">${company.registered_address}</td>
           <td class="t-logoFile"><span class="table-file-badge" title="${company.logo_file}">${company.logo_file}</span></td>
           <td class="t-qrFile"><span class="table-file-badge" title="${company.qr_file}">${company.qr_file}</span></td>
@@ -193,9 +192,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const compMobile = document.getElementById('compMobile').value.trim();
     const compWebsite = document.getElementById('compWebsite').value.trim();
     
-    // युझरने कॉमा टाकल्यास तो डेटा '|' ने सेपरेट होईल
-    let bankAccounts = document.getElementById('bankAccounts').value.trim();
-    bankAccounts = bankAccounts.replaceAll(',', ' |');
+    // Bank 4 distinct fields
+    const acName = document.getElementById('acName').value.trim();
+    const acNo = document.getElementById('acNo').value.trim();
+    const ifscCode = document.getElementById('ifscCode').value.trim().toUpperCase();
+    const bankName = document.getElementById('bankName').value.trim();
 
     const regAddress = document.getElementById('regAddress').value.trim();
 
@@ -264,7 +265,13 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('compEmail', compEmail);
     formData.append('compMobile', compMobile);
     formData.append('compWebsite', compWebsite);
-    formData.append('bankAccounts', bankAccounts);
+    
+    // Bank details
+    formData.append('acName', acName);
+    formData.append('acNo', acNo);
+    formData.append('ifscCode', ifscCode);
+    formData.append('bankName', bankName);
+
     formData.append('regAddress', regAddress);
 
     if(logoInput.files[0]) formData.append('logoFile', logoInput.files[0]);
@@ -341,9 +348,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const webVal = row.querySelector('.t-compWebsite').innerText;
       document.getElementById('compWebsite').value = webVal === '-' ? '' : webVal;
       
-      // एडिट करताना कॉमा असला तरी '|' ने रिप्लेस करणे
-      const bankVal = row.querySelector('.t-bankAccounts').getAttribute('title');
-      document.getElementById('bankAccounts').value = bankVal === '-' ? '' : bankVal.replaceAll(',', ' |');
+      // Load the 4 Bank details from data attributes
+      const bankTd = row.querySelector('.t-bankDetails');
+      document.getElementById('acName').value = bankTd.getAttribute('data-acname');
+      document.getElementById('acNo').value = bankTd.getAttribute('data-acno');
+      document.getElementById('ifscCode').value = bankTd.getAttribute('data-ifsc');
+      document.getElementById('bankName').value = bankTd.getAttribute('data-bank');
       
       document.getElementById('regAddress').value = row.querySelector('.t-regAddress').getAttribute('title');
 
@@ -391,7 +401,10 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 'tanNumber', type: 'input' }, { id: 'udyamNumber', type: 'input' },
     { id: 'fyBeginning', type: 'input' }, { id: 'compEmail', type: 'input' },
     { id: 'compMobile', type: 'input' }, { id: 'compWebsite', type: 'input' },
-    { id: 'bankAccounts', type: 'input' }, { id: 'regAddress', type: 'input' },
+    // 4 Bank fields sequence
+    { id: 'acName', type: 'input' }, { id: 'acNo', type: 'input' },
+    { id: 'ifscCode', type: 'input' }, { id: 'bankName', type: 'input' },
+    { id: 'regAddress', type: 'input' },
     { id: 'wrapper-logoFile', fileId: 'logoFile', type: 'file' },
     { id: 'wrapper-qrFile', fileId: 'qrFile', type: 'file' },
     { id: 'wrapper-stampFile', fileId: 'stampFile', type: 'file' },

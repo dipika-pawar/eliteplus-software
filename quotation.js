@@ -156,53 +156,225 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- 2. LIVE ITEMS DATA LINK IN POPUP MODAL ---
+  // --- 2. LIVE ITEMS DATA LINK IN POPUP MODAL (CUSTOM AUTOCOMPLETE & CLICK TO FILL) ---
+  let currentItemFocusIndex = -1;
+
   async function fetchItemMasterData() {
     try {
       const response = await fetch(ITEM_API);
       systemItemsMasterList = await response.json();
-      
-      const itemNameInp = document.getElementById("modalItemName");
-      if(itemNameInp) {
-         let dataList = document.getElementById("modalItemsDatalist");
-         if(!dataList){
-            dataList = document.createElement("datalist");
-            dataList.id = "modalItemsDatalist";
-            itemNameInp.parentNode.appendChild(dataList);
-         }
-         itemNameInp.setAttribute("list", "modalItemsDatalist");
-         dataList.innerHTML = "";
-         
-         systemItemsMasterList.forEach(item => {
-            const opt = document.createElement("option");
-            opt.value = item.item_name;
-            dataList.appendChild(opt);
-         });
-
-         itemNameInp.addEventListener("change", () => {
-            const matchedItem = systemItemsMasterList.find(x => x.item_name === itemNameInp.value);
-            if(matchedItem) {
-                const modalQtyInp = document.getElementById("modalItemQty");
-                if (modalQtyInp && (!modalQtyInp.value || parseFloat(modalQtyInp.value) === 0)) {
-                  modalQtyInp.value = "1";
-                }
-                document.getElementById("modalItemUnit").value = matchedItem.unit;
-                document.getElementById("modalItemPrice").value = matchedItem.sales_price;
-                itemNameInp.dataset.hsn = matchedItem.hsn_sac_code;
-                itemNameInp.dataset.brand = matchedItem.brand || '-';
-                itemNameInp.dataset.code = matchedItem.item_code || '-';
-                itemNameInp.dataset.image = matchedItem.image_path || '';
-                itemNameInp.dataset.spec = matchedItem.item_specification || '';
-                itemNameInp.dataset.taxRate = matchedItem.tax_category ? (matchedItem.tax_category.match(/\d+/)?.[0] || 18) : 18;
-            }
-         });
-      }
     } catch (err) {
       console.error("Item Master link failed:", err);
     }
   }
 
-  // --- 3. COMPANY MASTER DYNAMIC Letterhead, Logo, Scanner, Stamp & Signature Binding ---
+  // A. Setup Custom Autocomplete Listener for Item Name
+  const itemNameInp = document.getElementById("modalItemName");
+  const itemSuggestionsBox = document.getElementById("itemSuggestionsList");
+
+  if (itemNameInp && itemSuggestionsBox) {
+    itemNameInp.addEventListener("input", () => {
+      const val = itemNameInp.value.trim().toLowerCase();
+      itemSuggestionsBox.innerHTML = "";
+      currentItemFocusIndex = -1;
+
+      if (!val) {
+        itemSuggestionsBox.style.display = "none";
+        return;
+      }
+
+      const filtered = systemItemsMasterList.filter(item => {
+        const matchName = item.item_name && item.item_name.toLowerCase().includes(val);
+        const matchCode = item.item_code && item.item_code.toString().toLowerCase().includes(val);
+        const matchBrand = item.brand && item.brand.toLowerCase().includes(val);
+        return matchName || matchCode || matchBrand;
+      });
+
+      if (filtered.length > 0) {
+        filtered.forEach((item) => {
+          const div = document.createElement("div");
+          div.className = "suggestion-item";
+          div.innerHTML = `<strong>${item.item_name}</strong> <small class="text-muted">(${item.item_code || '-'})</small>`;
+
+          div.addEventListener("click", () => {
+            selectMasterItem(item);
+          });
+          itemSuggestionsBox.appendChild(div);
+        });
+        itemSuggestionsBox.style.display = "block";
+      } else {
+        const noDiv = document.createElement("div");
+        noDiv.className = "suggestion-item text-muted";
+        noDiv.textContent = "No matching items found";
+        itemSuggestionsBox.appendChild(noDiv);
+        itemSuggestionsBox.style.display = "block";
+      }
+    });
+
+    itemNameInp.addEventListener("keydown", (e) => {
+      const items = itemSuggestionsBox.getElementsByClassName("suggestion-item");
+      if (itemSuggestionsBox.style.display === "block" && items.length > 0 && items[0].textContent !== "No matching items found") {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          currentItemFocusIndex++;
+          if (currentItemFocusIndex >= items.length) currentItemFocusIndex = 0;
+          updateItemSuggestionActive(items);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          currentItemFocusIndex--;
+          if (currentItemFocusIndex < 0) currentItemFocusIndex = items.length - 1;
+          updateItemSuggestionActive(items);
+        } else if (e.key === "Enter" || e.key === "Tab") {
+          if (currentItemFocusIndex > -1) {
+            e.preventDefault();
+            items[currentItemFocusIndex].click(); 
+          }
+        } else if (e.key === "Escape") {
+          itemSuggestionsBox.style.display = "none";
+        }
+      }
+    });
+
+    function updateItemSuggestionActive(items) {
+      Array.from(items).forEach((item, idx) => {
+        if (idx === currentItemFocusIndex) {
+          item.classList.add("selected");
+          item.style.backgroundColor = "#f1f5f9";
+          item.scrollIntoView({ block: "nearest" });
+        } else {
+          item.classList.remove("selected");
+          item.style.backgroundColor = "";
+        }
+      });
+    }
+  }
+
+  function selectMasterItem(matchedItem) {
+    itemNameInp.value = matchedItem.item_name;
+    
+    // Auto-fill Quantity (defaults to 1 if empty/0)
+    const modalQtyInp = document.getElementById("modalItemQty");
+    if (modalQtyInp && (!modalQtyInp.value || parseFloat(modalQtyInp.value) === 0)) {
+      modalQtyInp.value = "1";
+    }
+    
+    // Auto-fill Unit and Price
+    document.getElementById("modalItemUnit").value = matchedItem.unit || 'Pcs';
+    document.getElementById("modalItemPrice").value = matchedItem.sales_price || 0;
+    
+    // Bind existing Metadata exactly to dataset
+    itemNameInp.dataset.hsn = matchedItem.hsn_sac_code || '';
+    itemNameInp.dataset.brand = matchedItem.brand || '-';
+    itemNameInp.dataset.code = matchedItem.item_code || '-';
+    itemNameInp.dataset.image = matchedItem.image_path || '';
+    itemNameInp.dataset.spec = matchedItem.item_specification || '';
+    
+    // Parse Tax Rate Logic from Category
+    itemNameInp.dataset.taxRate = matchedItem.tax_category ? (matchedItem.tax_category.match(/\d+/)?.[0] || 18) : 18;
+    
+    // Hide the custom suggestions dropdown
+    if(itemSuggestionsBox) itemSuggestionsBox.style.display = "none";
+    
+    // Move focus directly to Quantity input
+    if (modalQtyInp) { modalQtyInp.focus(); modalQtyInp.select(); }
+  }
+
+  // B. Setup Custom Autocomplete Listener for Unit Name
+  const unitInp = document.getElementById("modalItemUnit");
+  const unitSuggestionsBox = document.getElementById("unitSuggestionsList");
+  let currentUnitFocusIndex = -1;
+
+  if (unitInp && unitSuggestionsBox) {
+    unitInp.addEventListener("input", () => {
+      const val = unitInp.value.trim().toLowerCase();
+      unitSuggestionsBox.innerHTML = "";
+      currentUnitFocusIndex = -1;
+
+      if (!val) {
+        unitSuggestionsBox.style.display = "none";
+        return;
+      }
+
+      // Extract unique, non-empty units directly from the Master list
+      const allUnits = systemItemsMasterList
+          .map(item => item.unit)
+          .filter(unit => unit && unit.trim() !== "");
+      const uniqueUnits = [...new Set(allUnits)];
+
+      const filtered = uniqueUnits.filter(unit => unit.toLowerCase().includes(val));
+
+      if (filtered.length > 0) {
+        filtered.forEach((unit) => {
+          const div = document.createElement("div");
+          div.className = "suggestion-item";
+          div.innerHTML = `<strong>${unit}</strong>`;
+
+          div.addEventListener("click", () => {
+            unitInp.value = unit;
+            unitSuggestionsBox.style.display = "none";
+            document.getElementById("modalItemPrice")?.focus();
+          });
+          unitSuggestionsBox.appendChild(div);
+        });
+        unitSuggestionsBox.style.display = "block";
+      } else {
+        const noDiv = document.createElement("div");
+        noDiv.className = "suggestion-item text-muted";
+        noDiv.textContent = "No matching units";
+        unitSuggestionsBox.appendChild(noDiv);
+        unitSuggestionsBox.style.display = "block";
+      }
+    });
+
+    unitInp.addEventListener("keydown", (e) => {
+      const items = unitSuggestionsBox.getElementsByClassName("suggestion-item");
+      if (unitSuggestionsBox.style.display === "block" && items.length > 0 && items[0].textContent !== "No matching units") {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          currentUnitFocusIndex++;
+          if (currentUnitFocusIndex >= items.length) currentUnitFocusIndex = 0;
+          updateUnitSuggestionActive(items);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          currentUnitFocusIndex--;
+          if (currentUnitFocusIndex < 0) currentUnitFocusIndex = items.length - 1;
+          updateUnitSuggestionActive(items);
+        } else if (e.key === "Enter" || e.key === "Tab") {
+          if (currentUnitFocusIndex > -1) {
+            e.preventDefault();
+            items[currentUnitFocusIndex].click();
+          }
+        } else if (e.key === "Escape") {
+          unitSuggestionsBox.style.display = "none";
+        }
+      }
+    });
+
+    function updateUnitSuggestionActive(items) {
+      Array.from(items).forEach((item, idx) => {
+        if (idx === currentUnitFocusIndex) {
+          item.classList.add("selected");
+          item.style.backgroundColor = "#f1f5f9";
+          item.scrollIntoView({ block: "nearest" });
+        } else {
+          item.classList.remove("selected");
+          item.style.backgroundColor = "";
+        }
+      });
+    }
+  }
+
+  // Global click listener to hide dropdowns when clicking outside
+  document.addEventListener("click", (e) => {
+    if (itemNameInp && itemSuggestionsBox && e.target !== itemNameInp && e.target !== itemSuggestionsBox) {
+      itemSuggestionsBox.style.display = "none";
+    }
+    if (unitInp && unitSuggestionsBox && e.target !== unitInp && e.target !== unitSuggestionsBox) {
+      unitSuggestionsBox.style.display = "none";
+    }
+  });
+
+  // --- 3. COMPANY MASTER DYNAMIC Binding (Letterhead, Address, Contact, Logo, QR, Stamp, Signature, Bank) ---
   async function fetchActiveCompanyProfile() {
     try {
       const response = await fetch(COMPANY_API);
@@ -210,6 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if(data && data.length > 0) {
          systemCompanyProfile = data[0]; 
          
+         // Binding Logo
          const logoImages = document.querySelectorAll(".pdf-header-logo");
          logoImages.forEach(logoImg => {
             if(systemCompanyProfile.logo_file) {
@@ -217,6 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
          });
          
+         // Binding QR Code
          const qrImages = document.querySelectorAll(".pdf-scanner-img");
          qrImages.forEach(img => {
             if(systemCompanyProfile.qr_file) {
@@ -224,11 +398,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
          });
 
+         // Binding Signature
          const signImg = document.querySelector(".pdf-signature-real-img");
          if(signImg && systemCompanyProfile.signature_file) {
             signImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.signature_file}`;
          }
 
+         // Binding Stamp
          const stampImg = document.querySelector(".pdf-stamp-real-img");
          if(stampImg && systemCompanyProfile.stamp_file) {
             stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.stamp_file}`; 
@@ -236,31 +412,39 @@ document.addEventListener("DOMContentLoaded", () => {
             stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`; 
          }
 
+         // Binding Company Name above Authorized Signatory
          const companyTitleHeader = document.querySelector(".signature-stamp-frame .fw-bold");
          if(companyTitleHeader) {
-            companyTitleHeader.textContent = `for ${systemCompanyProfile.company_name}`;
+            companyTitleHeader.textContent = `for ${systemCompanyProfile.company_name || systemCompanyProfile.print_name}`;
          }
 
+         // Binding Address
          const addressDivs = document.querySelectorAll(".legal-address-column .opacity-90");
          addressDivs.forEach(div => {
-            div.innerHTML = `<i class="fa-solid fa-location-dot me-1 text-info"></i> ${systemCompanyProfile.registered_address}`;
+            div.innerHTML = `<i class="fa-solid fa-location-dot me-1 text-info"></i> ${systemCompanyProfile.registered_address || ''}`;
          });
 
+         // Binding Contact Details (Mobile, Email, Web)
          const contactDivs = document.querySelectorAll(".legal-address-column .fw-medium");
          contactDivs.forEach(div => {
             div.innerHTML = `
-               <i class="fa-solid fa-phone me-1 text-info"></i> ${systemCompanyProfile.company_mobile}
+               <i class="fa-solid fa-phone me-1 text-info"></i> ${systemCompanyProfile.company_mobile || ''}
                <span class="mx-1">|</span>
-               <i class="fa-solid fa-envelope me-1 text-info"></i> ${systemCompanyProfile.company_email}
+               <i class="fa-solid fa-envelope me-1 text-info"></i> ${systemCompanyProfile.company_email || ''}
                <span class="mx-1">|</span>
-               <i class="fa-solid fa-globe me-1 text-info"></i> ${systemCompanyProfile.company_website || '-'}
+               <i class="fa-solid fa-globe me-1 text-info"></i> ${systemCompanyProfile.company_website || ''}
             `;
          });
          
-         const bankBlock = document.querySelector(".pdf-bank-details-plain .font-monospace");
-         if(bankBlock && systemCompanyProfile.bank_accounts) {
-             const formattedBankAccounts = systemCompanyProfile.bank_accounts.replaceAll(',', ' |');
-             bankBlock.innerHTML = `<div class="text-dark fw-semibold" style="font-size:11px">${formattedBankAccounts}</div>`;
+         // Binding 4 Bank Specific Fields
+         const bankBlockCol = document.querySelector(".pdf-bank-details-plain .col-12");
+         if(bankBlockCol && systemCompanyProfile) {
+             bankBlockCol.innerHTML = `
+                 <div><span class="text-muted">A/C Name:</span> <strong class="text-dark">${systemCompanyProfile.ac_name || 'N/A'}</strong></div>
+                 <div><span class="text-muted">A/C No:</span> <strong class="text-dark">${systemCompanyProfile.ac_no || 'N/A'}</strong></div>
+                 <div><span class="text-muted">IFSC Code:</span> <strong class="text-dark">${systemCompanyProfile.ifsc_code || 'N/A'}</strong></div>
+                 <div><span class="text-muted">Bank Name:</span> <strong class="text-dark">${systemCompanyProfile.bank_name || 'N/A'}</strong></div>
+             `;
          }
       }
     } catch (err) {
@@ -273,8 +457,20 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("modalItemForm")?.reset();
     document.getElementById("modalEditIndex").value = "";
     document.getElementById("modalFormMode").textContent = "Add";
+    
+    // Clear dataset so old item data doesn't stick when adding new manual items
+    if(itemNameInp) {
+        itemNameInp.dataset.hsn = '';
+        itemNameInp.dataset.brand = '-';
+        itemNameInp.dataset.code = '-';
+        itemNameInp.dataset.image = '';
+        itemNameInp.dataset.spec = '';
+        itemNameInp.dataset.taxRate = '18';
+    }
+
     const modalQtyInp = document.getElementById("modalItemQty");
     if (modalQtyInp) modalQtyInp.value = "1";
+    
     bootstrapItemModal.show();
     setTimeout(() => {
       document.getElementById("modalItemName")?.focus();
@@ -307,6 +503,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!modalElement) return;
     modalElement.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
+        // Prevent form submission if a custom dropdown is currently open and focused
+        if (id === "modalItemName" && itemSuggestionsBox && itemSuggestionsBox.style.display === "block") return;
+        if (id === "modalItemUnit" && unitSuggestionsBox && unitSuggestionsBox.style.display === "block") return;
+        
         event.preventDefault(); 
         const nextModalIndex = currentIndex + 1;
         if (nextModalIndex < modalFields.length) {
@@ -319,7 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Global Enter Key Listener: आयटम ॲड झाल्यावर Enter दाबल्यास लगेच दुसरा आयटम ॲड करण्यासाठी मोडल ओपन होईल
+  // Global Enter Key Listener
   document.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       const addItemModalEl = document.getElementById("addItemModal");
@@ -330,7 +530,6 @@ document.addEventListener("DOMContentLoaded", () => {
                           (printModalEl && printModalEl.classList.contains("show")) ||
                           (catalogModalEl && catalogModalEl.classList.contains("show"));
 
-      // जर मोडल आधीपासून उघडे नसेल आणि टेबलमध्ये किमान १ आयटम असेल, तर Enter दाबल्यावर पुढील आयटमसाठी मोडल उघडेल
       if (!isModalOpen && currentItemsList.length > 0) {
         const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
         if (activeTag !== "button" && activeTag !== "textarea") {
@@ -658,13 +857,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const price = parseFloat(priceStr) || 0;
       if (qty <= 0 || price <= 0) return alert("Values must be positive greater than zero.");
 
-      const targetInput = document.getElementById("modalItemName");
-      const gstRate = parseFloat(targetInput.dataset.taxRate) || 18;
-      const hsn = targetInput.dataset.hsn || "";
-      const brand = targetInput.dataset.brand || "-";
-      const code = targetInput.dataset.code || "-";
-      const image = targetInput.dataset.image || "";
-      const spec = targetInput.dataset.spec || "";
+      const gstRate = parseFloat(itemNameInp.dataset.taxRate) || 18;
+      const hsn = itemNameInp.dataset.hsn || "";
+      const brand = itemNameInp.dataset.brand || "-";
+      const code = itemNameInp.dataset.code || "-";
+      const image = itemNameInp.dataset.image || "";
+      const spec = itemNameInp.dataset.spec || "";
 
       const payload = { name, qty, unit, price, gstRate, hsn, brand, code, image, spec, discountValue: 0 };
 
@@ -680,12 +878,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Ensure Edit binds correct values into Dataset so they aren't lost on update
   window.editItemRow = (i) => {
      const item = currentItemsList[i];
-     document.getElementById("modalItemName").value = item.name;
+     itemNameInp.value = item.name;
      document.getElementById("modalItemQty").value = item.qty;
      document.getElementById("modalItemUnit").value = item.unit;
      document.getElementById("modalItemPrice").value = item.price;
+     
+     // CRITICAL: Re-bind datasets to protect existing metadata during manual edit
+     itemNameInp.dataset.hsn = item.hsn || '';
+     itemNameInp.dataset.brand = item.brand || '-';
+     itemNameInp.dataset.code = item.code || '-';
+     itemNameInp.dataset.image = item.image || '';
+     itemNameInp.dataset.spec = item.spec || '';
+     itemNameInp.dataset.taxRate = item.gstRate || 18;
+
      modalEditIndex.value = i;
      modalFormMode.textContent = "Edit";
      bootstrapItemModal.show();
@@ -733,8 +941,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
       }
 
-      document.getElementById("pdfClientInstitution").textContent = partyInp.value || "The Principal";
-      document.getElementById("pdfClientSubName").textContent = partyInp.dataset.sub || 'Sundry Debtors Division';
+      document.getElementById("pdfClientInstitution").textContent = partyInp.value || "";
       document.getElementById("pdfClientLocation").textContent = partyInp.dataset.location || 'Pune, Maharashtra';
       document.getElementById("pdfClientMobile").textContent = partyInp.dataset.mobile || 'N/A';
       document.getElementById("pdfClientEmail").textContent = partyInp.dataset.email || 'N/A';
@@ -887,23 +1094,109 @@ document.addEventListener("DOMContentLoaded", () => {
     return (output.trim() + " Rupees Only");
   }
 
-  document.getElementById("modalDownloadPdfBtn")?.addEventListener("click", () => {
+  // --- PDF GENERATION FIX IMPLEMENTATION (STRICT 1 PAGE) ---
+  document.getElementById("modalDownloadPdfBtn")?.addEventListener("click", function() {
       const el = document.getElementById("pdfPrintTargetArea");
       const cleanVch = document.getElementById("pdfMetaQtnNo").textContent.replace(/\//g, "-");
-      html2pdf().set({ margin: 0, filename: `Quotation-${cleanVch}.pdf`, image: { type: "jpeg", quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: "pt", format: "a4", orientation: "portrait" } }).from(el).save();
+
+      const originalText = this.innerHTML;
+      this.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Generating PDF...`;
+      this.disabled = true;
+
+      const opt = {
+          margin: 0,
+          filename: `Quotation-${cleanVch}.pdf`,
+          image: { type: "jpeg", quality: 1.0 },
+          html2canvas: { 
+              scale: 2, 
+              useCORS: true, 
+              letterRendering: true,
+              scrollY: 0,
+              scrollX: 0,
+              onclone: function(clonedDoc) {
+                  const target = clonedDoc.getElementById("pdfPrintTargetArea");
+                  
+                  // 1. Isolate completely from Bootstrap modal layout
+                  target.style.position = "fixed";
+                  target.style.top = "0";
+                  target.style.left = "0";
+                  target.style.transform = "none";
+                  target.style.margin = "0";
+                  
+                  // 2. Force strict dimensions slightly less than 297mm to prevent fraction overflow
+                  target.style.width = "210mm";
+                  target.style.height = "296.5mm"; 
+                  target.style.minWidth = "210mm";
+                  target.style.maxWidth = "210mm";
+                  target.style.minHeight = "296.5mm";
+                  target.style.maxHeight = "296.5mm";
+                  
+                  // 3. Prevent content from bleeding into a second page
+                  target.style.overflow = "hidden"; 
+                  target.style.boxSizing = "border-box";
+              }
+          }, 
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" } 
+      };
+      
+      // Use toPdf().get('pdf') to forcibly intercept and eliminate the blank second page
+      html2pdf()
+          .set(opt)
+          .from(el)
+          .toPdf()
+          .get('pdf')
+          .then(function(pdf) {
+              const totalPages = pdf.internal.getNumberOfPages();
+              // Iterate backwards to securely delete any page higher than 1
+              for (let i = totalPages; i > 1; i--) {
+                  pdf.deletePage(i);
+              }
+          })
+          .save()
+          .then(() => {
+              // Restore button text after download
+              this.innerHTML = originalText;
+              this.disabled = false;
+          });
   });
 
-  document.getElementById("modalDownloadCatalogBtn")?.addEventListener("click", () => {
+  document.getElementById("modalDownloadCatalogBtn")?.addEventListener("click", function() {
       const catalogElement = document.getElementById("catalogPrintTargetArea");
+      
+      const originalText = this.innerHTML;
+      this.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Generating PDF...`;
+      this.disabled = true;
+
       const catalogOptions = {
         margin: 0,
         filename: "Product-Catalog.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, scrollX: 0 },
-        jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
+        image: { type: "jpeg", quality: 1.0 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true, 
+            scrollY: 0, 
+            scrollX: 0,
+            onclone: function(clonedDoc) {
+                const target = clonedDoc.getElementById("catalogPrintTargetArea");
+                target.style.position = "fixed";
+                target.style.top = "0";
+                target.style.left = "0";
+                target.style.transform = "none";
+                target.style.margin = "0";
+                target.style.width = "210mm";
+                target.style.minWidth = "210mm";
+                target.style.maxWidth = "210mm";
+            } 
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["css", "legacy"], before: ".catalog-page-break" }
       };
-      html2pdf().set(catalogOptions).from(catalogElement).save();
+      
+      html2pdf().set(catalogOptions).from(catalogElement).save().then(() => {
+          this.innerHTML = originalText;
+          this.disabled = false;
+      });
   });
 
   document.getElementById("topVchDetailBtn")?.addEventListener("click", () => document.getElementById("voucherDirectoryCard").scrollIntoView({ behavior: "smooth" }));
