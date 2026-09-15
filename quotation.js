@@ -912,6 +912,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Ensure Edit binds correct values into Dataset so they aren't lost on update
   window.editItemRow = (i) => {
      const item = currentItemsList[i];
      itemNameInp.value = item.name;
@@ -919,6 +920,7 @@ document.addEventListener("DOMContentLoaded", () => {
      document.getElementById("modalItemUnit").value = item.unit;
      document.getElementById("modalItemPrice").value = item.price;
      
+     // CRITICAL: Re-bind datasets to protect existing metadata during manual edit
      itemNameInp.dataset.hsn = item.hsn || '';
      itemNameInp.dataset.brand = item.brand || '-';
      itemNameInp.dataset.code = item.code || '-';
@@ -1260,6 +1262,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("topVchDetailBtn")?.addEventListener("click", () => document.getElementById("voucherDirectoryCard").scrollIntoView({ behavior: "smooth" }));
   
+  // Open modal when 'Add Item' button is clicked
   document.getElementById("openAddModalBtn")?.addEventListener("click", () => {
     triggerAddItemModal();
   });

@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Premium Interactive Charting Module
     const ctx = document.getElementById('quotationChart').getContext('2d');
     
-    // डॅशबोर्ड डेटा मॅट्रिक्स (पिल्स नुसार डेटा अपडेट करण्यासाठी)
+    // Dashboard data matrix (to update data according to pills)
     const chartDataVariants = {
         day: [1.0, 1.0],
         week: [5.0, 3.0],
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             labels: ['Rajesh Tiwari', 'Rajesh Tiwari'],
             datasets: [{
                 label: 'Quotations Created',
-                data: chartDataVariants.day, // बाय-डिफॉल्ट इमेज प्रमाणे १ आणि १ डेटा
+                data: chartDataVariants.day, // By default 1 and 1 data as per image
                 backgroundColor: [
                     '#F472B6', // Soft Pink for Rajeev (As per Image)
                     '#60A5FA'  // Elegant Sky Blue for Kashif Ahmad (As per Image)
@@ -91,15 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const pillButtons = document.querySelectorAll('.filter-pills .pill');
     pillButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // ॲक्टिव्ह क्लास रीसेट करा
+            // Reset active class
             pillButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
 
-            // क्लिक केलेल्या बटणनुसार ग्राफ व्हॅल्यू अपडेट करा
+            // Update graph value according to clicked button
             const selectedType = this.textContent.toLowerCase();
             if (chartDataVariants[selectedType]) {
                 quotationChart.data.datasets[0].data = chartDataVariants[selectedType];
-                quotationChart.update(); // स्मूथ ॲनिमेशन री-ट्रिगर होईल
+                quotationChart.update(); // Smooth animation will re-trigger
             }
         });
     });
@@ -108,10 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// सेल्स चार्टसाठी डेटा
+// Data for sales chart
 const salesCtx = document.getElementById('salesChart').getContext('2d');
 const salesChart = new Chart(salesCtx, {
-    type: 'line', // Line chart प्रोफेशनल दिसतो
+    type: 'line', // Line chart looks professional
     data: {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
         datasets: [{
@@ -135,7 +135,7 @@ const salesChart = new Chart(salesCtx, {
             x: { grid: { display: false } }
         },
         animation: {
-            duration: 2000, // 2 सेकंद ॲनिमेशन
+            duration: 2000, // 2 seconds animation
             easing: 'easeInOutQuart'
         }
     }

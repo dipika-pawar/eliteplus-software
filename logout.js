@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.toggle('open');
         e.stopPropagation();
 
-        // आयकॉन बदलणे (Bars <-> Xmark)
+        // Change icon (Bars <-> Xmark)
         if (sidebar.classList.contains('open')) {
             toggleIcon.className = 'fa-solid fa-xmark';
         } else {
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // साईडबारच्या बाहेर कुठेही क्लिक केल्यास साईडबार बंद करणे
+    // Close sidebar if clicked anywhere outside the sidebar
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 991 && sidebar.classList.contains('open')) {
             if (!sidebar.contains(e.target) && e.target !== menuToggle) {

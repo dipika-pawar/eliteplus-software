@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Instant Form Submission & Redirect
     loginForm.addEventListener('submit', (e) => {
-        e.preventDefault(); // Page reload रोखण्यासाठी
+        e.preventDefault(); // To prevent page reload
         
-        // आधीचा एरर मेसेज रिसेट करा (आता सुरक्षितपणे चालेल)
+        // Reset previous error message (will now run safely)
         if (errorMessage) {
             errorMessage.style.display = 'none';
             errorMessage.textContent = '';
@@ -27,20 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const usernameValue = usernameInput.value.trim();
         const passwordValue = passwordInput.value;
 
-        // कडक तपासणी: जर बरोबर असेल तर लगेच डॅशबोर्डवर पाठवा
+        // Strict check: If correct, redirect to dashboard immediately
         if (usernameValue === 'admin' && passwordValue === 'admin@123') {
             
-            // झटकन डॅशबोर्ड पेजवर रीडायरेक्ट करा
+            // Quickly redirect to the dashboard page
             window.location.href = 'dashboard.html'; 
 
         } else {
-            // आयडी किंवा पासवर्ड चुकीचा असल्यास एरर दाखवा
+            // Show error if ID or password is wrong
             if (errorMessage) {
                 errorMessage.textContent = 'Invalid username or password. Please try again.';
                 errorMessage.style.display = 'block';
             }
             
-            // पासवर्ड फिल्ड क्लियर करा आणि कर्सर तिथे आणा
+            // Clear the password field and focus the cursor there
             passwordInput.value = '';
             passwordInput.focus();
         }

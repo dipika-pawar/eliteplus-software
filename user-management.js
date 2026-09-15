@@ -12,9 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
         menuToggle.addEventListener('click', (e) => {
             sidebar.classList.toggle('open');
             e.stopPropagation();
+            
+            // Change icon (Bars <-> Xmark)
             toggleIcon.className = sidebar.classList.contains('open') ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
         });
 
+        // Close sidebar if clicked anywhere outside the sidebar
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 991 && sidebar.classList.contains('open')) {
                 if (!sidebar.contains(e.target) && e.target !== menuToggle) {
