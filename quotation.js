@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastSavedItemsSnapshot = []; 
   let systemItemsMasterList = [];
   let systemCompanyProfile = null;
+  
+  // Variable to track the last successfully saved or loaded voucher ID for accurate print sync
+  let lastSavedVoucherId = null;
 
   // Mobile Sidebar Toggle Mechanism
   const menuToggle = document.getElementById("menuToggle");
@@ -556,6 +559,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const printPreviewModal = new bootstrap.Modal(document.getElementById("printPreviewModal"));
   const catalogPreviewModal = new bootstrap.Modal(document.getElementById("catalogPreviewModal"));
 
+  // Helper Function for fetching saved terms directly
+  async function getSavedQuotationTerms(voucherId) {
+    if (!voucherId) return "";
+    try {
+        const response = await fetch(`${API_URL}/${voucherId}`);
+        const result = await response.json();
+        if (response.ok && result.quotation) {
+            return result.quotation.terms_conditions || "";
+        }
+    } catch (error) {
+        console.error("Failed to load saved quotation terms:", error);
+    }
+    return "";
+  }
+
   // --- 4. BACKEND INTEGRATION: READ DIRECTORY (GET) ---
   async function fetchSavedVouchers() {
      try {
@@ -764,6 +782,7 @@ document.addEventListener("DOMContentLoaded", () => {
          
          const resData = await response.json();
          if(response.ok) {
+             lastSavedVoucherId = payload.id; // Store ID for Print sync
              alert(resData.message);
              clearVoucherForm();
              fetchSavedVouchers();
@@ -784,6 +803,7 @@ document.addEventListener("DOMContentLoaded", () => {
              const vch = res.quotation;
              const activePartyName = voucherDatabase[localIdx].partyName;
 
+             lastSavedVoucherId = dbId; // Store loaded ID for Print sync
              document.getElementById("qVoucherTrackIndex").value = localIdx;
              document.getElementById("qSeries").value = vch.series;
              document.getElementById("qDate").value = formatDateToLocal(vch.quotation_date);
@@ -892,7 +912,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Ensure Edit binds correct values into Dataset so they aren't lost on update
   window.editItemRow = (i) => {
      const item = currentItemsList[i];
      itemNameInp.value = item.name;
@@ -900,7 +919,6 @@ document.addEventListener("DOMContentLoaded", () => {
      document.getElementById("modalItemUnit").value = item.unit;
      document.getElementById("modalItemPrice").value = item.price;
      
-     // CRITICAL: Re-bind datasets to protect existing metadata during manual edit
      itemNameInp.dataset.hsn = item.hsn || '';
      itemNameInp.dataset.brand = item.brand || '-';
      itemNameInp.dataset.code = item.code || '-';
@@ -932,7 +950,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     initializeCurrentDate();
-    fetchNextVoucherNumber(); // Auto-load next voucher number on clear/reset
+    fetchNextVoucherNumber(); 
     currentItemsList = [];
     renderItemsTable();
   };
@@ -946,36 +964,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 8. DYNAMIC PRINTING PREVIEW DATA SYNC MATRIX ---
   if (document.getElementById("btnPrintQuotation")) {
-    document.getElementById("btnPrintQuotation").addEventListener("click", () => {
+    document.getElementById("btnPrintQuotation").addEventListener("click", async () => {
       
       let printList = currentItemsList.length > 0 ? currentItemsList : lastSavedItemsSnapshot;
       if (printList.length === 0) return alert("Validation Error: No dynamic item configurations available to print.");
 
-      // Ensure Company Data is absolutely enforced into DOM right before opening print preview
-      applyCompanyProfileToDOM();
-
+      // Fetch dynamic Terms & Conditions accurately based on current UI vs Backend Priority
+      const trackIdx = document.getElementById("qVoucherTrackIndex").value;
       const partyInp = document.getElementById("qParty");
-      
-      if(!partyInp.value && lastSavedItemsSnapshot.length > 0) {
-          const trackIdx = document.getElementById("qVoucherTrackIndex").value;
-          if(trackIdx !== "" && voucherDatabase[trackIdx]) {
-              partyInp.value = voucherDatabase[trackIdx].partyName;
-          }
+
+      let targetVoucherId = null;
+
+      // Identify whether we are printing an active Edit or a recently Saved document
+      if (trackIdx !== "" && voucherDatabase[trackIdx]) {
+          targetVoucherId = voucherDatabase[trackIdx].id;
+          partyInp.value = voucherDatabase[trackIdx].partyName;
+      } else if (currentItemsList.length === 0 && lastSavedVoucherId) {
+          // If current items is empty, we just saved and cleared. Rely on the lastSavedVoucherId.
+          targetVoucherId = lastSavedVoucherId;
+          const matchedVch = voucherDatabase.find(v => v.id === lastSavedVoucherId);
+          if (matchedVch) partyInp.value = matchedVch.partyName;
       }
+
+      applyCompanyProfileToDOM();
 
       document.getElementById("pdfClientInstitution").textContent = partyInp.value || "";
       document.getElementById("pdfClientLocation").textContent = partyInp.dataset.location || 'Pune, Maharashtra';
       document.getElementById("pdfClientMobile").textContent = partyInp.dataset.mobile || 'N/A';
       document.getElementById("pdfClientEmail").textContent = partyInp.dataset.email || 'N/A';
       document.getElementById("pdfClientGst").textContent = partyInp.dataset.gst || 'N/A';
-
       document.getElementById("pdfMetaDate").textContent = document.getElementById("qDate").value;
       document.getElementById("pdfMetaQtnNo").textContent = document.getElementById("qVchNo").value;
 
-      // Assign the dynamically saved Terms & Conditions directly to the PDF preview
-      if(document.getElementById("pdfTermsConditions") && document.getElementById("qTerms")) {
-         document.getElementById("pdfTermsConditions").textContent = document.getElementById("qTerms").value.trim();
+      // ----- TERMS & CONDITIONS SYNC SYSTEM -----
+      // Default to UI value if present (useful for unsaved live edits)
+      let finalTerms = document.getElementById("qTerms") ? document.getElementById("qTerms").value.trim() : "";
+
+      // If a legitimate voucher ID is available, override with exact backend data
+      if (targetVoucherId) {
+          const backendTerms = await getSavedQuotationTerms(targetVoucherId);
+          if (backendTerms !== undefined && backendTerms !== "") {
+              finalTerms = backendTerms;
+          }
       }
+
+      // Safe multi-line attachment using textContent
+      if (document.getElementById("pdfTermsConditions")) {
+          document.getElementById("pdfTermsConditions").textContent = finalTerms;
+      }
+      // ------------------------------------------
 
       const rowsTarget = document.getElementById("pdfItemRowsTarget");
       rowsTarget.innerHTML = "";
