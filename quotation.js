@@ -479,12 +479,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 400);
   }
 
+  // Key down layout bindings
   const interactiveFormFields = ["qSeries", "qVchNo", "qSaleType", "qParty", "qMatCentre", "qNarration", "qTerms"];
   interactiveFormFields.forEach((id, currentIndex) => {
     const element = document.getElementById(id);
     if (!element) return;
     element.addEventListener("keydown", (event) => {
-      // For textareas, do not prevent default on Enter so users can type multiple lines
+      // Allow multi-line input in textareas
       if (event.key === "Tab" || (event.key === "Enter" && element.tagName !== "TEXTAREA")) {
         if (id === "qParty" && suggestionsBox && suggestionsBox.style.display === "block") return;
         event.preventDefault(); 
@@ -540,6 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // DOM Caching Elements Setup
   const itemTableBody = document.getElementById("itemTableBody");
   const voucherMasterTableBody = document.getElementById("voucherMasterTableBody");
   const modalItemForm = document.getElementById("modalItemForm");
@@ -713,6 +715,12 @@ document.addEventListener("DOMContentLoaded", () => {
      
      const vchNo = document.getElementById("qVchNo").value.trim();
      const partyName = document.getElementById("qParty").value.trim();
+     
+     let qTermsValue = "";
+     if(document.getElementById("qTerms")) {
+        qTermsValue = document.getElementById("qTerms").value.trim();
+     }
+
      const metrics = calculateQuotationTotals();
 
      const payload = {
@@ -724,7 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
          partyName: partyName,
          matCentre: document.getElementById("qMatCentre").value.trim(),
          narration: document.getElementById("qNarration").value.trim(),
-         termsConditions: document.getElementById("qTerms").value.trim(),
+         termsConditions: qTermsValue,
          discountPercent: parseFloat(manualDiscountInput.value) || 0,
          subtotal: metrics.subtotal,
          taxableAmount: metrics.taxableAmount,
@@ -784,7 +792,11 @@ document.addEventListener("DOMContentLoaded", () => {
              document.getElementById("qParty").value = activePartyName;
              document.getElementById("qMatCentre").value = vch.material_centre;
              document.getElementById("qNarration").value = vch.narration || '';
-             document.getElementById("qTerms").value = vch.terms_conditions || '';
+             
+             if(document.getElementById("qTerms")) {
+                document.getElementById("qTerms").value = vch.terms_conditions || '';
+             }
+
              document.getElementById("manualDiscountPercentage").value = parseFloat(vch.discount_percentage).toFixed(2);
 
              try {
@@ -844,6 +856,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
   };
 
+  // --- 7. POPUP MODAL ITEMS STORAGE PIPELINE ---
   if (modalItemForm) {
     modalItemForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -879,6 +892,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Ensure Edit binds correct values into Dataset so they aren't lost on update
   window.editItemRow = (i) => {
      const item = currentItemsList[i];
      itemNameInp.value = item.name;
@@ -886,6 +900,7 @@ document.addEventListener("DOMContentLoaded", () => {
      document.getElementById("modalItemUnit").value = item.unit;
      document.getElementById("modalItemPrice").value = item.price;
      
+     // CRITICAL: Re-bind datasets to protect existing metadata during manual edit
      itemNameInp.dataset.hsn = item.hsn || '';
      itemNameInp.dataset.brand = item.brand || '-';
      itemNameInp.dataset.code = item.code || '-';
@@ -912,13 +927,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("formVoucherHeaderTitle").innerHTML = `<i class="fa-solid fa-file-signature text-success"></i> Voucher Entry Panel`;
     document.getElementById("mainVoucherSaveBtn").innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Voucher`;
     
-    // Set default Terms and Conditions on clear/new
     if(document.getElementById("qTerms")) {
        document.getElementById("qTerms").value = defaultTerms;
     }
     
     initializeCurrentDate();
-    fetchNextVoucherNumber(); 
+    fetchNextVoucherNumber(); // Auto-load next voucher number on clear/reset
     currentItemsList = [];
     renderItemsTable();
   };
@@ -958,8 +972,10 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("pdfMetaDate").textContent = document.getElementById("qDate").value;
       document.getElementById("pdfMetaQtnNo").textContent = document.getElementById("qVchNo").value;
 
-      // Assign the text typed in the Terms box directly to the PDF preview element
-      document.getElementById("pdfTermsConditions").textContent = document.getElementById("qTerms").value.trim();
+      // Assign the dynamically saved Terms & Conditions directly to the PDF preview
+      if(document.getElementById("pdfTermsConditions") && document.getElementById("qTerms")) {
+         document.getElementById("pdfTermsConditions").textContent = document.getElementById("qTerms").value.trim();
+      }
 
       const rowsTarget = document.getElementById("pdfItemRowsTarget");
       rowsTarget.innerHTML = "";
@@ -1128,7 +1144,6 @@ document.addEventListener("DOMContentLoaded", () => {
               onclone: function(clonedDoc) {
                   const target = clonedDoc.getElementById("pdfPrintTargetArea");
                   
-                  // Isolate completely from Bootstrap modal layout
                   target.style.position = "fixed";
                   target.style.top = "0";
                   target.style.left = "0";
