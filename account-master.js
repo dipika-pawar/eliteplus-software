@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const setupEnterNavigation = (container) => {
     container.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
+        // Preserve textarea Shift+Enter behavior
         if (e.target.tagName.toLowerCase() === 'textarea' && e.shiftKey) {
           return;
         }
@@ -62,15 +63,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const index = focusableElements.indexOf(e.target);
         if (index > -1 && index < focusableElements.length - 1) {
-          e.preventDefault();
+          e.preventDefault(); // Prevents normal form submission and stops dropdown from reopening on confirm
           const nextElement = focusableElements[index + 1];
           nextElement.focus();
 
-          if (nextElement.tagName.toLowerCase() === 'input' && nextElement.type === 'text') {
+          // 1. Text Input Open Logic (Select existing text)
+          if (nextElement.tagName.toLowerCase() === 'input' && 
+             (nextElement.type === 'text' || nextElement.type === 'email' || nextElement.type === 'number')) {
             nextElement.select();
           }
 
-          // File Input Open Logic (Folder Dialog Open)
+          // 2. Select Dropdown Auto-Open Logic
+          if (nextElement.tagName.toLowerCase() === 'select') {
+            if (typeof nextElement.showPicker === 'function') {
+              try {
+                nextElement.showPicker();
+              } catch (err) {
+                // Safe fallback if blocked by browser
+              }
+            }
+          }
+
+          // 3. File Input Open Logic (Folder Dialog Open)
           if (nextElement.tagName.toLowerCase() === 'input' && nextElement.type === 'file') {
             if (typeof nextElement.showPicker === 'function') {
               try {

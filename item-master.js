@@ -327,27 +327,67 @@ document.addEventListener("DOMContentLoaded", () => {
 
     fetchItems();
 
-    // --- Enter Key Navigation System ---
-    const formFocusableElements = itemForm.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea, button[type="submit"]');
-    const enterKeyListener = (e) => {
-        if (e.key === 'Enter') {
-            const element = e.target;
-            if (element.type === 'submit') return;
-            e.preventDefault(); 
-            
-            const index = Array.from(formFocusableElements).indexOf(element);
-            const nextElement = formFocusableElements[index + 1];
-            if (nextElement) {
-                nextElement.focus();
-                if (nextElement.tagName === 'INPUT' || nextElement.tagName === 'TEXTAREA') {
-                    nextElement.select();
+    // --- Enter Key Navigation System (UPDATED) ---
+    const setupEnterNavigation = (container) => {
+        if (!container) return;
+        
+        container.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                // Preserve textarea Shift+Enter behavior
+                if (e.target.tagName.toLowerCase() === 'textarea' && e.shiftKey) {
+                    return;
+                }
+
+                // Dynamically fetch focusable elements so new additions (dynamic fields) work perfectly
+                const focusableElements = Array.from(
+                    container.querySelectorAll('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button[type="submit"]')
+                );
+
+                const index = focusableElements.indexOf(e.target);
+                if (index > -1 && index < focusableElements.length - 1) {
+                    e.preventDefault(); // Prevents normal form submission and dropdown reopening
+
+                    const nextElement = focusableElements[index + 1];
+                    nextElement.focus();
+
+                    // 1. Text Input Open Logic (Select existing text)
+                    if (nextElement.tagName.toLowerCase() === 'input' && 
+                       (nextElement.type === 'text' || nextElement.type === 'email' || nextElement.type === 'number')) {
+                        nextElement.select();
+                    }
+
+                    // 2. Select Dropdown Auto-Open Logic
+                    if (nextElement.tagName.toLowerCase() === 'select') {
+                        if (typeof nextElement.showPicker === 'function') {
+                            try {
+                                nextElement.showPicker();
+                            } catch (err) {
+                                // Safe fallback if blocked by browser
+                            }
+                        }
+                    }
+
+                    // 3. File Input Open Logic (Folder Dialog Open)
+                    if (nextElement.tagName.toLowerCase() === 'input' && nextElement.type === 'file') {
+                        if (typeof nextElement.showPicker === 'function') {
+                            try {
+                                nextElement.showPicker();
+                            } catch (err) {
+                                nextElement.click();
+                            }
+                        } else {
+                            nextElement.click();
+                        }
+                    }
                 }
             }
-        }
+        });
     };
-    formFocusableElements.forEach((element) => {
-        element.addEventListener('keydown', enterKeyListener);
-    });
+
+    // Apply the navigation system to both forms
+    if (itemForm) setupEnterNavigation(itemForm);
+    if (editForm) setupEnterNavigation(editForm);
+    // ---------------------------------------------
 
     // --- Validation UI Helpers ---
     function showError(inputEl, errorElId, message) {
