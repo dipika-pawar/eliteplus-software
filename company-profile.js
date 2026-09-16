@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  const API_URL = 'http://localhost:5000/api/company';
+  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/company';
 
   // --- 1. Sidebar Toggle Mechanics ---
   const menuToggle = document.getElementById('menuToggle');

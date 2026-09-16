@@ -5,11 +5,11 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   
-  // API Endpoints Mappings
-  const API_URL = 'http://localhost:5000/api/quotation';
-  const ACCOUNT_API = 'http://localhost:5000/api/account';
-  const ITEM_API = 'http://localhost:5000/api/item';
-  const COMPANY_API = 'http://localhost:5000/api/company';
+  // API Endpoints Mappings (Updated to Vercel Live Backend URL)
+  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/quotation';
+  const ACCOUNT_API = 'https://eliteplus-software-backend.vercel.app/api/account';
+  const ITEM_API = 'https://eliteplus-software-backend.vercel.app/api/item';
+  const COMPANY_API = 'https://eliteplus-software-backend.vercel.app/api/company';
 
   // Default Standard Terms & Conditions
   const defaultTerms = `1. Packing, Forwarding and Transport Charges inclusive.
@@ -394,25 +394,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const logoImages = document.querySelectorAll(".pdf-header-logo");
       logoImages.forEach(logoImg => {
-          if(systemCompanyProfile.logo_file) logoImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`;
+          if(systemCompanyProfile.logo_file) logoImg.src = `https://eliteplus-software-backend.vercel.app/uploads/${systemCompanyProfile.logo_file}`;
       });
       
       const qrImages = document.querySelectorAll(".pdf-scanner-img");
       qrImages.forEach(img => {
-          if(systemCompanyProfile.qr_file) img.src = `http://localhost:5000/uploads/${systemCompanyProfile.qr_file}`;
+          if(systemCompanyProfile.qr_file) img.src = `https://eliteplus-software-backend.vercel.app/uploads/${systemCompanyProfile.qr_file}`;
       });
 
       const signImg = document.querySelector(".pdf-signature-real-img");
       if(signImg && systemCompanyProfile.signature_file) {
-          signImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.signature_file}`;
+          signImg.src = `https://eliteplus-software-backend.vercel.app/uploads/${systemCompanyProfile.signature_file}`;
       }
 
       const stampImg = document.querySelector(".pdf-stamp-real-img");
       if(stampImg) {
           if(systemCompanyProfile.stamp_file) {
-             stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.stamp_file}`; 
+             stampImg.src = `https://eliteplus-software-backend.vercel.app/uploads/${systemCompanyProfile.stamp_file}`; 
           } else if (systemCompanyProfile.logo_file) {
-             stampImg.src = `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}`; 
+             stampImg.src = `https://eliteplus-software-backend.vercel.app/uploads/${systemCompanyProfile.logo_file}`; 
           }
       }
 
@@ -580,27 +580,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await fetch(API_URL);
         const result = await response.json();
         if(result.status === 'Success') {
-           voucherDatabase = result.data.map(vch => ({
-               id: vch.id,
-               series: vch.series,
-               date: formatDateToLocal(vch.quotation_date),
-               vchNo: vch.voucher_no,
-               saleType: vch.sale_type,
-               partyName: vch.party_name,
-               matCentre: vch.material_centre,
-               narration: vch.narration,
-               termsConditions: vch.terms_conditions,
-               discountPercent: vch.discount_percentage,
-               subtotal: vch.subtotal,
-               taxableAmount: vch.taxable_amount,
-               gstTotal: vch.gst_total,
-               discountAmount: vch.discount_amount,
-               roundOff: vch.round_off,
-               grandTotal: vch.grand_total,
-               amountInWords: vch.amount_in_words,
-               items: []
-           }));
-           renderVoucherMasterDirectory();
+            voucherDatabase = result.data.map(vch => ({
+                id: vch.id,
+                series: vch.series,
+                date: formatDateToLocal(vch.quotation_date),
+                vchNo: vch.voucher_no,
+                saleType: vch.sale_type,
+                partyName: vch.party_name,
+                matCentre: vch.material_centre,
+                narration: vch.narration,
+                termsConditions: vch.terms_conditions,
+                discountPercent: vch.discount_percentage,
+                subtotal: vch.subtotal,
+                taxableAmount: vch.taxable_amount,
+                gstTotal: vch.gst_total,
+                discountAmount: vch.discount_amount,
+                roundOff: vch.round_off,
+                grandTotal: vch.grand_total,
+                amountInWords: vch.amount_in_words,
+                items: []
+            }));
+            renderVoucherMasterDirectory();
         }
      } catch (err) {
         console.error("Voucher Directory loading failed:", err);
@@ -1070,18 +1070,18 @@ document.addEventListener("DOMContentLoaded", () => {
         let imageSrc = 'Images/advanced-practi-man-cpr-manikin-254.jpg';
         if (matchedMaster && matchedMaster.image_path) {
           imageSrc = matchedMaster.image_path.startsWith('http') || matchedMaster.image_path.startsWith('data:') 
-                      ? matchedMaster.image_path 
-                      : `http://localhost:5000${matchedMaster.image_path}`;
+                    ? matchedMaster.image_path 
+                    : `https://eliteplus-software-backend.vercel.app${matchedMaster.image_path}`;
         } else if (item.image) {
-          imageSrc = item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`;
+          imageSrc = item.image.startsWith('http') ? item.image : `https://eliteplus-software-backend.vercel.app${item.image}`;
         }
 
         const logoSrc = (systemCompanyProfile && systemCompanyProfile.logo_file) 
-                          ? `http://localhost:5000/uploads/${systemCompanyProfile.logo_file}` 
-                          : 'Images/Eliteplus-logo.png';
+                        ? `https://eliteplus-software-backend.vercel.app/uploads/${systemCompanyProfile.logo_file}` 
+                        : 'Images/Eliteplus-logo.png';
         
         const qrSrc = (systemCompanyProfile && systemCompanyProfile.qr_file) 
-                        ? `http://localhost:5000/uploads/${systemCompanyProfile.qr_file}` 
+                        ? `https://eliteplus-software-backend.vercel.app/uploads/${systemCompanyProfile.qr_file}` 
                         : 'Images/scanner.png';
 
         const regAddress = systemCompanyProfile?.registered_address || 'Sr.No 175, Fl No #116, Shivane, Pune - 411023';

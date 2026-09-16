@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
     
-    // Backend API Main URL Mapping
-    const API_URL = 'http://localhost:5000/api/item';
-    const UNIT_API_URL = 'http://localhost:5000/api/unit'; // Dynamic Unit API
-    const TAX_API_URL = 'http://localhost:5000/api/tax'; // Dynamic Tax Category API
+  // Backend API Main URL Mapping (Updated to Vercel Live URL)
+  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/item';
+  const UNIT_API_URL = 'https://eliteplus-software-backend.vercel.app/api/unit'; // Dynamic Unit API
+  const TAX_API_URL = 'https://eliteplus-software-backend.vercel.app/api/tax'; // Dynamic Tax Category API
 
     // --- 1. Sidebar Toggle ---
     const menuToggle = document.getElementById("menuToggle");
@@ -352,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     // 1. Text Input Open Logic (Select existing text)
                     if (nextElement.tagName.toLowerCase() === 'input' && 
-                       (nextElement.type === 'text' || nextElement.type === 'email' || nextElement.type === 'number')) {
+                         (nextElement.type === 'text' || nextElement.type === 'email' || nextElement.type === 'number')) {
                         nextElement.select();
                     }
 
@@ -610,9 +610,9 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('editImageUrl').value = '';
         }
 
-        // Image Preview Display
+        // Image Preview Display (Updated to use Vercel Backend URL)
         if (item.image_path && !item.image_path.startsWith('http') && item.image_path.trim() !== '') {
-            const imgSrc = `http://localhost:5000${item.image_path}`;
+            const imgSrc = `https://eliteplus-software-backend.vercel.app${item.image_path}`;
             editImgLabel.innerHTML = `<img src="${imgSrc}" style="width:24px; height:24px; border-radius:4px; object-fit:cover; margin-right:8px;"> <span style="color:#059669;">Existing Image (Click to change)</span>`;
             editImgLabel.style.borderColor = "#10b981";
         } else {
@@ -620,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
             editImgLabel.style.borderColor = "";
         }
 
-        // PDF Brochure Link Setup
+        // PDF Brochure Link Setup (Updated to use Vercel Backend URL)
         const existingPdfLink = document.getElementById('existingPdfLink');
         if (editPdfLabel) {
             editPdfLabel.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Choose New PDF';
@@ -628,7 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (existingPdfLink) {
             if (item.pdf_path && item.pdf_path !== '-') {
-                const pdfUrl = item.pdf_path.startsWith('http') ? item.pdf_path : `http://localhost:5000${item.pdf_path}`;
+                const pdfUrl = item.pdf_path.startsWith('http') ? item.pdf_path : `https://eliteplus-software-backend.vercel.app${item.pdf_path}`;
                 const pdfFileName = item.pdf_path.split('/').pop();
                 existingPdfLink.innerHTML = `<a href="${pdfUrl}" target="_blank" style="color:#2563eb; text-decoration:none; font-weight: 500;"><i class="fa-solid fa-eye me-1"></i> View Existing PDF: ${pdfFileName}</a>`;
             } else {
@@ -743,7 +743,7 @@ document.addEventListener("DOMContentLoaded", () => {
         list.forEach((item) => {
             let imgHtml = `<div class="table-item-icon-placeholder"><i class="fa-solid fa-box"></i></div>`;
             if (item.image_path && item.image_path.trim() !== "") {
-                const srcPath = item.image_path.startsWith('http') || item.image_path.startsWith('data:') ? item.image_path : `http://localhost:5000${item.image_path}`;
+                const srcPath = item.image_path.startsWith('http') || item.image_path.startsWith('data:') ? item.image_path : `https://eliteplus-software-backend.vercel.app${item.image_path}`;
                 imgHtml = `<img src="${srcPath}" alt="${item.item_name}" class="table-item-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'table-item-icon-placeholder\'><i class=\'fa-solid fa-image-broken\'></i></div>';">`;
             }
 
