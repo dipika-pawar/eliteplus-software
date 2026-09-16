@@ -559,22 +559,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const printPreviewModal = new bootstrap.Modal(document.getElementById("printPreviewModal"));
   const catalogPreviewModal = new bootstrap.Modal(document.getElementById("catalogPreviewModal"));
 
-  // Helper Function for fetching saved terms and narration directly
-  async function getSavedQuotationExtras(voucherId) {
-    if (!voucherId) return { terms: "", narration: "" };
+  // Helper Function for fetching saved terms directly
+  async function getSavedQuotationTerms(voucherId) {
+    if (!voucherId) return "";
     try {
         const response = await fetch(`${API_URL}/${voucherId}`);
         const result = await response.json();
         if (response.ok && result.quotation) {
-            return {
-                terms: result.quotation.terms_conditions || "",
-                narration: result.quotation.narration || ""
-            };
+            return result.quotation.terms_conditions || "";
         }
     } catch (error) {
-        console.error("Failed to load saved quotation extras:", error);
+        console.error("Failed to load saved quotation terms:", error);
     }
-    return { terms: "", narration: "" };
+    return "";
   }
 
   // --- 4. BACKEND INTEGRATION: READ DIRECTORY (GET) ---
@@ -1001,19 +998,15 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("pdfMetaDate").textContent = document.getElementById("qDate").value;
       document.getElementById("pdfMetaQtnNo").textContent = document.getElementById("qVchNo").value;
 
-      // ----- TERMS & NARRATION SYNC SYSTEM -----
+      // ----- TERMS & CONDITIONS SYNC SYSTEM -----
       // Default to UI value if present (useful for unsaved live edits)
       let finalTerms = document.getElementById("qTerms") ? document.getElementById("qTerms").value.trim() : "";
-      let finalNarration = document.getElementById("qNarration") ? document.getElementById("qNarration").value.trim() : "";
 
       // If a legitimate voucher ID is available, override with exact backend data
       if (targetVoucherId) {
-          const backendExtras = await getSavedQuotationExtras(targetVoucherId);
-          if (backendExtras.terms !== undefined && backendExtras.terms !== "") {
-              finalTerms = backendExtras.terms;
-          }
-          if (backendExtras.narration !== undefined && backendExtras.narration !== "") {
-              finalNarration = backendExtras.narration;
+          const backendTerms = await getSavedQuotationTerms(targetVoucherId);
+          if (backendTerms !== undefined && backendTerms !== "") {
+              finalTerms = backendTerms;
           }
       }
 
@@ -1021,12 +1014,24 @@ document.addEventListener("DOMContentLoaded", () => {
       if (document.getElementById("pdfTermsConditions")) {
           document.getElementById("pdfTermsConditions").textContent = finalTerms;
       }
-      
-      const defaultNarration = "As per your requirement, please find enclosed our offer along with terms and conditions for your kind consideration:";
-      if (document.getElementById("pdfNarrationText")) {
-          document.getElementById("pdfNarrationText").textContent = finalNarration !== "" ? finalNarration : defaultNarration;
-      }
       // ------------------------------------------
+
+      // ----- NARRATION SYNC SYSTEM (For 'Dear Sir/Madam' dynamic line) -----
+      let finalNarration = document.getElementById("qNarration") ? document.getElementById("qNarration").value.trim() : "";
+      
+      // Override with backend data if printing a saved voucher
+      if (targetVoucherId) {
+          const matchedVch = voucherDatabase.find(v => v.id === targetVoucherId);
+          if (matchedVch && matchedVch.narration !== undefined && matchedVch.narration !== "") {
+              finalNarration = matchedVch.narration;
+          }
+      }
+
+      // Safe attachment to the print preview
+      if (document.getElementById("pdfNarrationText")) {
+          document.getElementById("pdfNarrationText").textContent = finalNarration;
+      }
+      // ---------------------------------------------------------------------
 
       const rowsTarget = document.getElementById("pdfItemRowsTarget");
       rowsTarget.innerHTML = "";
