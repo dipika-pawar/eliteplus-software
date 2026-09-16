@@ -559,19 +559,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const printPreviewModal = new bootstrap.Modal(document.getElementById("printPreviewModal"));
   const catalogPreviewModal = new bootstrap.Modal(document.getElementById("catalogPreviewModal"));
 
-  // Helper Function for fetching saved terms directly
-  async function getSavedQuotationTerms(voucherId) {
-    if (!voucherId) return "";
+  // Helper Function for fetching saved terms and narration directly
+  async function getSavedQuotationExtras(voucherId) {
+    if (!voucherId) return { terms: "", narration: "" };
     try {
         const response = await fetch(`${API_URL}/${voucherId}`);
         const result = await response.json();
         if (response.ok && result.quotation) {
-            return result.quotation.terms_conditions || "";
+            return {
+                terms: result.quotation.terms_conditions || "",
+                narration: result.quotation.narration || ""
+            };
         }
     } catch (error) {
-        console.error("Failed to load saved quotation terms:", error);
+        console.error("Failed to load saved quotation extras:", error);
     }
-    return "";
+    return { terms: "", narration: "" };
   }
 
   // --- 4. BACKEND INTEGRATION: READ DIRECTORY (GET) ---
@@ -998,21 +1001,30 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("pdfMetaDate").textContent = document.getElementById("qDate").value;
       document.getElementById("pdfMetaQtnNo").textContent = document.getElementById("qVchNo").value;
 
-      // ----- TERMS & CONDITIONS SYNC SYSTEM -----
+      // ----- TERMS & NARRATION SYNC SYSTEM -----
       // Default to UI value if present (useful for unsaved live edits)
       let finalTerms = document.getElementById("qTerms") ? document.getElementById("qTerms").value.trim() : "";
+      let finalNarration = document.getElementById("qNarration") ? document.getElementById("qNarration").value.trim() : "";
 
       // If a legitimate voucher ID is available, override with exact backend data
       if (targetVoucherId) {
-          const backendTerms = await getSavedQuotationTerms(targetVoucherId);
-          if (backendTerms !== undefined && backendTerms !== "") {
-              finalTerms = backendTerms;
+          const backendExtras = await getSavedQuotationExtras(targetVoucherId);
+          if (backendExtras.terms !== undefined && backendExtras.terms !== "") {
+              finalTerms = backendExtras.terms;
+          }
+          if (backendExtras.narration !== undefined && backendExtras.narration !== "") {
+              finalNarration = backendExtras.narration;
           }
       }
 
       // Safe multi-line attachment using textContent
       if (document.getElementById("pdfTermsConditions")) {
           document.getElementById("pdfTermsConditions").textContent = finalTerms;
+      }
+      
+      const defaultNarration = "As per your requirement, please find enclosed our offer along with terms and conditions for your kind consideration:";
+      if (document.getElementById("pdfNarrationText")) {
+          document.getElementById("pdfNarrationText").textContent = finalNarration !== "" ? finalNarration : defaultNarration;
       }
       // ------------------------------------------
 
