@@ -1016,23 +1016,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       // ------------------------------------------
 
-      // ----- NARRATION SYNC SYSTEM (For 'Dear Sir/Madam' dynamic line) -----
-      let finalNarration = document.getElementById("qNarration") ? document.getElementById("qNarration").value.trim() : "";
-      
-      // Override with backend data if printing a saved voucher
-      if (targetVoucherId) {
-          const matchedVch = voucherDatabase.find(v => v.id === targetVoucherId);
-          if (matchedVch && matchedVch.narration !== undefined && matchedVch.narration !== "") {
-              finalNarration = matchedVch.narration;
-          }
-      }
-
-      // Safe attachment to the print preview
-      if (document.getElementById("pdfNarrationText")) {
-          document.getElementById("pdfNarrationText").textContent = finalNarration;
-      }
-      // ---------------------------------------------------------------------
-
       const rowsTarget = document.getElementById("pdfItemRowsTarget");
       rowsTarget.innerHTML = "";
 
