@@ -6,10 +6,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   
   // API Endpoints Mappings
-  const API_URL = 'http://localhost:5000/api/quotation';
-  const ACCOUNT_API = 'http://localhost:5000/api/account';
-  const ITEM_API = 'http://localhost:5000/api/item';
-  const COMPANY_API = 'http://localhost:5000/api/company';
+  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/quotation';
+  const ACCOUNT_API = 'https://eliteplus-software-backend.vercel.app/api/account';
+  const ITEM_API = 'https://eliteplus-software-backend.vercel.app/api/item';
+  const COMPANY_API = 'https://eliteplus-software-backend.vercel.app/api/company';
 
   // Default Standard Terms & Conditions
   const defaultTerms = `1. Packing, Forwarding and Transport Charges inclusive.
