@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Item Master</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- External CSS Link -->
+    <link rel="stylesheet" href="item-master.css">
+    <style>
+        .required-star {
+            color: #ef4444;
+            font-weight: bold;
+            margin-left: 2px;
+        }
+
+        /* Dropdown open position CSS */
+        select.input-field-custom {
+            position: relative;
+        }
+
+        /* Add Action Header Button Styles */
+        .label-with-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .btn-add-unit-inline {
+            background-color: #eff6ff;
+            border: 1px solid #2563eb;
+            color: #2563eb;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 3px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-add-unit-inline:hover {
+            background-color: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="mobile-header">
+        <div class="mobile-logo">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>AdminPanel</span>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div class="brand-info">
+                <h3>ElitePlus</h3>
+                <p>Management System</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <ul>
+                <li class="menu-item">
+                    <a href="dashboard.html">
+                        <i class="fa-solid fa-chart-pie menu-icon"></i>
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="company-profile.html">
+                        <i class="fa-solid fa-building menu-icon"></i>
+                        <span class="menu-text">Company Profile</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="account-master.html">
+                        <i class="fa-solid fa-file-invoice-dollar menu-icon"></i>
+                        <span class="menu-text">Account Master</span>
+                    </a>
+                </li>
+                <li class="menu-item active">
+                    <a href="item-master.html">
+                        <i class="fa-solid fa-boxes-stacked menu-icon"></i>
+                        <span class="menu-text">Item Master</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="user-management.html">
+                        <i class="fa-solid fa-users-gear menu-icon"></i>
+                        <span class="menu-text">User Management</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="quotation.html">
+                        <i class="fa-solid fa-file-lines menu-icon"></i>
+                        <span class="menu-text">Quotation</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="logout.html" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket menu-icon"></i>
+                <span class="menu-text">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="dashboard-wrapper">
+
+            <div class="dashboard-header">
+                <div>
+                    <h1>Item Master</h1>
+                    <p>Real-time setup layout, manage items parameters, and inventory logging</p>
+                </div>
+            </div>
+
+            <div class="form-panel transition-card" id="formContainer">
+                <div class="panel-header-simple">
+                    <h3><i class="fa-solid fa-box-open header-accent-icon"></i> Item Specification details</h3>
+                </div>
+
+                <form id="itemMasterForm" class="master-grid-form" novalidate>
+                    <div class="form-group-custom">
+                        <label>Item Name <span class="required-star">*</span></label>
+                        <input type="text" id="itemName" class="input-field-custom" maxlength="100" placeholder="Item Name">
+                        <div class="error-msg" id="itemNameError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label>Item Code</label>
+                        <input type="text" id="itemCode" class="input-field-custom" maxlength="20" placeholder="Item Code">
+                        <div class="error-msg" id="itemCodeError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label>Print Name</label>
+                        <input type="text" id="itemPrintName" class="input-field-custom" maxlength="100" placeholder="Print Name">
+                        <div class="error-msg" id="itemPrintNameError"></div>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>Item Type <span class="required-star">*</span></label>
+                        <select class="input-field-custom" id="itemType">
+                            <option value="">Select Type</option>
+                            <option value="Product">Product</option>
+                            <option value="Service">Service</option>
+                        </select>
+                        <div class="error-msg" id="itemTypeError"></div>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>Group / Category <span class="required-star">*</span></label>
+                        <select class="input-field-custom" id="itemGroup">
+                            <option value="">Select Group</option>
+                            <option value="General">General</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Hardware">Hardware</option>
+                            <option value="Services">Services</option>
+                        </select>
+                        <div class="error-msg" id="itemGroupError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label>Brand</label>
+                        <input type="text" id="itemBrand" class="input-field-custom" maxlength="50" placeholder="Brand">
+                        <div class="error-msg" id="itemBrandError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <div class="label-with-action">
+                            <label>Unit <span class="required-star">*</span></label>
+                            <button type="button" class="btn-add-unit-inline" id="openAddUnitModalBtn"><i class="fa-solid fa-plus"></i> Add Unit</button>
+                        </div>
+                        <select class="input-field-custom" id="itemUnit">
+                            <option value="">Select Unit</option>
+                            <option value="Pcs">Pcs</option>
+                            <option value="Kg">Kg</option>
+                            <option value="Ltr">Ltr</option>
+                            <option value="Box">Box</option>
+                            <option value="Meter">Meter</option>
+                            <option value="Nos">Nos</option>
+                        </select>
+                        <div class="error-msg" id="itemUnitError"></div>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <div class="label-with-action">
+                            <label>Tax Category <span class="required-star">*</span></label>
+                            <button type="button" class="btn-add-unit-inline" id="openAddTaxModalBtn"><i class="fa-solid fa-plus"></i> Add Tax Category</button>
+                        </div>
+                        <select class="input-field-custom" id="itemTaxCategory">
+                            <option value="">Select Tax</option>
+                            <option value="Exempt">Exempt</option>
+                            <option value="GST 12%">GST 12%</option>
+                            <option value="GST 18%">GST 18%</option>
+                            <option value="GST 28%">GST 28%</option>
+                            <option value="GST 3%">GST 3%</option>
+                            <option value="GST 5%">GST 5%</option>
+                            <option value="Nil Rated">Nil Rated</option>
+                            <option value="Non-GST">Non-GST</option>
+                            <option value="Services 18%">Services 18%</option>
+                            <option value="Services 5%">Services 5%</option>
+                            <option value="Zero Rated">Zero Rated</option>
+                        </select>
+                        <div class="error-msg" id="itemTaxCategoryError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label>HSN / SAC Code <span class="required-star">*</span></label>
+                        <input type="text" id="itemHsnCode" class="input-field-custom" placeholder="HSN/SAC Code">
+                        <div class="error-msg" id="itemHsnCodeError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label>Opening Stock Qty</label>
+                        <input type="text" id="itemOpeningStock" class="input-field-custom" value="0" placeholder="0">
+                        <div class="error-msg" id="itemOpeningStockError"></div>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>Opening Stock Value</label>
+                        <input type="text" id="itemOpeningStockValue" class="input-field-custom read-only-field" readonly value="0.00" placeholder="0.00">
+                        <div class="error-msg" id="itemOpeningStockValueError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label>Purchase Price</label>
+                        <input type="text" id="itemPurchasePrice" class="input-field-custom" placeholder="0.00">
+                        <div class="error-msg" id="itemPurchasePriceError"></div>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>Sales Price</label>
+                        <input type="text" id="itemSalesPrice" class="input-field-custom" placeholder="0.00">
+                        <div class="error-msg" id="itemSalesPriceError"></div>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>MRP</label>
+                        <input type="text" id="itemMrp" class="input-field-custom" placeholder="0.00">
+                        <div class="error-msg" id="itemMrpError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label>Packing Dimension</label>
+                        <input type="text" id="itemPacking" class="input-field-custom" maxlength="100" placeholder="14 cm * 15 cm">
+                        <div class="error-msg" id="itemPackingError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label>Video Link</label>
+                        <input type="url" id="itemVideoLink" class="input-field-custom" placeholder="https://youtube.com/...">
+                        <div class="error-msg" id="itemVideoLinkError"></div>
+                    </div>
+
+                    <div class="form-group-custom grid-col-span-full">
+                        <label>Item Specification</label>
+                        <textarea id="itemDescription" class="textarea-field-custom" rows="3" maxlength="1000" placeholder="Enter extensive description details..."></textarea>
+                        <div class="error-msg" id="itemDescriptionError"></div>
+                    </div>
+
+                    <div class="form-group-custom grid-col-span-full">
+                        <label>Image URL (Paste direct link or Upload file below)</label>
+                        <input type="url" id="itemImageUrl" class="input-field-custom" placeholder="https://example.com/image.jpg">
+                        <div class="error-msg" id="itemImageUrlError"></div>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>Image File Upload</label>
+                        <div class="modern-file-wrapper">
+                            <input type="file" id="itemImg" class="file-hidden" accept="image/jpeg, image/jpg, image/png, image/webp">
+                            <label for="itemImg" class="file-mock-btn"><i class="fa-solid fa-image"></i> Upload</label>
+                        </div>
+                        <div class="error-msg" id="itemImgError"></div>
+                    </div>
+                    
+                    <div class="form-group-custom">
+                        <label>Brochure (PDF)</label>
+                        <div class="modern-file-wrapper">
+                            <input type="file" id="itemPdf" class="file-hidden" accept="application/pdf">
+                            <label for="itemPdf" class="file-mock-btn mock-pdf"><i class="fa-solid fa-file-pdf"></i> Upload</label>
+                        </div>
+                        <div class="error-msg" id="itemPdfError"></div>
+                    </div>
+
+                    <div class="form-action-row grid-col-span-full">
+                        <button type="submit" class="action-btn-submit">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Item
+                        </button>
+
+                        <a href="" class="action-btn-new" id="btnNewClear" style="text-decoration: none; display: inline-block;">
+                            <i class="fa-solid fa-plus"></i> New
+                        </a>
+
+                        <button type="reset" class="action-btn-cancel">
+                            <i class="fa-solid fa-rotate-left"></i> Refresh
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="form-panel transition-card">
+                <div class="panel-header-simple">
+                    <h3><i class="fa-solid fa-boxes-stacked header-accent-icon icon-alt"></i> Item List</h3>
+
+                    <div class="header-actions">
+                        <button class="btn-add-new-trigger" id="addNewDetailsBtn">
+                            <i class="fa-solid fa-plus"></i> Add New Item
+                        </button>
+
+                        <div class="search-container">
+                            <input type="text" id="itemSearch" placeholder="Search Item by Name...">
+                        </div>
+
+                        <button class="btn-outline-secondary" id="importItemBtn">
+                            <i class="fa-solid fa-upload"></i> Import
+                        </button>
+
+                        <input type="file" id="importFileInput" style="display:none" accept=".xlsx, .xls">
+
+                        <button class="btn-outline-success" id="exportItemBtn">
+                            <i class="fa-solid fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="responsive-table-container">
+                    <table class="professional-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Item Name</th>
+                                <th>Code</th>
+                                <th>Type</th>
+                                <th>Group / Category</th>
+                                <th>Unit</th>
+                                <th>Tax Category</th>
+                                <th>HSN / SAC</th>
+                                <th style="text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 950px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 25px;">
+            <h3>Edit Item Details</h3>
+            <form id="editForm" class="modal-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;" novalidate>
+                <input type="hidden" id="editIndex">
+
+                <div class="form-group-custom">
+                    <label>Item Name <span class="required-star">*</span></label>
+                    <input type="text" id="editName" class="input-field-custom" maxlength="100" required>
+                    <div class="error-msg" id="editNameError"></div>
+                </div>
+                
+                <div class="form-group-custom">
+                    <label>Item Code</label>
+                    <input type="text" id="editCode" class="input-field-custom" maxlength="20">
+                    <div class="error-msg" id="editCodeError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Print Name</label>
+                    <input type="text" id="editPrintName" class="input-field-custom" maxlength="100">
+                    <div class="error-msg" id="editPrintNameError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Item Type <span class="required-star">*</span></label>
+                    <select class="input-field-custom" id="editType">
+                        <option value="Product">Product</option>
+                        <option value="Service">Service</option>
+                    </select>
+                    <div class="error-msg" id="editTypeError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Group / Category <span class="required-star">*</span></label>
+                    <select class="input-field-custom" id="editGroup">
+                        <option value="General">General</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Hardware">Hardware</option>
+                        <option value="Services">Services</option>
+                    </select>
+                    <div class="error-msg" id="editGroupError"></div>
+                </div>
+                
+                <div class="form-group-custom">
+                    <label>Brand</label>
+                    <input type="text" id="editBrand" class="input-field-custom" maxlength="50">
+                    <div class="error-msg" id="editBrandError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <div class="label-with-action">
+                        <label>Unit <span class="required-star">*</span></label>
+                        <button type="button" class="btn-add-unit-inline" id="openAddUnitModalEditBtn"><i class="fa-solid fa-plus"></i> Add Unit</button>
+                    </div>
+                    <select class="input-field-custom" id="editUnit">
+                        <option value="Pcs">Pcs</option>
+                        <option value="Kg">Kg</option>
+                        <option value="Ltr">Ltr</option>
+                        <option value="Box">Box</option>
+                        <option value="Meter">Meter</option>
+                        <option value="Nos">Nos</option>
+                    </select>
+                    <div class="error-msg" id="editUnitError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <div class="label-with-action">
+                        <label>Tax Category <span class="required-star">*</span></label>
+                        <button type="button" class="btn-add-unit-inline" id="openAddTaxModalEditBtn"><i class="fa-solid fa-plus"></i> Add Tax Category</button>
+                    </div>
+                    <select class="input-field-custom" id="editTaxCategory">
+                        <option value="">Select Tax</option>
+                        <option value="Exempt">Exempt</option>
+                        <option value="GST 12%">GST 12%</option>
+                        <option value="GST 18%">GST 18%</option>
+                        <option value="GST 28%">GST 28%</option>
+                        <option value="GST 3%">GST 3%</option>
+                        <option value="GST 5%">GST 5%</option>
+                        <option value="Nil Rated">Nil Rated</option>
+                        <option value="Non-GST">Non-GST</option>
+                        <option value="Services 18%">Services 18%</option>
+                        <option value="Services 5%">Services 5%</option>
+                        <option value="Zero Rated">Zero Rated</option>
+                    </select>
+                    <div class="error-msg" id="editTaxCategoryError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>HSN / SAC Code <span class="required-star">*</span></label>
+                    <input type="text" id="editHsnCode" class="input-field-custom">
+                    <div class="error-msg" id="editHsnCodeError"></div>
+                </div>
+
+                <!-- ADDED NEW FIELDS: Opening Stock Qty & Value -->
+                <div class="form-group-custom">
+                    <label>Opening Stock Qty</label>
+                    <input type="text" id="editStock" class="input-field-custom">
+                    <div class="error-msg" id="editStockError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Opening Stock Value</label>
+                    <input type="text" id="editOpeningStockValue" class="input-field-custom read-only-field" readonly>
+                    <div class="error-msg" id="editOpeningStockValueError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Purchase Price</label>
+                    <input type="text" id="editPurchasePrice" class="input-field-custom">
+                    <div class="error-msg" id="editPurchasePriceError"></div>
+                </div>
+                
+                <div class="form-group-custom">
+                    <label>Sales Price</label>
+                    <input type="text" id="editPrice" class="input-field-custom">
+                    <div class="error-msg" id="editPriceError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>MRP</label>
+                    <input type="text" id="editMrp" class="input-field-custom">
+                    <div class="error-msg" id="editMrpError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Packing Dimension</label>
+                    <input type="text" id="editPacking" class="input-field-custom">
+                    <div class="error-msg" id="editPackingError"></div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Video Link</label>
+                    <input type="url" id="editVideoLink" class="input-field-custom">
+                    <div class="error-msg" id="editVideoLinkError"></div>
+                </div>
+
+                <div class="form-group-custom" style="grid-column: span 2;">
+                    <label>Item Specification</label>
+                    <textarea id="editDescription" class="textarea-field-custom" rows="3" maxlength="1000"></textarea>
+                    <div class="error-msg" id="editDescriptionError"></div>
+                </div>
+                
+                <div class="form-group-custom" style="grid-column: span 2;">
+                    <label>Image URL</label>
+                    <input type="url" id="editImageUrl" class="input-field-custom">
+                    <div class="error-msg" id="editImageUrlError"></div>
+                </div>
+
+                <div class="form-group-custom" style="grid-column: span 2;">
+                    <label>Or Change Image File (Optional)</label>
+                    <div class="modern-file-wrapper">
+                        <input type="file" id="editImg" class="file-hidden" accept="image/jpeg, image/jpg, image/png, image/webp">
+                        <label for="editImg" id="editImgLabel" class="file-mock-btn"><i class="fa-solid fa-image"></i> Choose Image</label>
+                    </div>
+                    <div class="error-msg" id="editImgError"></div>
+                </div>
+
+                <!-- ADDED NEW FIELD: Brochure (PDF) -->
+                <div class="form-group-custom" style="grid-column: span 2;">
+                    <label>Brochure (PDF)</label>
+                    <div class="modern-file-wrapper">
+                        <input type="file" id="editPdf" class="file-hidden" accept="application/pdf">
+                        <label for="editPdf" id="editPdfLabel" class="file-mock-btn mock-pdf"><i class="fa-solid fa-file-pdf"></i> Choose New PDF</label>
+                    </div>
+                    <div id="existingPdfLink" style="margin-top: 8px; font-size: 13px;"></div>
+                    <div class="error-msg" id="editPdfError"></div>
+                </div>
+
+                <div style="grid-column: span 2; margin-top: 20px; display: flex; gap: 10px;">
+                    <button type="submit" class="action-btn-submit" style="flex:1;"><i class="fa-solid fa-check"></i> Update</button>
+                    <button type="button" id="closeModal" class="action-btn-cancel" style="flex:1; background:#64748b;"><i class="fa-solid fa-xmark"></i> Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Unit Popup Modal -->
+    <div id="addUnitModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; width: 90%; padding: 20px;">
+            <h3>Add New Unit</h3>
+            <div class="form-group-custom" style="margin-bottom: 15px;">
+                <label>Unit Name <span class="required-star">*</span></label>
+                <input type="text" id="newUnitName" class="input-field-custom" placeholder="e.g. Set, Bundle, Dozen" maxlength="20">
+                <div class="error-msg" id="newUnitNameError"></div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="button" id="btnSaveUnit" class="action-btn-submit" style="flex:1;"><i class="fa-solid fa-plus"></i> Add Unit</button>
+                <button type="button" id="btnCloseUnitModal" class="action-btn-cancel" style="flex:1; background:#64748b;"><i class="fa-solid fa-xmark"></i> Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Tax Category Popup Modal -->
+    <div id="addTaxModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; width: 90%; padding: 20px;">
+            <h3>Add New Tax Category</h3>
+            <div class="form-group-custom" style="margin-bottom: 15px;">
+                <label>Tax Category Name <span class="required-star">*</span></label>
+                <input type="text" id="newTaxName" class="input-field-custom" placeholder="e.g. GST 15%, Services 12%" maxlength="50">
+                <div class="error-msg" id="newTaxNameError"></div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="button" id="btnSaveTax" class="action-btn-submit" style="flex:1;"><i class="fa-solid fa-plus"></i> Add Tax</button>
+                <button type="button" id="btnCloseTaxModal" class="action-btn-cancel" style="flex:1; background:#64748b;"><i class="fa-solid fa-xmark"></i> Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- External SheetJS Library for Excel Operations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- External JS Link -->
+    <script src="item-master.js"></script>
+</body>
+
+</html>

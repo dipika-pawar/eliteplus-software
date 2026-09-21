@@ -1,0 +1,384 @@
+/* Color System Setup */
+:root {
+    --primary-color: #0F4C81;
+    --secondary-color: #1E88E5;
+    --accent-color: #00ACC1;
+    --background-color: #F8FAFC;
+    --text-color: #1F2937;
+    --border-color: #D1D5DB;
+    --white: #FFFFFF;
+    --sidebar-width: 260px;
+    --logout-danger: #EF4444;
+}
+
+/* Base Body Engine */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ==========================================
+   SIDEBAR ENGINE (नवीन कलर पॅलेटनुसार डिझाइन)
+   ========================================== */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--white);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 24px 16px;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #EDF2F7;
+    margin-bottom: 24px;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: var(--white);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    box-shadow: 0 4px 10px rgba(15, 76, 129, 0.15);
+}
+
+.brand-info h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.brand-info p {
+    font-size: 11px;
+    color: #718096;
+    margin: 0;
+}
+
+.sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-menu ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+}
+
+.menu-item a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    color: #4A5568;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.menu-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.menu-item a:hover {
+    background-color: rgba(30, 136, 229, 0.06);
+    color: var(--secondary-color);
+}
+
+.menu-item a:hover .menu-icon {
+    transform: scale(1.1);
+}
+
+/* Active State - ग्रॅडिएंट मध्ये नवीन ॲक्सेंट कलर वापरला आहे */
+.menu-item.active a {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(15, 76, 129, 0.15);
+}
+
+.sidebar-footer {
+    padding-top: 16px;
+    border-top: 1px solid #EDF2F7;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    color: var(--logout-danger);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background-color: #FEF2F2;
+}
+
+.logout-btn:hover {
+    background-color: var(--logout-danger);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* ==========================================
+   MOBILE HEADER STYLE 
+   ========================================== */
+.mobile-header {
+    display: none;
+    width: 100%;
+    height: 60px;
+    background-color: var(--white);
+    border-bottom: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1010;
+    padding: 0 20px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mobile-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--primary-color);
+    cursor: pointer;
+}
+
+/* ==========================================
+   MAIN CONTENT WRAPPER 
+   ========================================== */
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 40px;
+    width: calc(100% - var(--sidebar-width));
+    transition: all 0.4s ease;
+}
+
+/* Responsive Grid Logic (Responsive Engine) */
+@media (max-width: 991px) {
+    .mobile-header { display: flex; }
+    .sidebar { transform: translateX(-100%); }
+    
+    /* Active Mobile Sidebar */
+    .sidebar.open { 
+        transform: translateX(0); 
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.08); 
+    }
+    .main-content { 
+        margin-left: 0; 
+        width: 100%; 
+        padding: 90px 20px 20px 20px; 
+    }
+}
+
+
+
+
+/* ==========================================
+   USER MANAGEMENT MASTER CARD & TABLE ENGINE
+   ========================================== */
+
+.user-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000; }
+.modal-content { background: white; padding: 25px; border-radius: 12px; width: 400px; display: flex; flex-direction: column; gap: 10px; }
+.modal-content input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+.modal-btns { display: flex; gap: 10px; margin-top: 10px; }
+.btn-save { background: #0F4C81; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
+.btn-cancel { background: #6c757d; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
+/* आधी दिलेली टेबल आणि बटण स्टाईल इथे वापरत राहा */
+
+.user-directory-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937; /* गडद राखाडी रंग */
+    margin: 0;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* हेडिंगच्या खाली एक स्टाईलिश लाईन (ऑप्शनल) */
+.user-directory-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    border-radius: 2px;
+}
+
+/* मास्टर कार्ड स्टाईल */
+.master-card {
+    background: var(--white);
+    padding: 28px;
+    border-radius: 16px;
+    border: 1px solid #EDF2F7;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ॲड युजर बटण */
+.btn-add-user {
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(15, 76, 129, 0.2);
+}
+
+.btn-add-user:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+/* सर्च इनपुट */
+.search-input-custom {
+    padding: 12px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    width: 300px;
+    outline: none;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.search-input-custom:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(15, 76, 129, 0.1);
+}
+
+/* टेबल स्टाईल */
+.table-responsive-custom {
+    margin-top: 24px;
+    overflow-x: auto;
+}
+
+.table-custom {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-custom thead tr {
+    background-color: #F8FAFC;
+    border-bottom: 2px solid #EDF2F7;
+}
+
+.table-custom th {
+    padding: 16px 20px;
+    color: #64748B;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-custom td {
+    padding: 18px 20px;
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.table-custom tbody tr:hover {
+    background-color: rgba(30, 136, 229, 0.03);
+}
+
+/* मोबाईल रिस्पॉन्सिव्हिटी */
+@media (max-width: 768px) {
+    .master-card { padding: 20px; }
+    .search-input-custom { width: 100%; }
+    .btn-add-user { width: 100%; justify-content: center; }
+}
+
+/* Edit Button Styling */
+.btn-action-edit {
+    background-color: #FFF9C4; /* हलका पिवळा रंग */
+    color: #D35400;           /* गडद पिवळा/केशरी मजकूर */
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-action-edit:hover {
+    background-color: #F9E79F;
+}
+
+/* Delete Button Styling */
+.btn-action-delete {
+    background-color: #FADBD8; /* हलका लाल रंग */
+    color: #C0392B;           /* गडद लाल मजकूर */
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-action-delete:hover {
+    background-color: #F5B7B1;
+}

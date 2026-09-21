@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Dashboard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="mobile-logo">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>AdminPanel</span>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div class="brand-info">
+                <h3>ElitePlus</h3>
+                <p>Management System</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <ul>
+                <li class="menu-item active">
+                    <a href="dashboard.html">
+                        <i class="fa-solid fa-chart-pie menu-icon"></i>
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="company-profile.html">
+                        <i class="fa-solid fa-building menu-icon"></i>
+                        <span class="menu-text">Company Profile</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="account-master.html">
+                        <i class="fa-solid fa-file-invoice-dollar menu-icon"></i>
+                        <span class="menu-text">Account Master</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="item-master.html">
+                        <i class="fa-solid fa-boxes-stacked menu-icon"></i>
+                        <span class="menu-text">Item Master</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="user-management.html">
+                        <i class="fa-solid fa-users-gear menu-icon"></i>
+                        <span class="menu-text">User Management</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="quotation.html">
+                        <i class="fa-solid fa-file-lines menu-icon"></i>
+                        <span class="menu-text">Quotation</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="logout.html" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket menu-icon"></i>
+                <span class="menu-text">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+        <div class="dashboard-wrapper">
+
+            <!-- Dashboard Modern Header -->
+            <div class="dashboard-header">
+                <div>
+                    <h1>Dashboard Overview</h1>
+                    <p>Real-time analytics, shortcuts, and recent updates</p>
+                </div>
+            </div>
+
+            <!-- Top Core Stats Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card card-green">
+                    <div class="card-content">
+                        <h4>Users</h4>
+                        <span class="card-number">5</span>
+                    </div>
+                    <div class="card-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="metric-card card-purple">
+                    <div class="card-content">
+                        <h4>Clients</h4>
+                        <span class="card-number">1856</span>
+                    </div>
+                    <div class="card-icon">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                </div>
+
+                <div class="metric-card card-yellow">
+                    <div class="card-content">
+                        <h4>Quotations</h4>
+                        <span class="card-number">2</span>
+                    </div>
+                    <div class="card-icon">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Centralized Analytics Panel -->
+            <div class="chart-panel">
+                <div class="chart-panel-header">
+                    <h3>Quotations Generated by User</h3>
+                    <div class="filter-pills">
+                        <button class="pill active">Day</button>
+                        <button class="pill">Week</button>
+                        <button class="pill">Month</button>
+                    </div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="quotationChart"></canvas>
+                </div>
+                <div class="chart-footer">
+                    <span class="chart-date"><i class="fa-regular fa-calendar-days"></i> Data Updated: 2024-11-28</span>
+                </div>
+            </div>
+
+            <!-- New Extended Features Layout Grid -->
+            <div class="dashboard-extended-grid">
+
+                <!-- Widget 1: Quick Productivity Shortcuts -->
+                <div class="extended-card">
+                    <div class="ext-card-header">
+                        <h3><i class="fa-solid fa-bolt shortcut-flash"></i> Quick Actions</h3>
+                    </div>
+                    <div class="shortcuts-list">
+                        <a href="quotation.html" class="shortcut-item">
+                            <div class="shortcut-icon icon-blue"><i class="fa-solid fa-plus"></i></div>
+                            <div class="shortcut-details">
+                                <h4>Create Quotation</h4>
+                                <p>Generate new client invoice proposal</p>
+                            </div>
+                        </a>
+                        <a href="user-management.html" class="shortcut-item">
+                            <div class="shortcut-icon icon-green"><i class="fa-solid fa-user-plus"></i></div>
+                            <div class="shortcut-details">
+                                <h4>Add New Users</h4>
+                                <p>Register a company or vendor profile</p>
+                            </div>
+                        </a>
+                        <a href="item-master.html" class="shortcut-item">
+                            <div class="shortcut-icon icon-orange"><i class="fa-solid fa-box"></i></div>
+                            <div class="shortcut-details">
+                                <h4>Inventory Master</h4>
+                                <p>Manage company items and stocks</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Widget 2: Beautiful Live Activities Log -->
+                <div class="extended-card">
+                    <div class="ext-card-header">
+                        <h3><i class="fa-solid fa-clock-rotate-left activity-clock"></i> Recent System Logs</h3>
+                    </div>
+                    <div class="timeline-container">
+                        <div class="timeline-item">
+                            <div class="timeline-badge badge-blue"><i class="fa-solid fa-file-signature"></i></div>
+                            <div class="timeline-content">
+                                <h4>Quotation #QT-9024 Generated</h4>
+                                <span class="timeline-time">12 mins ago &bull; by Rajeev</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-badge badge-green"><i class="fa-solid fa-building-shield"></i></div>
+                            <div class="timeline-content">
+                                <h4>New Client Added: SmartITBox</h4>
+                                <span class="timeline-time">1 hour ago &bull; by Admin</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-badge badge-purple"><i class="fa-solid fa-boxes-packing"></i></div>
+                            <div class="timeline-content">
+                                <h4>Item Master Inventory Updated</h4>
+                                <span class="timeline-time">3 hours ago &bull; by Kashif Ahmad</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="extended-card" style="grid-column: 1 / -1;">
+                    <div class="ext-card-header">
+                        <h3><i class="fa-solid fa-chart-line" style="color: #10B981;"></i> Product Sales Performance
+                        </h3>
+                    </div>
+                    <div class="sales-chart-wrapper" style="height: 250px;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
