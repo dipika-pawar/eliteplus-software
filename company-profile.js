@@ -291,7 +291,14 @@ const API_URL = 'https://eliteplus-software-backend.vercel.app/api/company';
         response = await fetch(API_URL, { method: 'POST', body: formData });
       }
 
-      const result = await response.json();
+      // ✅ Safe parsing to prevent "Error: undefined"
+      let result;
+      const responseText = await response.text();
+      try {
+        result = JSON.parse(responseText);
+      } catch (err) {
+        result = { message: responseText || "Server returned an invalid response." };
+      }
       
       if (response.ok) {
         alert(result.message || "Saved successfully!");
@@ -303,7 +310,7 @@ const API_URL = 'https://eliteplus-software-backend.vercel.app/api/company';
         });
         fetchCompanies();
       } else {
-        alert("Error: " + result.message);
+        alert("Error: " + (result.message || result.error || "Unknown server error"));
       }
 
       submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Save Company Profile';
@@ -311,7 +318,10 @@ const API_URL = 'https://eliteplus-software-backend.vercel.app/api/company';
 
     } catch (error) {
       console.error("API Error:", error);
-      alert("Network Error!");
+      alert("Network Error! Please check your connection.");
+      const submitBtn = document.getElementById('btnSaveCompany');
+      submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Save Company Profile';
+      submitBtn.disabled = false;
     }
   });
 
