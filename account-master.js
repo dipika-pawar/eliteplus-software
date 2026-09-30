@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // API URL Mapping
+  // API URL Mapping (Updated to live Vercel backend URL)
   const API_URL = 'https://eliteplus-software-backend.vercel.app/api/accounts';
 
   // Elements Setup
