@@ -5,11 +5,11 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   
-  // API Endpoints Mappings (Updated to live Vercel backend URL)
-  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/quotation';
-  const ACCOUNT_API = 'https://eliteplus-software-backend.vercel.app/api/account';
-  const ITEM_API = 'https://eliteplus-software-backend.vercel.app/api/item';
-  const COMPANY_API = 'https://eliteplus-software-backend.vercel.app/api/company';
+  // API Endpoints Mappings (Updated to live Vercel URLs)
+  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/quotations';
+  const ACCOUNT_API = 'https://eliteplus-software-backend.vercel.app/api/accounts';
+  const ITEM_API = 'https://eliteplus-software-backend.vercel.app/api/items';
+  const COMPANY_API = 'https://eliteplus-software-backend.vercel.app/api/companies';
 
   // Default Standard Terms & Conditions
   const defaultTerms = `1. Packing, Forwarding and Transport Charges inclusive.
@@ -488,6 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const element = document.getElementById(id);
     if (!element) return;
     element.addEventListener("keydown", (event) => {
+      // Allow multi-line input in textareas
       if (event.key === "Tab" || (event.key === "Enter" && element.tagName !== "TEXTAREA")) {
         if (id === "qParty" && suggestionsBox && suggestionsBox.style.display === "block") return;
         event.preventDefault(); 
@@ -558,6 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const printPreviewModal = new bootstrap.Modal(document.getElementById("printPreviewModal"));
   const catalogPreviewModal = new bootstrap.Modal(document.getElementById("catalogPreviewModal"));
 
+  // Helper Function for fetching saved terms directly
   async function getSavedQuotationTerms(voucherId) {
     if (!voucherId) return "";
     try {
@@ -572,6 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return "";
   }
 
+  // --- 4. BACKEND INTEGRATION: READ DIRECTORY (GET) ---
   async function fetchSavedVouchers() {
      try {
         const response = await fetch(API_URL);
@@ -613,6 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
      return `${dd}-${mm}-${d.getFullYear()}`;
   }
 
+  // --- 5. CORE ARITHMETIC METRICS CALCULATOR ENGINE ---
   function computeItemTaxParameters(item) {
     const gstRate = parseFloat(item.gstRate) || 18;
     const qty = parseFloat(item.qty) || 0;
@@ -720,6 +724,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  // --- 6. CORE VOUCHER SAVE ENGINE (POST / PUT) ---
   document.getElementById("quotationForm").addEventListener("submit", async (e) => {
      e.preventDefault();
      const trackIndex = document.getElementById("qVoucherTrackIndex").value;
@@ -777,7 +782,7 @@ document.addEventListener("DOMContentLoaded", () => {
          
          const resData = await response.json();
          if(response.ok) {
-             lastSavedVoucherId = payload.id;
+             lastSavedVoucherId = payload.id; // Store ID for Print sync
              alert(resData.message);
              clearVoucherForm();
              fetchSavedVouchers();
@@ -798,7 +803,7 @@ document.addEventListener("DOMContentLoaded", () => {
              const vch = res.quotation;
              const activePartyName = voucherDatabase[localIdx].partyName;
 
-             lastSavedVoucherId = dbId;
+             lastSavedVoucherId = dbId; // Store loaded ID for Print sync
              document.getElementById("qVoucherTrackIndex").value = localIdx;
              document.getElementById("qSeries").value = vch.series;
              document.getElementById("qDate").value = formatDateToLocal(vch.quotation_date);
@@ -871,6 +876,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
   };
 
+  // --- 7. POPUP MODAL ITEMS STORAGE PIPELINE ---
   if (modalItemForm) {
     modalItemForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -906,6 +912,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Ensure Edit binds correct values into Dataset so they aren't lost on update
   window.editItemRow = (i) => {
      const item = currentItemsList[i];
      itemNameInp.value = item.name;
@@ -913,6 +920,7 @@ document.addEventListener("DOMContentLoaded", () => {
      document.getElementById("modalItemUnit").value = item.unit;
      document.getElementById("modalItemPrice").value = item.price;
      
+     // CRITICAL: Re-bind datasets to protect existing metadata during manual edit
      itemNameInp.dataset.hsn = item.hsn || '';
      itemNameInp.dataset.brand = item.brand || '-';
      itemNameInp.dataset.code = item.code || '-';
@@ -956,21 +964,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const vchSearchBox = document.getElementById("vchSearchBox");
   if(vchSearchBox) vchSearchBox.addEventListener("input", (e)=> renderVoucherMasterDirectory(e.target.value));
 
+  // --- 8. DYNAMIC PRINTING PREVIEW DATA SYNC MATRIX ---
   if (document.getElementById("btnPrintQuotation")) {
     document.getElementById("btnPrintQuotation").addEventListener("click", async () => {
       
       let printList = currentItemsList.length > 0 ? currentItemsList : lastSavedItemsSnapshot;
       if (printList.length === 0) return alert("Validation Error: No dynamic item configurations available to print.");
 
+      // Fetch dynamic Terms & Conditions accurately based on current UI vs Backend Priority
       const trackIdx = document.getElementById("qVoucherTrackIndex").value;
       const partyInp = document.getElementById("qParty");
 
       let targetVoucherId = null;
 
+      // Identify whether we are printing an active Edit or a recently Saved document
       if (trackIdx !== "" && voucherDatabase[trackIdx]) {
           targetVoucherId = voucherDatabase[trackIdx].id;
           partyInp.value = voucherDatabase[trackIdx].partyName;
       } else if (currentItemsList.length === 0 && lastSavedVoucherId) {
+          // If current items is empty, we just saved and cleared. Rely on the lastSavedVoucherId.
           targetVoucherId = lastSavedVoucherId;
           const matchedVch = voucherDatabase.find(v => v.id === lastSavedVoucherId);
           if (matchedVch) partyInp.value = matchedVch.partyName;
@@ -986,8 +998,11 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("pdfMetaDate").textContent = document.getElementById("qDate").value;
       document.getElementById("pdfMetaQtnNo").textContent = document.getElementById("qVchNo").value;
 
+      // ----- TERMS & CONDITIONS SYNC SYSTEM -----
+      // Default to UI value if present (useful for unsaved live edits)
       let finalTerms = document.getElementById("qTerms") ? document.getElementById("qTerms").value.trim() : "";
 
+      // If a legitimate voucher ID is available, override with exact backend data
       if (targetVoucherId) {
           const backendTerms = await getSavedQuotationTerms(targetVoucherId);
           if (backendTerms !== undefined && backendTerms !== "") {
@@ -995,12 +1010,16 @@ document.addEventListener("DOMContentLoaded", () => {
           }
       }
 
+      // Safe multi-line attachment using textContent
       if (document.getElementById("pdfTermsConditions")) {
           document.getElementById("pdfTermsConditions").textContent = finalTerms;
       }
+      // ------------------------------------------
 
+      // ----- NARRATION SYNC SYSTEM (For 'Dear Sir/Madam' dynamic line) -----
       let finalNarration = document.getElementById("qNarration") ? document.getElementById("qNarration").value.trim() : "";
       
+      // Override with backend data if printing a saved voucher
       if (targetVoucherId) {
           const matchedVch = voucherDatabase.find(v => v.id === targetVoucherId);
           if (matchedVch && matchedVch.narration !== undefined && matchedVch.narration !== "") {
@@ -1008,9 +1027,11 @@ document.addEventListener("DOMContentLoaded", () => {
           }
       }
 
+      // Safe attachment to the print preview
       if (document.getElementById("pdfNarrationText")) {
           document.getElementById("pdfNarrationText").textContent = finalNarration;
       }
+      // ---------------------------------------------------------------------
 
       const rowsTarget = document.getElementById("pdfItemRowsTarget");
       rowsTarget.innerHTML = "";
@@ -1046,6 +1067,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- 9. DYNAMIC PRINT CATALOG GENERATOR PIPELINE ---
   if (document.getElementById("btnPrintCatalog")) {
     document.getElementById("btnPrintCatalog").addEventListener("click", () => {
       let catalogList = currentItemsList.length > 0 ? currentItemsList : lastSavedItemsSnapshot;
@@ -1064,13 +1086,20 @@ document.addEventListener("DOMContentLoaded", () => {
         
         let imageSrc = 'Images/advanced-practi-man-cpr-manikin-254.jpg';
         if (matchedMaster && matchedMaster.image_path) {
-          imageSrc = matchedMaster.image_path;
+          imageSrc = matchedMaster.image_path.startsWith('http') || matchedMaster.image_path.startsWith('data:') 
+                      ? matchedMaster.image_path 
+                      : matchedMaster.image_path;
         } else if (item.image) {
-          imageSrc = item.image;
+          imageSrc = item.image.startsWith('http') ? item.image : item.image;
         }
 
-        const logoSrc = (systemCompanyProfile && systemCompanyProfile.logo_file) ? systemCompanyProfile.logo_file : 'Images/Eliteplus-logo.png';
-        const qrSrc = (systemCompanyProfile && systemCompanyProfile.qr_file) ? systemCompanyProfile.qr_file : 'Images/scanner.png';
+        const logoSrc = (systemCompanyProfile && systemCompanyProfile.logo_file) 
+                        ? systemCompanyProfile.logo_file 
+                        : 'Images/Eliteplus-logo.png';
+        
+        const qrSrc = (systemCompanyProfile && systemCompanyProfile.qr_file) 
+                        ? systemCompanyProfile.qr_file 
+                        : 'Images/scanner.png';
 
         const regAddress = systemCompanyProfile?.registered_address || 'Sr.No 175, Fl No #116, Shivane, Pune - 411023';
         const mobileNo = systemCompanyProfile?.company_mobile || '9890017812';
@@ -1149,6 +1178,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return (output.trim() + " Rupees Only");
   }
 
+  // --- PDF GENERATION FIX IMPLEMENTATION (STRICT 1 PAGE) ---
   document.getElementById("modalDownloadPdfBtn")?.addEventListener("click", function() {
       const el = document.getElementById("pdfPrintTargetArea");
       const cleanVch = document.getElementById("pdfMetaQtnNo").textContent.replace(/\//g, "-");
@@ -1249,6 +1279,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("topVchDetailBtn")?.addEventListener("click", () => document.getElementById("voucherDirectoryCard").scrollIntoView({ behavior: "smooth" }));
   
+  // Open modal when 'Add Item' button is clicked
   document.getElementById("openAddModalBtn")?.addEventListener("click", () => {
     triggerAddItemModal();
   });
