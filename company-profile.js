@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Vercel live backend URL update keli ahe
-  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/company';
+  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/companies';
 
   // --- 1. Sidebar Toggle Mechanics ---
   const menuToggle = document.getElementById('menuToggle');
@@ -112,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tr = document.createElement('tr');
         tr.setAttribute('data-id', company.id);
         
+        // Use print_name instead of ac_name
         const bankDetailText = company.bank_name ? `${company.bank_name} | ${company.ac_no} | ${company.ifsc_code} | ${company.print_name}` : '-';
 
         tr.innerHTML = `
@@ -193,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const compMobile = document.getElementById('compMobile').value.trim();
     const compWebsite = document.getElementById('compWebsite').value.trim();
     
+    // Bank 3 distinct fields (Account Name is derived from Print Name in backend logic now)
     const acNo = document.getElementById('acNo').value.trim();
     const ifscCode = document.getElementById('ifscCode').value.trim().toUpperCase();
     const bankName = document.getElementById('bankName').value.trim();
@@ -265,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('compMobile', compMobile);
     formData.append('compWebsite', compWebsite);
     
+    // Bank details
     formData.append('acNo', acNo);
     formData.append('ifscCode', ifscCode);
     formData.append('bankName', bankName);
@@ -345,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const webVal = row.querySelector('.t-compWebsite').innerText;
       document.getElementById('compWebsite').value = webVal === '-' ? '' : webVal;
       
+      // Load the 3 Bank details from data attributes
       const bankTd = row.querySelector('.t-bankDetails');
       document.getElementById('acNo').value = bankTd.getAttribute('data-acno');
       document.getElementById('ifscCode').value = bankTd.getAttribute('data-ifsc');
@@ -388,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // --- 4. ENTER KEY NAVIGATION SYSTEM ---
   const formFields = [
     { id: 'compName', type: 'input' }, { id: 'printName', type: 'input' },
     { id: 'gstNumber', type: 'input' }, { id: 'gstStatus', type: 'dropdown' },
@@ -395,6 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 'tanNumber', type: 'input' }, { id: 'udyamNumber', type: 'input' },
     { id: 'fyBeginning', type: 'input' }, { id: 'compEmail', type: 'input' },
     { id: 'compMobile', type: 'input' }, { id: 'compWebsite', type: 'input' },
+    // 3 Bank fields sequence
     { id: 'bankName', type: 'input' }, { id: 'acNo', type: 'input' }, { id: 'ifscCode', type: 'input' }, 
     { id: 'regAddress', type: 'input' },
     { id: 'wrapper-logoFile', fileId: 'logoFile', type: 'file' },
