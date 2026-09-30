@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // Backend User API main URL mapping
-    const API_URL = 'http://localhost:5000/api/user';
+    const API_URL = 'https://eliteplus-software-backend.vercel.app/api/users';
 
     // --- 1. Mobile Sidebar Open/Close Toggle Mechanism ---
     const menuToggle = document.getElementById('menuToggle');
