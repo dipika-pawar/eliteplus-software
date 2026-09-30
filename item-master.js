@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
     
     // Backend API Main URL Mapping
-    const API_URL = 'https://eliteplus-software-backend.vercel.app/api/items';
+   const API_URL = 'https://eliteplus-software-backend.vercel.app/api/items';
     const UNIT_API_URL = 'https://eliteplus-software-backend.vercel.app/api/units'; // Dynamic Unit API
     const TAX_API_URL = 'https://eliteplus-software-backend.vercel.app/api/taxes'; // Dynamic Tax Category API
+
     // --- 1. Sidebar Toggle ---
     const menuToggle = document.getElementById("menuToggle");
     const sidebar = document.getElementById("sidebar");
