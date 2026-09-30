@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Backend User API main URL mapping
+    // Backend User API main URL mapping (Updated to live Vercel and plural route)
     const API_URL = 'https://eliteplus-software-backend.vercel.app/api/users';
 
     // --- 1. Mobile Sidebar Open/Close Toggle Mechanism ---
@@ -180,7 +180,8 @@ function closeModal() {
 
 // ★ POST / PUT: Main pipeline to save or update user data
 async function saveUser() {
-    const API_URL = 'http://localhost:5000/api/user';
+    // Fixed: Now using the correct live Vercel URL and plural route ('users')
+    const API_URL = 'https://eliteplus-software-backend.vercel.app/api/users';
     const id = document.getElementById('editRowId').value;
     const fName = document.getElementById('fName').value.trim();
     const uName = document.getElementById('uName').value.trim();
