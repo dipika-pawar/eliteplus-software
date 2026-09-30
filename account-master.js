@@ -1,849 +1,1263 @@
+/**
+ * ElitePlus ERP Voucher Calculation & Print Synchronization Engine
+ * Full Stack System Integration Matrix - Quotation & Dynamic Catalog Print Pipeline
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Auto Fetch Dr/Cr Logic based on Group Selection
-  const setupAutoDrCr = (groupSelectId, balTypeSelectId) => {
-    const groupElem = document.getElementById(groupSelectId);
-    const balTypeElem = document.getElementById(balTypeSelectId);
+  
+  // API Endpoints Mappings (Updated to live Vercel backend URL)
+  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/quotation';
+  const ACCOUNT_API = 'https://eliteplus-software-backend.vercel.app/api/account';
+  const ITEM_API = 'https://eliteplus-software-backend.vercel.app/api/item';
+  const COMPANY_API = 'https://eliteplus-software-backend.vercel.app/api/company';
 
-    if (groupElem && balTypeElem) {
-      groupElem.addEventListener("change", (e) => {
-        const selectedGroup = e.target.value.toLowerCase().trim();
-        if (selectedGroup.includes("debtors")) {
-          balTypeElem.value = "Dr";
-        } else if (selectedGroup.includes("creditors")) {
-          balTypeElem.value = "Cr";
-        }
-      });
-    }
-  };
+  // Default Standard Terms & Conditions
+  const defaultTerms = `1. Packing, Forwarding and Transport Charges inclusive.
+2. Delivery within 2 weeks after receipt of Purchase Order.
+3. Payment 50% advanced and 50% after delivery.
+4. Disputes, if any, are subject to Pune Jurisdiction.
+5. Quotation Validity 30 Days.`;
 
-  setupAutoDrCr("accGroup", "balType");
-  setupAutoDrCr("editAccGroup", "editBalType");
+  // State Management Systems
+  let voucherDatabase = [];
+  let currentItemsList = [];
+  let lastSavedItemsSnapshot = []; 
+  let systemItemsMasterList = [];
+  let systemCompanyProfile = null;
+  
+  // Variable to track the last successfully saved or loaded voucher ID for accurate print sync
+  let lastSavedVoucherId = null;
 
-  // AUTO FETCH MOBILE NO TO WHATSAPP NO (WITH CUSTOM EDIT ALLOWED)
-  const setupAutoWhatsapp = (mobileId, whatsappId) => {
-    const mobileInput = document.getElementById(mobileId);
-    const whatsappInput = document.getElementById(whatsappId);
-
-    if (mobileInput && whatsappInput) {
-      let isCustomWhatsapp = false;
-
-      mobileInput.addEventListener("input", () => {
-        if (!isCustomWhatsapp) {
-          whatsappInput.value = mobileInput.value;
-        }
-      });
-
-      whatsappInput.addEventListener("input", () => {
-        // User enters a custom WhatsApp number
-        isCustomWhatsapp = true;
-        // If user clears WhatsApp input manually, sync it again with mobile number
-        if (whatsappInput.value.trim() === "") {
-          isCustomWhatsapp = false;
-        }
-      });
-    }
-  };
-
-  setupAutoWhatsapp("mobileNo", "whatsappNo");
-  setupAutoWhatsapp("editMobileNo", "editWhatsapp");
-
-  // Enter Key Navigation & Auto File/Select Picker Logic
-  const setupEnterNavigation = (container) => {
-    container.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        // Preserve textarea Shift+Enter behavior
-        if (e.target.tagName.toLowerCase() === "textarea" && e.shiftKey) {
-          return;
-        }
-
-        const focusableElements = Array.from(
-          container.querySelectorAll(
-            'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button[type="submit"]',
-          ),
-        );
-
-        const index = focusableElements.indexOf(e.target);
-        if (index > -1 && index < focusableElements.length - 1) {
-          e.preventDefault(); // Prevents normal form submission and stops dropdown from reopening on confirm
-          const nextElement = focusableElements[index + 1];
-          nextElement.focus();
-
-          // 1. Text Input Open Logic (Select existing text)
-          if (
-            nextElement.tagName.toLowerCase() === "input" &&
-            (nextElement.type === "text" ||
-              nextElement.type === "email" ||
-              nextElement.type === "number")
-          ) {
-            nextElement.select();
-          }
-
-          // 2. Select Dropdown Auto-Open Logic
-          if (nextElement.tagName.toLowerCase() === "select") {
-            if (typeof nextElement.showPicker === "function") {
-              try {
-                nextElement.showPicker();
-              } catch (err) {
-                // Safe fallback if blocked by browser
-              }
-            }
-          }
-
-          // 3. File Input Open Logic (Folder Dialog Open)
-          if (
-            nextElement.tagName.toLowerCase() === "input" &&
-            nextElement.type === "file"
-          ) {
-            if (typeof nextElement.showPicker === "function") {
-              try {
-                nextElement.showPicker();
-              } catch (err) {
-                nextElement.click();
-              }
-            } else {
-              nextElement.click();
-            }
-          }
-        }
-      }
-    });
-  };
-
-  const accountFormEl = document.getElementById("accountForm");
-  const editAccountFormEl = document.getElementById("editAccountForm");
-  if (accountFormEl) setupEnterNavigation(accountFormEl);
-  if (editAccountFormEl) setupEnterNavigation(editAccountFormEl);
-
-  // Mobile Menu Toggle logic
+  // Mobile Sidebar Toggle Mechanism
   const menuToggle = document.getElementById("menuToggle");
   const sidebar = document.getElementById("sidebar");
   if (menuToggle && sidebar) {
-    menuToggle.addEventListener("click", () => {
+    menuToggle.addEventListener("click", (e) => {
       sidebar.classList.toggle("open");
+      e.stopPropagation();
     });
   }
 
-  // API URL Mapping
-  const API_URL = "https://eliteplus-software-backend.vercel.app/api/accounts";
-  // Elements Setup
-  const accountForm = document.getElementById("accountForm");
-  const accountTableBody = document.getElementById("accountTableBody");
-  const editAccountForm = document.getElementById("editAccountForm");
-  const sameAsBillingCheckbox = document.getElementById("sameAsBilling");
-  const searchInput = document.getElementById("searchInput");
-  const resetBtn = document.getElementById("resetBtn");
-
-  // Bootstrap Modal Reference
-  const editModalEl = document.getElementById("editAccountModal");
-  let editModal = null;
-  if (editModalEl) {
-    editModal = new bootstrap.Modal(editModalEl);
+  // System Current Date Initialization (DD-MM-YYYY Layout)
+  const dateField = document.getElementById("qDate");
+  function initializeCurrentDate() {
+    if (dateField) {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      let mm = today.getMonth() + 1;
+      let dd = today.getDate();
+      if (dd < 10) dd = "0" + dd;
+      if (mm < 10) mm = "0" + mm;
+      dateField.value = `${dd}-${mm}-${yyyy}`;
+    }
   }
+  initializeCurrentDate();
 
-  let accounts = JSON.parse(localStorage.getItem("myAccounts")) || [];
+  // Load default terms on startup
+  const termsField = document.getElementById("qTerms");
+  if (termsField) termsField.value = defaultTerms;
 
-  function saveData() {
-    localStorage.setItem("myAccounts", JSON.stringify(accounts));
-  }
-
-  function mapDBtoLocal(dbRows) {
-    return dbRows.map((row) => ({
-      id: row.id,
-      name: row.print_name,
-      group: row.account_group,
-      opBal: row.opening_bal,
-      balType: row.bal_type,
-      creditLimit: row.credit_limit,
-      emailId: row.email_id,
-      mobileNo: row.mobile_no,
-      whatsapp: row.whatsapp_no,
-      telNo: row.telephone_no,
-      transport: row.transport,
-      station: row.station,
-      pinCode: row.pin_code,
-      msmeType: row.msme_type,
-      gstStatus: row.dealer_type,
-      gstNo: row.gstin_no,
-      panNo: row.pan_no,
-      cinNo: row.cin_no,
-      billAddr: row.billing_address,
-      shipAddr: row.shipping_address,
-      creditDays: row.credit_days,
-      creditLimitVal: row.credit_limit_val,
-      outAlert: row.outstanding_alert,
-      blockSales: row.block_sales,
-      panFileName: row.pan_file_name || "-",
-      gstFileName: row.gst_file_name || "-",
-      msmeFileName: row.msme_file_name || "-",
-    }));
-  }
-
-  async function fetchAccounts() {
+  // --- AUTO VOUCHER NUMBER GENERATOR ---
+  async function fetchNextVoucherNumber() {
     try {
-      const response = await fetch(API_URL);
-      if (response.ok) {
-        const dbData = await response.json();
-        accounts = mapDBtoLocal(dbData);
-        saveData();
-        renderTable();
-      } else {
-        renderTable();
-      }
-    } catch (error) {
-      console.warn("Database is offline. Using local storage data.");
-      renderTable();
-    }
-  }
-
-  fetchAccounts();
-
-  ["gstinNo", "panNo", "cinNo"].forEach((id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.addEventListener("input", function () {
-        this.value = this.value.toUpperCase();
-      });
-    }
-  });
-
-  if (sameAsBillingCheckbox) {
-    sameAsBillingCheckbox.addEventListener("change", function () {
-      if (this.checked)
-        document.getElementById("shipAddr").value =
-          document.getElementById("billAddr").value;
-    });
-    document.getElementById("billAddr").addEventListener("input", function () {
-      if (sameAsBillingCheckbox.checked)
-        document.getElementById("shipAddr").value = this.value;
-    });
-  }
-
-  function showFieldError(fieldId, message) {
-    const element = document.getElementById(fieldId);
-    if (!element) return;
-    let errorContainer = element.parentNode.querySelector(".validation-error");
-    if (!errorContainer) {
-      errorContainer = document.createElement("small");
-      errorContainer.className = "validation-error";
-      element.parentNode.appendChild(errorContainer);
-    }
-    errorContainer.innerText = message;
-    errorContainer.style.display = "block";
-  }
-
-  function clearAllErrors() {
-    document.querySelectorAll(".validation-error").forEach((el) => {
-      el.style.display = "none";
-    });
-  }
-
-  // RESET BUTTON LOGIC
-  if (resetBtn && accountForm) {
-    resetBtn.addEventListener("click", () => {
-      accountForm.reset();
-      if (sameAsBillingCheckbox) sameAsBillingCheckbox.checked = false;
-      clearAllErrors();
-    });
-  }
-
-  // UPDATED VALIDATION ENGINE
-  function validateAccountForm() {
-    clearAllErrors();
-    let isValid = true;
-
-    const printName = document.getElementById("printName").value.trim();
-    const accGroup = document.getElementById("accGroup").value;
-    const mobileNo = document.getElementById("mobileNo").value.trim();
-    const whatsappNo = document.getElementById("whatsappNo").value.trim();
-    const pinCode = document.getElementById("pinCode").value.trim();
-    const dealerType = document.getElementById("dealerType").value;
-    const gstinNo = document
-      .getElementById("gstinNo")
-      .value.trim()
-      .toUpperCase();
-    const panNo = document.getElementById("panNo").value.trim().toUpperCase();
-    const emailId = document.getElementById("emailId").value.trim();
-    const opBal = document.getElementById("opBal").value.trim();
-    const creditLimit = document.getElementById("creditLimit").value.trim();
-    const billAddr = document.getElementById("billAddr").value.trim();
-    const shipAddr = document.getElementById("shipAddr").value.trim();
-
-    // Regex Patterns
-    const mobileRegex = /^[6-9]\d{9}$/;
-    const pinRegex = /^\d{6}$/;
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const gstRegex =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const numberRegex = /^\d*(\.\d+)?$/;
-
-    // 1. Party Name Validation
-    if (!printName) {
-      showFieldError("printName", "Party Name is required.");
-      isValid = false;
-    } else if (printName.length < 3) {
-      showFieldError(
-        "printName",
-        "Party Name must be at least 3 characters long.",
-      );
-      isValid = false;
-    }
-
-    // 2. Group Validation
-    if (!accGroup) {
-      showFieldError("accGroup", "Group selection is required.");
-      isValid = false;
-    }
-
-    // 3. Mobile Number Validation
-    if (!mobileNo) {
-      showFieldError("mobileNo", "Mobile Number is required.");
-      isValid = false;
-    } else if (!mobileRegex.test(mobileNo)) {
-      showFieldError(
-        "mobileNo",
-        "Enter a valid 10-digit Mobile Number starting with 6-9.",
-      );
-      isValid = false;
-    }
-
-    // 4. Dealer Type Validation
-    if (!dealerType) {
-      showFieldError("dealerType", "Dealer Type selection is required.");
-      isValid = false;
-    }
-
-    // 5. Billing Address Validation
-    if (!billAddr) {
-      showFieldError("billAddr", "Billing Address is required.");
-      isValid = false;
-    }
-
-    // 6. Shipping Address Validation
-    if (!shipAddr) {
-      showFieldError("shipAddr", "Shipping Address is required.");
-      isValid = false;
-    }
-
-    // OPTIONAL FIELDS VALIDATION
-    if (whatsappNo && !mobileRegex.test(whatsappNo)) {
-      showFieldError("whatsappNo", "Enter a valid 10-digit WhatsApp Number.");
-      isValid = false;
-    }
-
-    if (pinCode && !pinRegex.test(pinCode)) {
-      showFieldError("pinCode", "Enter a valid 6-digit Pin Code.");
-      isValid = false;
-    }
-
-    if (dealerType === "Registered" && !gstinNo) {
-      showFieldError(
-        "gstinNo",
-        "GSTIN Number is required for Registered dealers.",
-      );
-      isValid = false;
-    } else if (gstinNo && !gstRegex.test(gstinNo)) {
-      showFieldError("gstinNo", "Enter a valid 15-digit GSTIN Number.");
-      isValid = false;
-    }
-
-    if (panNo && !panRegex.test(panNo)) {
-      showFieldError(
-        "panNo",
-        "Enter a valid 10-character PAN Number (e.g., ABCDE1234F).",
-      );
-      isValid = false;
-    }
-
-    if (emailId && !emailRegex.test(emailId)) {
-      showFieldError("emailId", "Enter a valid Email Address.");
-      isValid = false;
-    }
-
-    if (opBal && (!numberRegex.test(opBal) || parseFloat(opBal) < 0)) {
-      showFieldError(
-        "opBal",
-        "Enter a valid positive number for Opening Balance.",
-      );
-      isValid = false;
-    }
-
-    if (
-      creditLimit &&
-      (!numberRegex.test(creditLimit) || parseFloat(creditLimit) < 0)
-    ) {
-      showFieldError(
-        "creditLimit",
-        "Enter a valid positive number for Credit Limit.",
-      );
-      isValid = false;
-    }
-
-    // File Upload Validations - STRICTLY IMAGES ONLY
-    const allowedImageExtensions = ["jpg", "jpeg", "png"];
-    const validateImageFile = (fileInputId) => {
-      const fileInput = document.getElementById(fileInputId);
-      if (fileInput && fileInput.files[0]) {
-        const file = fileInput.files[0];
-        const ext = file.name.split(".").pop().toLowerCase();
-        if (
-          !allowedImageExtensions.includes(ext) ||
-          !file.type.startsWith("image/")
-        ) {
-          showFieldError(
-            fileInputId,
-            "Only image files (.jpg, .jpeg, .png) are allowed.",
-          );
-          isValid = false;
-        } else if (file.size > 2 * 1024 * 1024) {
-          showFieldError(fileInputId, "Image file size must be less than 2MB.");
-          isValid = false;
+      const response = await fetch(`${API_URL}/next-voucher-no`);
+      const result = await response.json();
+      if (result.status === 'Success' && result.voucherNo) {
+        const vchInput = document.getElementById("qVchNo");
+        if (vchInput) {
+          vchInput.value = result.voucherNo;
         }
       }
-    };
-
-    validateImageFile("panFile");
-    validateImageFile("gstFile");
-    validateImageFile("msmeFile");
-
-    return isValid;
+    } catch (err) {
+      console.error("Failed to fetch next auto voucher number:", err);
+    }
   }
 
-  // POST Submission Pipeline
-  accountForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  // --- 1. PARTY SEARCH AUTOCOMPLETE ---
+  const partyInput = document.getElementById("qParty");
+  const suggestionsBox = document.getElementById("partySuggestionsList");
+  let currentFocusIndex = -1;
 
-    if (!validateAccountForm()) {
-      document
-        .getElementById("accountFormCard")
-        .scrollIntoView({ behavior: "smooth" });
-      return;
+  if (partyInput && suggestionsBox) {
+    partyInput.addEventListener("input", async () => {
+      const inputValue = partyInput.value.trim().toLowerCase();
+      suggestionsBox.innerHTML = "";
+      currentFocusIndex = -1;
+
+      if (inputValue.length === 0) {
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      try {
+        const response = await fetch(ACCOUNT_API);
+        const accounts = await response.json();
+        
+        const filtered = accounts.filter(acc => 
+          acc.print_name.toLowerCase().includes(inputValue)
+        );
+
+        if (filtered.length > 0) {
+          filtered.forEach((partyObj) => {
+            const div = document.createElement("div");
+            div.className = "suggestion-item";
+            div.textContent = partyObj.print_name;
+
+            div.addEventListener("click", () => {
+              partyInput.value = partyObj.print_name;
+              suggestionsBox.style.display = "none";
+              
+              partyInput.dataset.location = partyObj.billing_address || partyObj.shipping_address || 'Pune, Maharashtra';
+              partyInput.dataset.mobile = partyObj.mobile_no || 'N/A';
+              partyInput.dataset.email = partyObj.email_id || 'N/A';
+              partyInput.dataset.gst = partyObj.gstin_no || 'Unregistered';
+              partyInput.dataset.sub = partyObj.account_group || 'Sundry Debtors Division';
+
+              const nextField = document.getElementById("qMatCentre");
+              if (nextField) nextField.focus();
+            });
+            suggestionsBox.appendChild(div);
+          });
+          suggestionsBox.style.display = "block";
+        } else {
+          suggestionsBox.style.display = "none";
+        }
+      } catch (err) {
+        console.error("Autocomplete master pipeline error:", err);
+      }
+    });
+
+    partyInput.addEventListener("keydown", (e) => {
+      const items = suggestionsBox.getElementsByClassName("suggestion-item");
+      if (suggestionsBox.style.display === "block" && items.length > 0) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          currentFocusIndex++;
+          if (currentFocusIndex >= items.length) currentFocusIndex = 0;
+          updateActiveSuggestion(items);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          currentFocusIndex--;
+          if (currentFocusIndex < 0) currentFocusIndex = items.length - 1;
+          updateActiveSuggestion(items);
+        } else if (e.key === "Enter" || e.key === "Tab") {
+          if (currentFocusIndex > -1 && items[currentFocusIndex]) {
+            e.preventDefault();
+            items[currentFocusIndex].click();
+          }
+        }
+      }
+    });
+
+    function updateActiveSuggestion(items) {
+      Array.from(items).forEach((item, idx) => {
+        if (idx === currentFocusIndex) {
+          item.classList.add("selected");
+          item.style.backgroundColor = "#f1f5f9";
+          item.scrollIntoView({ block: "nearest" });
+        } else {
+          item.classList.remove("selected");
+          item.style.backgroundColor = "";
+        }
+      });
     }
 
-    const generatedId = Date.now();
-    const panFile = document.getElementById("panFile").files[0];
-    const gstFile = document.getElementById("gstFile").files[0];
-    const msmeFile = document.getElementById("msmeFile").files[0];
-
-    const newAccount = {
-      id: generatedId,
-      name: document.getElementById("printName").value.trim(),
-      group: document.getElementById("accGroup").value,
-      opBal: document.getElementById("opBal").value.trim() || "0",
-      balType: document.getElementById("balType").value,
-      creditLimit: document.getElementById("creditLimit").value.trim() || "0",
-      emailId: document.getElementById("emailId").value.trim(),
-      mobileNo: document.getElementById("mobileNo").value.trim(),
-      whatsapp: document.getElementById("whatsappNo").value.trim(),
-      telNo: document.getElementById("telNo").value.trim(),
-      transport: document.getElementById("transport").value.trim(),
-      station: document.getElementById("station").value.trim(),
-      pinCode: document.getElementById("pinCode").value.trim(),
-      msmeType: document.getElementById("msmeType").value,
-      gstStatus: document.getElementById("dealerType").value,
-      gstNo: document.getElementById("gstinNo").value.trim().toUpperCase(),
-      panNo: document.getElementById("panNo").value.trim().toUpperCase(),
-      cinNo: document.getElementById("cinNo").value.trim().toUpperCase(),
-      billAddr: document.getElementById("billAddr").value.trim(),
-      shipAddr: document.getElementById("shipAddr").value.trim(),
-      creditDays: document.getElementById("creditDays").value.trim(),
-      creditLimitVal: document.getElementById("creditLimitVal").value.trim(),
-      outAlert: document.getElementById("outAlert").value,
-      blockSales: document.getElementById("blockSales").value,
-      panFileName: panFile ? panFile.name : "-",
-      gstFileName: gstFile ? gstFile.name : "-",
-      msmeFileName: msmeFile ? msmeFile.name : "-",
-    };
-
-    const formData = new FormData();
-    formData.append("id", newAccount.id);
-    formData.append("name", newAccount.name);
-    formData.append("group", newAccount.group);
-    formData.append("opBal", newAccount.opBal);
-    formData.append("balType", newAccount.balType);
-    formData.append("creditLimit", newAccount.creditLimit);
-    formData.append("emailId", newAccount.emailId);
-    formData.append("mobileNo", newAccount.mobileNo);
-    formData.append("whatsapp", newAccount.whatsapp);
-    formData.append("telNo", newAccount.telNo);
-    formData.append("transport", newAccount.transport);
-    formData.append("station", newAccount.station);
-    formData.append("pinCode", newAccount.pinCode);
-    formData.append("msmeType", newAccount.msmeType);
-    formData.append("gstStatus", newAccount.gstStatus);
-    formData.append("gstNo", newAccount.gstNo);
-    formData.append("panNo", newAccount.panNo);
-    formData.append("cinNo", newAccount.cinNo);
-    formData.append("billAddr", newAccount.billAddr);
-    formData.append("shipAddr", newAccount.shipAddr);
-    formData.append("creditDays", newAccount.creditDays);
-    formData.append("creditLimitVal", newAccount.creditLimitVal);
-    formData.append("outAlert", newAccount.outAlert);
-    formData.append("blockSales", newAccount.blockSales);
-
-    if (panFile) formData.append("panFile", panFile);
-    if (gstFile) formData.append("gstFile", gstFile);
-    if (msmeFile) formData.append("msmeFile", msmeFile);
-
-    try {
-      const response = await fetch(API_URL, { method: "POST", body: formData });
-      const data = await response.json();
-      if (response.ok) {
-        alert(data.message);
-        accountForm.reset();
-        if (sameAsBillingCheckbox) sameAsBillingCheckbox.checked = false;
-        clearAllErrors();
-        fetchAccounts();
-      } else {
-        alert("Error: " + data.message);
+    document.addEventListener("click", (e) => {
+      if (e.target !== partyInput && e.target !== suggestionsBox) {
+        suggestionsBox.style.display = "none";
       }
+    });
+  }
+
+  // --- 2. LIVE ITEMS DATA LINK IN POPUP MODAL ---
+  let currentItemFocusIndex = -1;
+
+  async function fetchItemMasterData() {
+    try {
+      const response = await fetch(ITEM_API);
+      systemItemsMasterList = await response.json();
     } catch (err) {
-      accounts.push(newAccount);
-      saveData();
-      renderTable();
-      accountForm.reset();
-      if (sameAsBillingCheckbox) sameAsBillingCheckbox.checked = false;
-      clearAllErrors();
-      alert(
-        "Database is not connected! Account temporarily saved to local storage.",
-      );
+      console.error("Item Master link failed:", err);
+    }
+  }
+
+  const itemNameInp = document.getElementById("modalItemName");
+  const itemSuggestionsBox = document.getElementById("itemSuggestionsList");
+
+  if (itemNameInp && itemSuggestionsBox) {
+    itemNameInp.addEventListener("input", () => {
+      const val = itemNameInp.value.trim().toLowerCase();
+      itemSuggestionsBox.innerHTML = "";
+      currentItemFocusIndex = -1;
+
+      if (!val) {
+        itemSuggestionsBox.style.display = "none";
+        return;
+      }
+
+      const filtered = systemItemsMasterList.filter(item => {
+        const matchName = item.item_name && item.item_name.toLowerCase().includes(val);
+        const matchCode = item.item_code && item.item_code.toString().toLowerCase().includes(val);
+        const matchBrand = item.brand && item.brand.toLowerCase().includes(val);
+        return matchName || matchCode || matchBrand;
+      });
+
+      if (filtered.length > 0) {
+        filtered.forEach((item) => {
+          const div = document.createElement("div");
+          div.className = "suggestion-item";
+          div.innerHTML = `<strong>${item.item_name}</strong> <small class="text-muted">(${item.item_code || '-'})</small>`;
+
+          div.addEventListener("click", () => {
+            selectMasterItem(item);
+          });
+          itemSuggestionsBox.appendChild(div);
+        });
+        itemSuggestionsBox.style.display = "block";
+      } else {
+        const noDiv = document.createElement("div");
+        noDiv.className = "suggestion-item text-muted";
+        noDiv.textContent = "No matching items found";
+        itemSuggestionsBox.appendChild(noDiv);
+        itemSuggestionsBox.style.display = "block";
+      }
+    });
+
+    itemNameInp.addEventListener("keydown", (e) => {
+      const items = itemSuggestionsBox.getElementsByClassName("suggestion-item");
+      if (itemSuggestionsBox.style.display === "block" && items.length > 0 && items[0].textContent !== "No matching items found") {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          currentItemFocusIndex++;
+          if (currentItemFocusIndex >= items.length) currentItemFocusIndex = 0;
+          updateItemSuggestionActive(items);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          currentItemFocusIndex--;
+          if (currentItemFocusIndex < 0) currentItemFocusIndex = items.length - 1;
+          updateItemSuggestionActive(items);
+        } else if (e.key === "Enter" || e.key === "Tab") {
+          if (currentItemFocusIndex > -1) {
+            e.preventDefault();
+            items[currentItemFocusIndex].click(); 
+          }
+        } else if (e.key === "Escape") {
+          itemSuggestionsBox.style.display = "none";
+        }
+      }
+    });
+
+    function updateItemSuggestionActive(items) {
+      Array.from(items).forEach((item, idx) => {
+        if (idx === currentItemFocusIndex) {
+          item.classList.add("selected");
+          item.style.backgroundColor = "#f1f5f9";
+          item.scrollIntoView({ block: "nearest" });
+        } else {
+          item.classList.remove("selected");
+          item.style.backgroundColor = "";
+        }
+      });
+    }
+  }
+
+  function selectMasterItem(matchedItem) {
+    itemNameInp.value = matchedItem.item_name;
+    
+    const modalQtyInp = document.getElementById("modalItemQty");
+    if (modalQtyInp && (!modalQtyInp.value || parseFloat(modalQtyInp.value) === 0)) {
+      modalQtyInp.value = "1";
+    }
+    
+    document.getElementById("modalItemUnit").value = matchedItem.unit || 'Pcs';
+    document.getElementById("modalItemPrice").value = matchedItem.sales_price || 0;
+    
+    itemNameInp.dataset.hsn = matchedItem.hsn_sac_code || '';
+    itemNameInp.dataset.brand = matchedItem.brand || '-';
+    itemNameInp.dataset.code = matchedItem.item_code || '-';
+    itemNameInp.dataset.image = matchedItem.image_path || '';
+    itemNameInp.dataset.spec = matchedItem.item_specification || '';
+    itemNameInp.dataset.taxRate = matchedItem.tax_category ? (matchedItem.tax_category.match(/\d+/)?.[0] || 18) : 18;
+    
+    if(itemSuggestionsBox) itemSuggestionsBox.style.display = "none";
+    if (modalQtyInp) { modalQtyInp.focus(); modalQtyInp.select(); }
+  }
+
+  const unitInp = document.getElementById("modalItemUnit");
+  const unitSuggestionsBox = document.getElementById("unitSuggestionsList");
+  let currentUnitFocusIndex = -1;
+
+  if (unitInp && unitSuggestionsBox) {
+    unitInp.addEventListener("input", () => {
+      const val = unitInp.value.trim().toLowerCase();
+      unitSuggestionsBox.innerHTML = "";
+      currentUnitFocusIndex = -1;
+
+      if (!val) {
+        unitSuggestionsBox.style.display = "none";
+        return;
+      }
+
+      const allUnits = systemItemsMasterList
+          .map(item => item.unit)
+          .filter(unit => unit && unit.trim() !== "");
+      const uniqueUnits = [...new Set(allUnits)];
+
+      const filtered = uniqueUnits.filter(unit => unit.toLowerCase().includes(val));
+
+      if (filtered.length > 0) {
+        filtered.forEach((unit) => {
+          const div = document.createElement("div");
+          div.className = "suggestion-item";
+          div.innerHTML = `<strong>${unit}</strong>`;
+
+          div.addEventListener("click", () => {
+            unitInp.value = unit;
+            unitSuggestionsBox.style.display = "none";
+            document.getElementById("modalItemPrice")?.focus();
+          });
+          unitSuggestionsBox.appendChild(div);
+        });
+        unitSuggestionsBox.style.display = "block";
+      } else {
+        const noDiv = document.createElement("div");
+        noDiv.className = "suggestion-item text-muted";
+        noDiv.textContent = "No matching units";
+        unitSuggestionsBox.appendChild(noDiv);
+        unitSuggestionsBox.style.display = "block";
+      }
+    });
+
+    unitInp.addEventListener("keydown", (e) => {
+      const items = unitSuggestionsBox.getElementsByClassName("suggestion-item");
+      if (unitSuggestionsBox.style.display === "block" && items.length > 0 && items[0].textContent !== "No matching units") {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          currentUnitFocusIndex++;
+          if (currentUnitFocusIndex >= items.length) currentUnitFocusIndex = 0;
+          updateUnitSuggestionActive(items);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          currentUnitFocusIndex--;
+          if (currentUnitFocusIndex < 0) currentUnitFocusIndex = items.length - 1;
+          updateUnitSuggestionActive(items);
+        } else if (e.key === "Enter" || e.key === "Tab") {
+          if (currentUnitFocusIndex > -1) {
+            e.preventDefault();
+            items[currentUnitFocusIndex].click();
+          }
+        } else if (e.key === "Escape") {
+          unitSuggestionsBox.style.display = "none";
+        }
+      }
+    });
+
+    function updateUnitSuggestionActive(items) {
+      Array.from(items).forEach((item, idx) => {
+        if (idx === currentUnitFocusIndex) {
+          item.classList.add("selected");
+          item.style.backgroundColor = "#f1f5f9";
+          item.scrollIntoView({ block: "nearest" });
+        } else {
+          item.classList.remove("selected");
+          item.style.backgroundColor = "";
+        }
+      });
+    }
+  }
+
+  document.addEventListener("click", (e) => {
+    if (itemNameInp && itemSuggestionsBox && e.target !== itemNameInp && e.target !== itemSuggestionsBox) {
+      itemSuggestionsBox.style.display = "none";
+    }
+    if (unitInp && unitSuggestionsBox && e.target !== unitInp && e.target !== unitSuggestionsBox) {
+      unitSuggestionsBox.style.display = "none";
     }
   });
 
-  // Render Table Body
-  function renderTable(filter = "") {
-    accountTableBody.innerHTML = "";
+  // --- 3. COMPANY MASTER DYNAMIC Binding ---
+  async function fetchActiveCompanyProfile() {
+    try {
+      const response = await fetch(COMPANY_API);
+      const data = await response.json();
+      if(data && data.length > 0) {
+         systemCompanyProfile = data[0]; 
+         applyCompanyProfileToDOM(); 
+      }
+    } catch (err) {
+       console.error("Company Profile loading fault:", err);
+    }
+  }
 
-    const filteredAccounts = accounts.filter(
-      (acc) =>
-        acc.name && acc.name.toLowerCase().startsWith(filter.toLowerCase()),
-    );
+  function applyCompanyProfileToDOM() {
+      if(!systemCompanyProfile) return;
 
-    if (filteredAccounts.length === 0) {
-      accountTableBody.innerHTML = `<tr><td colspan="8" class="text-center py-3 text-muted">No records found.</td></tr>`;
-      return;
+      const logoImages = document.querySelectorAll(".pdf-header-logo");
+      logoImages.forEach(logoImg => {
+          if(systemCompanyProfile.logo_file) logoImg.src = systemCompanyProfile.logo_file;
+      });
+      
+      const qrImages = document.querySelectorAll(".pdf-scanner-img");
+      qrImages.forEach(img => {
+          if(systemCompanyProfile.qr_file) img.src = systemCompanyProfile.qr_file;
+      });
+
+      const signImg = document.querySelector(".pdf-signature-real-img");
+      if(signImg && systemCompanyProfile.signature_file) {
+          signImg.src = systemCompanyProfile.signature_file;
+      }
+
+      const stampImg = document.querySelector(".pdf-stamp-real-img");
+      if(stampImg) {
+          if(systemCompanyProfile.stamp_file) {
+             stampImg.src = systemCompanyProfile.stamp_file; 
+          } else if (systemCompanyProfile.logo_file) {
+             stampImg.src = systemCompanyProfile.logo_file; 
+          }
+      }
+
+      const companyTitleHeader = document.querySelector(".signature-stamp-frame .fw-bold");
+      if(companyTitleHeader) {
+          companyTitleHeader.textContent = `for ${systemCompanyProfile.company_name || systemCompanyProfile.print_name}`;
+      }
+
+      const addressDivs = document.querySelectorAll(".legal-address-column .opacity-90");
+      addressDivs.forEach(div => {
+          div.innerHTML = `<i class="fa-solid fa-location-dot me-1 text-info"></i> ${systemCompanyProfile.registered_address || ''}`;
+      });
+
+      const contactDivs = document.querySelectorAll(".legal-address-column .fw-medium");
+      contactDivs.forEach(div => {
+          div.innerHTML = `
+              <i class="fa-solid fa-phone me-1 text-info"></i> ${systemCompanyProfile.company_mobile || ''}
+              <span class="mx-1">|</span>
+              <i class="fa-solid fa-envelope me-1 text-info"></i> ${systemCompanyProfile.company_email || ''}
+              <span class="mx-1">|</span>
+              <i class="fa-solid fa-globe me-1 text-info"></i> ${systemCompanyProfile.company_website || ''}
+          `;
+      });
+      
+      const bankBlockCol = document.querySelector(".pdf-bank-details-plain .col-12");
+      if(bankBlockCol) {
+          const acName = systemCompanyProfile.print_name || 'N/A';
+          const acNo = systemCompanyProfile.ac_no || 'N/A';
+          const ifscCode = systemCompanyProfile.ifsc_code || 'N/A';
+          const bankName = systemCompanyProfile.bank_name || 'N/A';
+
+          bankBlockCol.innerHTML = `
+              <div>
+                  <span class="text-muted">A/C Name:</span> <strong class="text-dark">${acName}</strong> 
+                  <span class="mx-1 text-muted">|</span> 
+                  <span class="text-muted">A/C No:</span> <strong class="text-dark">${acNo}</strong>
+              </div>
+              <div>
+                  <span class="text-muted">IFSC Code:</span> <strong class="text-dark">${ifscCode}</strong> 
+                  <span class="mx-1 text-muted">|</span> 
+                  <span class="text-muted">Bank Name:</span> <strong class="text-dark">${bankName}</strong>
+              </div>
+          `;
+      }
+  }
+
+  function triggerAddItemModal() {
+    document.getElementById("modalItemForm")?.reset();
+    document.getElementById("modalEditIndex").value = "";
+    document.getElementById("modalFormMode").textContent = "Add";
+    
+    if(itemNameInp) {
+        itemNameInp.dataset.hsn = '';
+        itemNameInp.dataset.brand = '-';
+        itemNameInp.dataset.code = '-';
+        itemNameInp.dataset.image = '';
+        itemNameInp.dataset.spec = '';
+        itemNameInp.dataset.taxRate = '18';
     }
 
-    filteredAccounts.forEach((acc) => {
-      const tr = document.createElement("tr");
-      tr.className = "table-row-hover";
-      tr.setAttribute("data-id", acc.id);
+    const modalQtyInp = document.getElementById("modalItemQty");
+    if (modalQtyInp) modalQtyInp.value = "1";
+    
+    bootstrapItemModal.show();
+    setTimeout(() => {
+      document.getElementById("modalItemName")?.focus();
+    }, 400);
+  }
 
+  // Key down layout bindings
+  const interactiveFormFields = ["qSeries", "qVchNo", "qSaleType", "qParty", "qMatCentre", "qNarration", "qTerms"];
+  interactiveFormFields.forEach((id, currentIndex) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+    element.addEventListener("keydown", (event) => {
+      if (event.key === "Tab" || (event.key === "Enter" && element.tagName !== "TEXTAREA")) {
+        if (id === "qParty" && suggestionsBox && suggestionsBox.style.display === "block") return;
+        event.preventDefault(); 
+        const nextIndex = currentIndex + 1;
+        if (nextIndex < interactiveFormFields.length) {
+          const nextField = document.getElementById(interactiveFormFields[nextIndex]);
+          if (nextField) { nextField.focus(); nextField.select(); }
+        } else {
+          document.getElementById("openAddModalBtn")?.focus();
+        }
+      }
+    });
+  });
+
+  const modalFields = ["modalItemName", "modalItemQty", "modalItemUnit", "modalItemPrice"];
+  modalFields.forEach((id, currentIndex) => {
+    const modalElement = document.getElementById(id);
+    if (!modalElement) return;
+    modalElement.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        if (id === "modalItemName" && itemSuggestionsBox && itemSuggestionsBox.style.display === "block") return;
+        if (id === "modalItemUnit" && unitSuggestionsBox && unitSuggestionsBox.style.display === "block") return;
+        
+        event.preventDefault(); 
+        const nextModalIndex = currentIndex + 1;
+        if (nextModalIndex < modalFields.length) {
+          const nextModalField = document.getElementById(modalFields[nextModalIndex]);
+          if (nextModalField) { nextModalField.focus(); nextModalField.select(); }
+        } else {
+          document.getElementById("modalItemForm")?.requestSubmit();
+        }
+      }
+    });
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const addItemModalEl = document.getElementById("addItemModal");
+      const printModalEl = document.getElementById("printPreviewModal");
+      const catalogModalEl = document.getElementById("catalogPreviewModal");
+
+      const isModalOpen = (addItemModalEl && addItemModalEl.classList.contains("show")) ||
+                          (printModalEl && printModalEl.classList.contains("show")) ||
+                          (catalogModalEl && catalogModalEl.classList.contains("show"));
+
+      if (!isModalOpen && currentItemsList.length > 0) {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+        if (activeTag !== "button" && activeTag !== "textarea") {
+          e.preventDefault();
+          triggerAddItemModal();
+        }
+      }
+    }
+  });
+
+  // DOM Caching Elements Setup
+  const itemTableBody = document.getElementById("itemTableBody");
+  const voucherMasterTableBody = document.getElementById("voucherMasterTableBody");
+  const modalItemForm = document.getElementById("modalItemForm");
+  const modalEditIndex = document.getElementById("modalEditIndex");
+  const modalFormMode = document.getElementById("modalFormMode");
+  const modalSubmitBtn = document.getElementById("modalSubmitBtn");
+  const manualDiscountInput = document.getElementById("manualDiscountPercentage");
+  const manualDiscountAmountDisplay = document.getElementById("manualDiscountAmountDisplay");
+  const grandTotalDisplay = document.getElementById("grandTotalDisplay");
+
+  const bootstrapItemModal = new bootstrap.Modal(document.getElementById("addItemModal"));
+  const printPreviewModal = new bootstrap.Modal(document.getElementById("printPreviewModal"));
+  const catalogPreviewModal = new bootstrap.Modal(document.getElementById("catalogPreviewModal"));
+
+  async function getSavedQuotationTerms(voucherId) {
+    if (!voucherId) return "";
+    try {
+        const response = await fetch(`${API_URL}/${voucherId}`);
+        const result = await response.json();
+        if (response.ok && result.quotation) {
+            return result.quotation.terms_conditions || "";
+        }
+    } catch (error) {
+        console.error("Failed to load saved quotation terms:", error);
+    }
+    return "";
+  }
+
+  async function fetchSavedVouchers() {
+     try {
+        const response = await fetch(API_URL);
+        const result = await response.json();
+        if(result.status === 'Success') {
+           voucherDatabase = result.data.map(vch => ({
+               id: vch.id,
+               series: vch.series,
+               date: formatDateToLocal(vch.quotation_date),
+               vchNo: vch.voucher_no,
+               saleType: vch.sale_type,
+               partyName: vch.party_name,
+               matCentre: vch.material_centre,
+               narration: vch.narration,
+               termsConditions: vch.terms_conditions,
+               discountPercent: vch.discount_percentage,
+               subtotal: vch.subtotal,
+               taxableAmount: vch.taxable_amount,
+               gstTotal: vch.gst_total,
+               discountAmount: vch.discount_amount,
+               roundOff: vch.round_off,
+               grandTotal: vch.grand_total,
+               amountInWords: vch.amount_in_words,
+               items: []
+           }));
+           renderVoucherMasterDirectory();
+        }
+     } catch (err) {
+        console.error("Voucher Directory loading failed:", err);
+     }
+  }
+
+  function formatDateToLocal(isoStr) {
+     const d = new Date(isoStr);
+     let dd = d.getDate();
+     let mm = d.getMonth() + 1;
+     if(dd < 10) dd = '0' + dd;
+     if(mm < 10) mm = '0' + mm;
+     return `${dd}-${mm}-${d.getFullYear()}`;
+  }
+
+  function computeItemTaxParameters(item) {
+    const gstRate = parseFloat(item.gstRate) || 18;
+    const qty = parseFloat(item.qty) || 0;
+    const price = parseFloat(item.price) || 0;
+    const itemDiscount = parseFloat(item.discountValue) || 0;
+
+    const grossAmount = qty * price;
+    const taxable = Math.max(0, grossAmount - itemDiscount);
+    const taxAmt = (taxable * gstRate) / 100;
+    const lineTotal = taxable + taxAmt;
+
+    return { rate: gstRate, taxableAmount: taxable, taxAmount: taxAmt, aggregate: lineTotal };
+  }
+
+  window.calculateQuotationTotals = () => {
+    let itemsSubTotal = 0;
+    let totalTaxAmount = 0;
+    let taxRegistry = { 18: { taxable: 0, tax: 0 }, 5: { taxable: 0, tax: 0 }, 12: { taxable: 0, tax: 0 }, 28: { taxable: 0, tax: 0 } };
+
+    let activeList = currentItemsList.length > 0 ? currentItemsList : lastSavedItemsSnapshot;
+
+    activeList.forEach((item) => {
+      let cal = computeItemTaxParameters(item);
+      item.taxableAmount = cal.taxableAmount;
+      item.taxAmount = cal.taxAmount;
+      item.aggregate = cal.aggregate;
+
+      itemsSubTotal += cal.taxableAmount;
+      totalTaxAmount += cal.taxAmount;
+
+      if (!taxRegistry[cal.rate]) taxRegistry[cal.rate] = { taxable: 0, tax: 0 };
+      taxRegistry[cal.rate].taxable += cal.taxableAmount;
+      taxRegistry[cal.rate].tax += cal.taxAmount;
+    });
+
+    ['18', '5'].forEach(rate => {
+       if(document.getElementById(`taxableAmt${rate}`)) document.getElementById(`taxableAmt${rate}`).textContent = taxRegistry[rate].taxable.toFixed(2);
+       if(document.getElementById(`taxAmt${rate}`)) document.getElementById(`taxAmt${rate}`).textContent = taxRegistry[rate].tax.toFixed(2);
+       if(document.getElementById(`sundryAmt${rate}`)) document.getElementById(`sundryAmt${rate}`).textContent = taxRegistry[rate].tax.toFixed(2);
+    });
+
+    if (document.getElementById("totalTaxableAmtDisplay")) document.getElementById("totalTaxableAmtDisplay").textContent = itemsSubTotal.toFixed(2);
+    if (document.getElementById("totalTaxAmtDisplay")) document.getElementById("totalTaxAmtDisplay").textContent = totalTaxAmount.toFixed(2);
+
+    let discountPercent = parseFloat(manualDiscountInput.value) || 0;
+    let discountAmount = (itemsSubTotal * discountPercent) / 100;
+    let preRound = itemsSubTotal + totalTaxAmount - discountAmount;
+    let finalTotal = Math.round(preRound);
+    let variance = finalTotal - preRound;
+
+    if (manualDiscountAmountDisplay) manualDiscountAmountDisplay.textContent = "-" + discountAmount.toFixed(2);
+    if (grandTotalDisplay) grandTotalDisplay.textContent = finalTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+
+    return { subtotal: itemsSubTotal, taxableAmount: itemsSubTotal, gstTotal: totalTaxAmount, discountAmount: discountAmount, roundOff: variance, grandTotal: finalTotal };
+  };
+
+  window.renderItemsTable = () => {
+    if (!itemTableBody) return;
+    itemTableBody.innerHTML = "";
+    
+    currentItemsList.forEach((item, index) => {
+      const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${acc.name || "-"}</td>
-        <td><span class="badge-group">${acc.group || "-"}</span></td>
-        <td>${acc.mobileNo || "-"}</td>
-        <td>${acc.emailId || "-"}</td>
-        <td>${acc.gstNo || "-"}</td>
-        <td>${acc.opBal || "0"} ${acc.balType || ""}</td>
-        <td><span class="badge-active">Active</span></td>
+        <td>${index + 1}</td>
+        <td class="text-start fw-semibold text-dark">${item.name}</td>
+        <td>${parseFloat(item.qty).toFixed(2)}</td>
+        <td>${item.unit}</td>
+        <td>${parseFloat(item.price).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+        <td class="fw-bold">${(item.qty * item.price).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
         <td>
-            <div class="table-actions-btns">
-                <button class="btn btn-table-edit btn-edit-hook"><i class="fa-solid fa-pen"></i></button>
-                <button class="btn btn-table-delete btn-delete-hook"><i class="fa-solid fa-trash"></i></button>
-            </div>
+            <button type="button" class="btn-row-edit" onclick="editItemRow(${index})"><i class="fa-solid fa-pen"></i> Edit</button>
+            <button type="button" class="btn-row-delete" onclick="deleteItemRow(${index})"><i class="fa-solid fa-trash"></i> Delete</button>
         </td>
       `;
-      accountTableBody.appendChild(tr);
+      itemTableBody.appendChild(tr);
+    });
+    calculateQuotationTotals();
+  };
+
+  window.renderVoucherMasterDirectory = (term = "") => {
+    if (!voucherMasterTableBody) return;
+    voucherMasterTableBody.innerHTML = "";
+    let filtered = voucherDatabase.filter(v => v.vchNo.toLowerCase().includes(term.toLowerCase()));
+
+    if(filtered.length === 0) {
+       voucherMasterTableBody.innerHTML = `<tr><td colspan="7" class="text-muted py-3">No matching quotation vouchers found.</td></tr>`;
+       return;
+    }
+    filtered.forEach((vch, index) => {
+      const originalIdx = voucherDatabase.indexOf(vch);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><b>${index + 1}</b></td>
+        <td class="text-danger fw-bold">${vch.vchNo}</td>
+        <td>${vch.date}</td>
+        <td class="text-start fw-semibold text-dark">${vch.partyName}</td>
+        <td><span class="badge bg-light text-dark border">${vch.saleType}</span></td>
+        <td class="fw-bold text-primary">₹${vch.grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+        <td>
+            <button type="button" class="btn btn-sm btn-row-edit px-2" onclick="loadVoucherToForm(${vch.id}, ${originalIdx})"><i class="fa-solid fa-file-pen"></i> Edit</button>
+            <button type="button" class="btn btn-sm btn-row-delete px-2" onclick="deleteVoucherRecord(${vch.id}, ${originalIdx})"><i class="fa-solid fa-trash-can"></i> Delete</button>
+        </td>
+      `;
+      voucherMasterTableBody.appendChild(tr);
+    });
+  };
+
+  document.getElementById("quotationForm").addEventListener("submit", async (e) => {
+     e.preventDefault();
+     const trackIndex = document.getElementById("qVoucherTrackIndex").value;
+     
+     if (currentItemsList.length === 0) return alert("Validation Error: Cannot save an empty grid.");
+     
+     const vchNo = document.getElementById("qVchNo").value.trim();
+     const partyName = document.getElementById("qParty").value.trim();
+     
+     let qTermsValue = "";
+     if(document.getElementById("qTerms")) {
+        qTermsValue = document.getElementById("qTerms").value.trim();
+     }
+
+     const metrics = calculateQuotationTotals();
+
+     const payload = {
+         id: trackIndex !== "" ? voucherDatabase[parseInt(trackIndex)].id : Date.now(),
+         series: document.getElementById("qSeries").value.trim(),
+         date: document.getElementById("qDate").value,
+         voucherNo: vchNo,
+         saleType: document.getElementById("qSaleType").value,
+         partyName: partyName,
+         matCentre: document.getElementById("qMatCentre").value.trim(),
+         narration: document.getElementById("qNarration").value.trim(),
+         termsConditions: qTermsValue,
+         discountPercent: parseFloat(manualDiscountInput.value) || 0,
+         subtotal: metrics.subtotal,
+         taxableAmount: metrics.taxableAmount,
+         gstTotal: metrics.gstTotal,
+         discountAmount: metrics.discountAmount,
+         roundOff: metrics.roundOff,
+         grandTotal: metrics.grandTotal,
+         amountInWords: translateAmountIntoWords(metrics.grandTotal),
+         items: currentItemsList
+     };
+
+     lastSavedItemsSnapshot = JSON.parse(JSON.stringify(currentItemsList));
+
+     try {
+         let response;
+         if(trackIndex !== "") {
+             response = await fetch(`${API_URL}/${payload.id}`, {
+                 method: 'PUT',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify(payload)
+             });
+         } else {
+             response = await fetch(API_URL, {
+                 method: 'POST',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify(payload)
+             });
+         }
+         
+         const resData = await response.json();
+         if(response.ok) {
+             lastSavedVoucherId = payload.id;
+             alert(resData.message);
+             clearVoucherForm();
+             fetchSavedVouchers();
+         } else {
+             alert("Error: " + resData.message);
+         }
+     } catch(err) {
+         console.error(err);
+         alert("Network Communication Failure!");
+     }
+  });
+
+  window.loadVoucherToForm = async (dbId, localIdx) => {
+     try {
+         const response = await fetch(`${API_URL}/${dbId}`);
+         const res = await response.json();
+         if(response.ok) {
+             const vch = res.quotation;
+             const activePartyName = voucherDatabase[localIdx].partyName;
+
+             lastSavedVoucherId = dbId;
+             document.getElementById("qVoucherTrackIndex").value = localIdx;
+             document.getElementById("qSeries").value = vch.series;
+             document.getElementById("qDate").value = formatDateToLocal(vch.quotation_date);
+             document.getElementById("qVchNo").value = vch.voucher_no;
+             document.getElementById("qSaleType").value = vch.sale_type;
+             document.getElementById("qParty").value = activePartyName;
+             document.getElementById("qMatCentre").value = vch.material_centre;
+             document.getElementById("qNarration").value = vch.narration || '';
+             
+             if(document.getElementById("qTerms")) {
+                document.getElementById("qTerms").value = vch.terms_conditions || '';
+             }
+
+             document.getElementById("manualDiscountPercentage").value = parseFloat(vch.discount_percentage).toFixed(2);
+
+             try {
+                const accRes = await fetch(ACCOUNT_API);
+                const accounts = await accRes.json();
+                const matchedAccount = accounts.find(a => a.print_name === activePartyName);
+                if (matchedAccount) {
+                   partyInput.dataset.location = matchedAccount.billing_address || matchedAccount.shipping_address || 'Pune, Maharashtra';
+                   partyInput.dataset.mobile = matchedAccount.mobile_no || 'N/A';
+                   partyInput.dataset.email = matchedAccount.email_id || 'N/A';
+                   partyInput.dataset.gst = matchedAccount.gstin_no || 'Unregistered';
+                   partyInput.dataset.sub = matchedAccount.account_group || 'Sundry Debtors Division';
+                }
+             } catch (accErr) {
+                console.error("Account background injection fault:", accErr);
+             }
+
+             currentItemsList = res.items.map(item => ({
+                 name: item.item_name,
+                 qty: parseFloat(item.qty),
+                 unit: item.unit,
+                 price: parseFloat(item.price),
+                 gstRate: parseFloat(item.tax_rate),
+                 hsn: item.hsn_sac_code || '',
+                 brand: item.brand || '-',
+                 code: item.item_code || '-',
+                 image: item.image_path || '',
+                 spec: item.item_specification || '',
+                 taxableAmount: parseFloat(item.taxable_amount),
+                 taxAmount: parseFloat(item.tax_amount),
+                 discountValue: 0
+             }));
+
+             lastSavedItemsSnapshot = JSON.parse(JSON.stringify(currentItemsList));
+
+             document.getElementById("formVoucherHeaderTitle").innerHTML = `<i class="fa-solid fa-file-pen text-warning"></i> Editing Voucher: ${vch.voucher_no}`;
+             document.getElementById("mainVoucherSaveBtn").innerHTML = `<i class="fa-solid fa-check-double"></i> Update Voucher`;
+             
+             renderItemsTable();
+             document.getElementById("voucherFormCard").scrollIntoView({ behavior: "smooth" });
+         }
+     } catch (err) {
+         console.error("Error loading single voucher details:", err);
+     }
+  };
+
+  window.deleteVoucherRecord = async (dbId, localIdx) => {
+      if(confirm("Are you sure you want to delete this voucher permanently?")) {
+          try {
+              const response = await fetch(`${API_URL}/${dbId}`, { method: 'DELETE' });
+              if(response.ok) {
+                  alert("Voucher deleted successfully!");
+                  clearVoucherForm();
+                  fetchSavedVouchers();
+              }
+          } catch(e) { console.error(e); }
+      }
+  };
+
+  if (modalItemForm) {
+    modalItemForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("modalItemName").value.trim();
+      const qtyStr = document.getElementById("modalItemQty").value.trim();
+      const unit = document.getElementById("modalItemUnit").value.trim();
+      const priceStr = document.getElementById("modalItemPrice").value.trim();
+      const editIndexValue = modalEditIndex.value;
+
+      if (!name || !qtyStr || !unit || !priceStr) return alert("Validation Error: All inputs are mandatory.");
+      const qty = parseFloat(qtyStr) || 0;
+      const price = parseFloat(priceStr) || 0;
+      if (qty <= 0 || price <= 0) return alert("Values must be positive greater than zero.");
+
+      const gstRate = parseFloat(itemNameInp.dataset.taxRate) || 18;
+      const hsn = itemNameInp.dataset.hsn || "";
+      const brand = itemNameInp.dataset.brand || "-";
+      const code = itemNameInp.dataset.code || "-";
+      const image = itemNameInp.dataset.image || "";
+      const spec = itemNameInp.dataset.spec || "";
+
+      const payload = { name, qty, unit, price, gstRate, hsn, brand, code, image, spec, discountValue: 0 };
+
+      if (editIndexValue !== "") {
+        currentItemsList[parseInt(editIndexValue)] = payload;
+      } else {
+        currentItemsList.push(payload);
+      }
+      
+      lastSavedItemsSnapshot = JSON.parse(JSON.stringify(currentItemsList));
+      renderItemsTable();
+      bootstrapItemModal.hide();
     });
   }
 
-  // Action Listeners (Edit & Delete)
-  accountTableBody.addEventListener("click", async (e) => {
-    const editBtn = e.target.closest(".btn-edit-hook");
-    const deleteBtn = e.target.closest(".btn-delete-hook");
-    if (!editBtn && !deleteBtn) return;
+  window.editItemRow = (i) => {
+     const item = currentItemsList[i];
+     itemNameInp.value = item.name;
+     document.getElementById("modalItemQty").value = item.qty;
+     document.getElementById("modalItemUnit").value = item.unit;
+     document.getElementById("modalItemPrice").value = item.price;
+     
+     itemNameInp.dataset.hsn = item.hsn || '';
+     itemNameInp.dataset.brand = item.brand || '-';
+     itemNameInp.dataset.code = item.code || '-';
+     itemNameInp.dataset.image = item.image || '';
+     itemNameInp.dataset.spec = item.spec || '';
+     itemNameInp.dataset.taxRate = item.gstRate || 18;
 
-    const row = e.target.closest("tr");
-    const id = row.getAttribute("data-id");
-    const index = accounts.findIndex((a) => a.id.toString() === id.toString());
+     modalEditIndex.value = i;
+     modalFormMode.textContent = "Edit";
+     bootstrapItemModal.show();
+  };
 
-    if (deleteBtn) {
-      if (confirm("Are you sure you want to delete this account?")) {
-        try {
-          const response = await fetch(`${API_URL}/${id}`, {
-            method: "DELETE",
-          });
-          if (response.ok) {
-            alert("Account Deleted successfully!");
-            fetchAccounts();
+  window.deleteItemRow = (i) => { 
+     if(confirm("Remove line item row?")) { 
+        currentItemsList.splice(i,1); 
+        lastSavedItemsSnapshot = JSON.parse(JSON.stringify(currentItemsList));
+        renderItemsTable(); 
+     } 
+  };
+  
+  window.clearVoucherForm = () => {
+    document.getElementById("quotationForm").reset();
+    document.getElementById("qVoucherTrackIndex").value = "";
+    document.getElementById("formVoucherHeaderTitle").innerHTML = `<i class="fa-solid fa-file-signature text-success"></i> Voucher Entry Panel`;
+    document.getElementById("mainVoucherSaveBtn").innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Voucher`;
+    
+    if(document.getElementById("qTerms")) {
+       document.getElementById("qTerms").value = defaultTerms;
+    }
+    
+    initializeCurrentDate();
+    fetchNextVoucherNumber(); 
+    currentItemsList = [];
+    renderItemsTable();
+  };
+
+  if(manualDiscountInput) {
+     manualDiscountInput.addEventListener("input", () => calculateQuotationTotals());
+  }
+
+  const vchSearchBox = document.getElementById("vchSearchBox");
+  if(vchSearchBox) vchSearchBox.addEventListener("input", (e)=> renderVoucherMasterDirectory(e.target.value));
+
+  if (document.getElementById("btnPrintQuotation")) {
+    document.getElementById("btnPrintQuotation").addEventListener("click", async () => {
+      
+      let printList = currentItemsList.length > 0 ? currentItemsList : lastSavedItemsSnapshot;
+      if (printList.length === 0) return alert("Validation Error: No dynamic item configurations available to print.");
+
+      const trackIdx = document.getElementById("qVoucherTrackIndex").value;
+      const partyInp = document.getElementById("qParty");
+
+      let targetVoucherId = null;
+
+      if (trackIdx !== "" && voucherDatabase[trackIdx]) {
+          targetVoucherId = voucherDatabase[trackIdx].id;
+          partyInp.value = voucherDatabase[trackIdx].partyName;
+      } else if (currentItemsList.length === 0 && lastSavedVoucherId) {
+          targetVoucherId = lastSavedVoucherId;
+          const matchedVch = voucherDatabase.find(v => v.id === lastSavedVoucherId);
+          if (matchedVch) partyInp.value = matchedVch.partyName;
+      }
+
+      applyCompanyProfileToDOM();
+
+      document.getElementById("pdfClientInstitution").textContent = partyInp.value || "";
+      document.getElementById("pdfClientLocation").textContent = partyInp.dataset.location || 'Pune, Maharashtra';
+      document.getElementById("pdfClientMobile").textContent = partyInp.dataset.mobile || 'N/A';
+      document.getElementById("pdfClientEmail").textContent = partyInp.dataset.email || 'N/A';
+      document.getElementById("pdfClientGst").textContent = partyInp.dataset.gst || 'N/A';
+      document.getElementById("pdfMetaDate").textContent = document.getElementById("qDate").value;
+      document.getElementById("pdfMetaQtnNo").textContent = document.getElementById("qVchNo").value;
+
+      let finalTerms = document.getElementById("qTerms") ? document.getElementById("qTerms").value.trim() : "";
+
+      if (targetVoucherId) {
+          const backendTerms = await getSavedQuotationTerms(targetVoucherId);
+          if (backendTerms !== undefined && backendTerms !== "") {
+              finalTerms = backendTerms;
           }
-        } catch (err) {
-          accounts.splice(index, 1);
-          saveData();
-          renderTable(searchInput ? searchInput.value : "");
-          alert("Account deleted from local storage!");
-        }
       }
-    }
 
-    if (editBtn) {
-      const acc = accounts[index];
-      if (!acc) return;
+      if (document.getElementById("pdfTermsConditions")) {
+          document.getElementById("pdfTermsConditions").textContent = finalTerms;
+      }
 
-      document.getElementById("editRowIndex").value = acc.id;
-      document.getElementById("editPrintName").value = acc.name || "";
-      document.getElementById("editAccGroup").value = acc.group || "";
-      document.getElementById("editOpBal").value = acc.opBal || "0";
-      document.getElementById("editBalType").value = acc.balType || "";
-      document.getElementById("editCreditLimit").value = acc.creditLimit || "0";
-      document.getElementById("editEmailId").value = acc.emailId || "";
-      document.getElementById("editMobileNo").value = acc.mobileNo || "";
-      document.getElementById("editWhatsapp").value = acc.whatsapp || "";
-      document.getElementById("editTelNo").value = acc.telNo || "";
-      document.getElementById("editTransport").value = acc.transport || "";
-      document.getElementById("editStation").value = acc.station || "";
-      document.getElementById("editPinCode").value = acc.pinCode || "";
-      document.getElementById("editMsmeType").value = acc.msmeType || "";
-      document.getElementById("editDealerType").value = acc.gstStatus || "";
-      document.getElementById("editGstinNo").value = acc.gstNo || "";
-      document.getElementById("editPanNo").value = acc.panNo || "";
-      document.getElementById("editCinNo").value = acc.cinNo || "";
-      document.getElementById("editBillAddr").value = acc.billAddr || "";
-      document.getElementById("editShipAddr").value = acc.shipAddr || "";
-      document.getElementById("editCreditDays").value = acc.creditDays || "0";
-      document.getElementById("editCreditLimitVal").value =
-        acc.creditLimitVal || "0";
-      document.getElementById("editOutAlert").value = acc.outAlert || "";
-      document.getElementById("editBlockSales").value = acc.blockSales || "";
+      let finalNarration = document.getElementById("qNarration") ? document.getElementById("qNarration").value.trim() : "";
+      
+      if (targetVoucherId) {
+          const matchedVch = voucherDatabase.find(v => v.id === targetVoucherId);
+          if (matchedVch && matchedVch.narration !== undefined && matchedVch.narration !== "") {
+              finalNarration = matchedVch.narration;
+          }
+      }
 
-      // Clear the files input when opening modal
-      document.getElementById("editPanFile").value = "";
-      document.getElementById("editGstFile").value = "";
-      document.getElementById("editMsmeFile").value = "";
+      if (document.getElementById("pdfNarrationText")) {
+          document.getElementById("pdfNarrationText").textContent = finalNarration;
+      }
 
-      if (editModal) editModal.show();
-    }
-  });
+      const rowsTarget = document.getElementById("pdfItemRowsTarget");
+      rowsTarget.innerHTML = "";
 
-  // PUT Submission Pipeline for Modal
-  editAccountForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const id = document.getElementById("editRowIndex").value;
-    const index = accounts.findIndex((a) => a.id.toString() === id.toString());
-
-    const editPanFile = document.getElementById("editPanFile").files[0];
-    const editGstFile = document.getElementById("editGstFile").files[0];
-    const editMsmeFile = document.getElementById("editMsmeFile").files[0];
-
-    const formData = new FormData();
-    formData.append(
-      "name",
-      document.getElementById("editPrintName").value.trim(),
-    );
-    formData.append("group", document.getElementById("editAccGroup").value);
-    formData.append("opBal", document.getElementById("editOpBal").value.trim());
-    formData.append("balType", document.getElementById("editBalType").value);
-    formData.append(
-      "creditLimit",
-      document.getElementById("editCreditLimit").value.trim(),
-    );
-    formData.append(
-      "emailId",
-      document.getElementById("editEmailId").value.trim(),
-    );
-    formData.append(
-      "mobileNo",
-      document.getElementById("editMobileNo").value.trim(),
-    );
-    formData.append(
-      "whatsapp",
-      document.getElementById("editWhatsapp").value.trim(),
-    );
-    formData.append("telNo", document.getElementById("editTelNo").value.trim());
-    formData.append(
-      "transport",
-      document.getElementById("editTransport").value.trim(),
-    );
-    formData.append(
-      "station",
-      document.getElementById("editStation").value.trim(),
-    );
-    formData.append(
-      "pinCode",
-      document.getElementById("editPinCode").value.trim(),
-    );
-    formData.append("msmeType", document.getElementById("editMsmeType").value);
-    formData.append(
-      "gstStatus",
-      document.getElementById("editDealerType").value,
-    );
-    formData.append(
-      "gstNo",
-      document.getElementById("editGstinNo").value.trim(),
-    );
-    formData.append("panNo", document.getElementById("editPanNo").value.trim());
-    formData.append("cinNo", document.getElementById("editCinNo").value.trim());
-    formData.append(
-      "billAddr",
-      document.getElementById("editBillAddr").value.trim(),
-    );
-    formData.append(
-      "shipAddr",
-      document.getElementById("editShipAddr").value.trim(),
-    );
-    formData.append(
-      "creditDays",
-      document.getElementById("editCreditDays").value.trim(),
-    );
-    formData.append(
-      "creditLimitVal",
-      document.getElementById("editCreditLimitVal").value.trim(),
-    );
-    formData.append("outAlert", document.getElementById("editOutAlert").value);
-    formData.append(
-      "blockSales",
-      document.getElementById("editBlockSales").value,
-    );
-
-    if (editPanFile) formData.append("panFile", editPanFile);
-    if (editGstFile) formData.append("gstFile", editGstFile);
-    if (editMsmeFile) formData.append("msmeFile", editMsmeFile);
-
-    try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        body: formData,
+      printList.forEach((item, index) => {
+          let cal = computeItemTaxParameters(item);
+          let tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td class="text-start fw-bold text-dark">${item.name}</td>
+            <td class="text-dark">${item.brand || '-'}</td>
+            <td class="text-end font-monospace">${parseFloat(item.price).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+            <td>${parseFloat(item.qty)}</td>
+            <td>${item.unit}</td>
+            <td>${cal.rate}%</td>
+            <td class="text-end font-monospace">${cal.taxAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+            <td class="text-end font-monospace fw-bold">${cal.aggregate.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+          `;
+          rowsTarget.appendChild(tr);
       });
-      if (response.ok) {
-        alert("Account Master Updated successfully!");
-        if (editModal) editModal.hide();
-        fetchAccounts();
+
+      for (let i = printList.length; i < 15; i++) {
+        let emptyTr = document.createElement("tr");
+        emptyTr.className = "pdf-empty-row-tr";
+        emptyTr.innerHTML = `<td>${i+1}</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`;
+        rowsTarget.appendChild(emptyTr);
       }
-    } catch (err) {
-      if (index !== -1) {
-        accounts[index] = {
-          ...accounts[index],
-          name: document.getElementById("editPrintName").value.trim(),
-          group: document.getElementById("editAccGroup").value,
-          opBal: document.getElementById("editOpBal").value.trim(),
-          balType: document.getElementById("editBalType").value,
-          creditLimit: document.getElementById("editCreditLimit").value.trim(),
-          emailId: document.getElementById("editEmailId").value.trim(),
-          mobileNo: document.getElementById("editMobileNo").value.trim(),
-          whatsapp: document.getElementById("editWhatsapp").value.trim(),
-        };
 
-        if (editPanFile) accounts[index].panFileName = editPanFile.name;
-        if (editGstFile) accounts[index].gstFileName = editGstFile.name;
-        if (editMsmeFile) accounts[index].msmeFileName = editMsmeFile.name;
-
-        saveData();
-        renderTable(searchInput ? searchInput.value : "");
-        if (editModal) editModal.hide();
-        alert("Updated in local storage!");
-      }
-    }
-  });
-
-  document.getElementById("scrollListBtn")?.addEventListener("click", () => {
-    document
-      .getElementById("accountListCard")
-      .scrollIntoView({ behavior: "smooth" });
-  });
-  document.getElementById("addAccountBtn")?.addEventListener("click", () => {
-    document
-      .getElementById("accountFormCard")
-      .scrollIntoView({ behavior: "smooth" });
-  });
-
-  if (searchInput) {
-    searchInput.addEventListener("input", () => {
-      renderTable(searchInput.value);
+      const metrics = calculateQuotationTotals();
+      document.getElementById("pdfAmountInWords").textContent = translateAmountIntoWords(metrics.grandTotal);
+      
+      printPreviewModal.show();
     });
   }
 
-  document.getElementById("importAccountBtn").addEventListener("click", () => {
-    document.getElementById("importFile").click();
-  });
+  if (document.getElementById("btnPrintCatalog")) {
+    document.getElementById("btnPrintCatalog").addEventListener("click", () => {
+      let catalogList = currentItemsList.length > 0 ? currentItemsList : lastSavedItemsSnapshot;
+      if (catalogList.length === 0) return alert("Validation Error: No dynamic item configurations available to print catalog.");
 
-  document.getElementById("importFile").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const data = new Uint8Array(event.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const rows = XLSX.utils.sheet_to_json(
-        workbook.Sheets[workbook.SheetNames[0]],
-      );
+      const catalogContainer = document.getElementById("catalogPrintTargetArea");
+      if (!catalogContainer) return;
 
-      rows.forEach(async (row) => {
-        const generatedId = Date.now() + Math.random();
-        const newAccLocal = {
-          id: generatedId,
-          name: row["Party Name"] || row.Name || "",
-          group: row.Group || "",
-          opBal: row["Opening Bal"] || "0",
-          balType: row["Dr/Cr"] || "",
-          creditLimit: row["Credit Limit"] || "0",
-          emailId: row["Email ID"] || "",
-          mobileNo: row["Mobile No"] || "",
-          whatsapp: row.WhatsApp || "",
-          telNo: row.Telephone || "",
-          transport: row.Transport || "",
-          station: row.Station || "",
-          pinCode: row["Pin Code"] || "",
-          msmeType: row["MSME Type"] || "",
-          gstStatus: row["Dealer Type"] || "",
-          gstNo: row["GST No"] || "",
-          panNo: row["PAN No"] || "",
-          cinNo: row["CIN No"] || "",
-          billAddr: row["Billing Addr"] || "",
-          shipAddr: row["Shipping Addr"] || "",
-          creditDays: row["Credit Days"] || "0",
-          creditLimitVal: row["Credit Limit Val"] || "0",
-          outAlert: row["Out Alert"] || "",
-          blockSales: row["Block Sales"] || "",
-          panFileName: "-",
-          gstFileName: "-",
-          msmeFileName: "-",
-        };
+      catalogContainer.innerHTML = "";
 
-        const formData = new FormData();
-        formData.append("id", newAccLocal.id);
-        formData.append("name", newAccLocal.name);
-        formData.append("group", newAccLocal.group);
-        formData.append("opBal", newAccLocal.opBal);
-        formData.append("balType", newAccLocal.balType);
-        formData.append("creditLimit", newAccLocal.creditLimit);
-        formData.append("emailId", newAccLocal.emailId);
-        formData.append("mobileNo", newAccLocal.mobileNo);
-        formData.append("whatsapp", newAccLocal.whatsapp);
-        formData.append("telNo", newAccLocal.telNo);
-        formData.append("transport", newAccLocal.transport);
-        formData.append("station", newAccLocal.station);
-        formData.append("pinCode", newAccLocal.pinCode);
-        formData.append("msmeType", newAccLocal.msmeType);
-        formData.append("gstStatus", newAccLocal.gstStatus);
-        formData.append("gstNo", newAccLocal.gstNo);
-        formData.append("panNo", newAccLocal.panNo);
-        formData.append("cinNo", newAccLocal.cinNo);
-        formData.append("billAddr", newAccLocal.billAddr);
-        formData.append("shipAddr", newAccLocal.shipAddr);
-
-        try {
-          await fetch(API_URL, { method: "POST", body: formData });
-        } catch (e) {
-          // Saved locally below
+      catalogList.forEach((item, index) => {
+        const matchedMaster = systemItemsMasterList.find(x => x.item_name.toLowerCase() === item.name.toLowerCase());
+        
+        const itemCode = matchedMaster?.item_code || item.code || 'N/A';
+        const itemSpec = matchedMaster?.item_specification || item.spec || 'No specification available for this item.';
+        
+        let imageSrc = 'Images/advanced-practi-man-cpr-manikin-254.jpg';
+        if (matchedMaster && matchedMaster.image_path) {
+          imageSrc = matchedMaster.image_path;
+        } else if (item.image) {
+          imageSrc = item.image;
         }
 
-        accounts.push(newAccLocal);
+        const logoSrc = (systemCompanyProfile && systemCompanyProfile.logo_file) ? systemCompanyProfile.logo_file : 'Images/Eliteplus-logo.png';
+        const qrSrc = (systemCompanyProfile && systemCompanyProfile.qr_file) ? systemCompanyProfile.qr_file : 'Images/scanner.png';
+
+        const regAddress = systemCompanyProfile?.registered_address || 'Sr.No 175, Fl No #116, Shivane, Pune - 411023';
+        const mobileNo = systemCompanyProfile?.company_mobile || '9890017812';
+        const emailId = systemCompanyProfile?.company_email || 'elite.pune@gmail.com';
+        const websiteUrl = systemCompanyProfile?.company_website || 'www.eliteplus.in';
+
+        const pageDiv = document.createElement("div");
+        pageDiv.className = `catalog-page ${index > 0 ? 'catalog-page-break' : ''}`;
+        
+        pageDiv.innerHTML = `
+          <div class="pdf-inner-border-wrapper">
+            <div class="pdf-letterhead-container mb-2">
+              <div class="logo-wrapper">
+                <img src="${logoSrc}" alt="Company Logo" class="pdf-header-logo">
+              </div>
+            </div>
+
+            <div class="catalog-product-row px-2 py-3">
+              <h1 class="catalog-screenshot-title">${item.name}</h1>
+              <div class="catalog-screenshot-code">Code: ${itemCode}</div>
+
+              <div class="product-img-box-clean">
+                <img src="${imageSrc}" alt="${item.name}" onerror="this.onerror=null; this.src='Images/advanced-practi-man-cpr-manikin-254.jpg';">
+              </div>
+
+              <p class="catalog-screenshot-desc mt-2">
+                ${itemSpec}
+              </p>
+            </div>
+
+            <div class="pdf-bottom-pinned-group mt-auto">
+              <div class="pdf-corporate-footer-blue-bar text-white d-flex justify-content-between align-items-center">
+                <div class="legal-address-column small text-start">
+                  <div class="opacity-90 mb-1" style="max-width: 540px; color: #cbd5e1; font-size: 11px;">
+                    <i class="fa-solid fa-location-dot me-1 text-info"></i> ${regAddress}
+                  </div>
+                  <div class="fw-medium font-monospace text-white-50" style="font-size: 10.5px;">
+                    <i class="fa-solid fa-phone me-1 text-info"></i> ${mobileNo}
+                    <span class="mx-1">|</span>
+                    <i class="fa-solid fa-envelope me-1 text-info"></i> ${emailId}
+                    <span class="mx-1">|</span>
+                    <i class="fa-solid fa-globe me-1 text-info"></i> ${websiteUrl}
+                  </div>
+                </div>
+                <div class="footer-right-side-qr-area bg-white p-1 rounded">
+                  <div class="embedded-qr-placeholder-box-real mini-qr-box">
+                    <img src="${qrSrc}" alt="Mini Scanner" class="pdf-scanner-img">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        catalogContainer.appendChild(pageDiv);
       });
 
-      saveData();
-      renderTable();
-      alert("Data Imported Successfully!");
-      setTimeout(fetchAccounts, 2000);
-    };
-    reader.readAsArrayBuffer(file);
+      catalogPreviewModal.show();
+    });
+  }
+
+  function translateAmountIntoWords(amount) {
+    let primaryValue = Math.floor(amount);
+    let unitsList = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    let tensList = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+    function computeHundreds(num) {
+      let out = "";
+      if (num >= 100) { out += unitsList[Math.floor(num / 100)] + " Hundred "; num %= 100; }
+      if (num >= 20) { out += tensList[Math.floor(num / 10)] + " "; num %= 10; }
+      if (num > 0) { out += unitsList[num] + " "; }
+      return out.trim();
+    }
+    let output = "";
+    if (Math.floor(primaryValue / 100000) > 0) { output += computeHundreds(Math.floor(primaryValue / 100000)) + " Lakh "; primaryValue %= 100000; }
+    if (Math.floor(primaryValue / 1000) > 0) { output += computeHundreds(Math.floor(primaryValue / 1000)) + " Thousand "; primaryValue %= 1000; }
+    if (primaryValue > 0) output += computeHundreds(primaryValue);
+    return (output.trim() + " Rupees Only");
+  }
+
+  document.getElementById("modalDownloadPdfBtn")?.addEventListener("click", function() {
+      const el = document.getElementById("pdfPrintTargetArea");
+      const cleanVch = document.getElementById("pdfMetaQtnNo").textContent.replace(/\//g, "-");
+
+      const originalText = this.innerHTML;
+      this.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Generating PDF...`;
+      this.disabled = true;
+
+      const opt = {
+          margin: 0,
+          filename: `Quotation-${cleanVch}.pdf`,
+          image: { type: "jpeg", quality: 1.0 },
+          html2canvas: { 
+              scale: 2, 
+              useCORS: true, 
+              letterRendering: true,
+              scrollY: 0,
+              scrollX: 0,
+              onclone: function(clonedDoc) {
+                  const target = clonedDoc.getElementById("pdfPrintTargetArea");
+                  
+                  target.style.position = "fixed";
+                  target.style.top = "0";
+                  target.style.left = "0";
+                  target.style.transform = "none";
+                  target.style.margin = "0";
+                  
+                  target.style.width = "210mm";
+                  target.style.height = "296.5mm"; 
+                  target.style.minWidth = "210mm";
+                  target.style.maxWidth = "210mm";
+                  target.style.minHeight = "296.5mm";
+                  target.style.maxHeight = "296.5mm";
+                  
+                  target.style.overflow = "hidden"; 
+                  target.style.boxSizing = "border-box";
+              }
+          }, 
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" } 
+      };
+      
+      html2pdf()
+          .set(opt)
+          .from(el)
+          .toPdf()
+          .get('pdf')
+          .then(function(pdf) {
+              const totalPages = pdf.internal.getNumberOfPages();
+              for (let i = totalPages; i > 1; i--) {
+                  pdf.deletePage(i);
+              }
+          })
+          .save()
+          .then(() => {
+              this.innerHTML = originalText;
+              this.disabled = false;
+          });
   });
 
-  document.getElementById("exportAccountBtn").addEventListener("click", () => {
-    const wb = XLSX.utils.table_to_book(
-      document.querySelector(".table-custom"),
-      { sheet: "Accounts" },
-    );
-    XLSX.writeFile(wb, "Account_List.xlsx");
+  document.getElementById("modalDownloadCatalogBtn")?.addEventListener("click", function() {
+      const catalogElement = document.getElementById("catalogPrintTargetArea");
+      
+      const originalText = this.innerHTML;
+      this.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Generating PDF...`;
+      this.disabled = true;
+
+      const catalogOptions = {
+        margin: 0,
+        filename: "Product-Catalog.pdf",
+        image: { type: "jpeg", quality: 1.0 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true, 
+            scrollY: 0, 
+            scrollX: 0,
+            onclone: function(clonedDoc) {
+                const target = clonedDoc.getElementById("catalogPrintTargetArea");
+                target.style.position = "fixed";
+                target.style.top = "0";
+                target.style.left = "0";
+                target.style.transform = "none";
+                target.style.margin = "0";
+                target.style.width = "210mm";
+                target.style.minWidth = "210mm";
+                target.style.maxWidth = "210mm";
+            } 
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"], before: ".catalog-page-break" }
+      };
+      
+      html2pdf().set(catalogOptions).from(catalogElement).save().then(() => {
+          this.innerHTML = originalText;
+          this.disabled = false;
+      });
   });
+
+  document.getElementById("topVchDetailBtn")?.addEventListener("click", () => document.getElementById("voucherDirectoryCard").scrollIntoView({ behavior: "smooth" }));
+  
+  document.getElementById("openAddModalBtn")?.addEventListener("click", () => {
+    triggerAddItemModal();
+  });
+
+  document.getElementById("btnWhatsAppConfig")?.addEventListener("click", () => window.open(`https://web.whatsapp.com/send?phone=7721092805&text=Hello`, "_blank"));
+  document.getElementById("btnEmailConfig")?.addEventListener("click", () => window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=kalpande402@gmail.com&su=Quotation`, "_blank"));
+
+  fetchItemMasterData();
+  fetchActiveCompanyProfile();
+  fetchSavedVouchers();
+  fetchNextVoucherNumber(); 
 });
