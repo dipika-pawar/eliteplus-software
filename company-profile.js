@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Vercel Production backend URL configured for Supabase & Vercel deployment
+  // Vercel live backend URL update keli ahe
   const API_URL = 'https://eliteplus-software-backend.vercel.app/api/company';
 
   // --- 1. Sidebar Toggle Mechanics ---
@@ -112,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const tr = document.createElement('tr');
         tr.setAttribute('data-id', company.id);
         
-        // Use print_name instead of ac_name
         const bankDetailText = company.bank_name ? `${company.bank_name} | ${company.ac_no} | ${company.ifsc_code} | ${company.print_name}` : '-';
 
         tr.innerHTML = `
@@ -194,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const compMobile = document.getElementById('compMobile').value.trim();
     const compWebsite = document.getElementById('compWebsite').value.trim();
     
-    // Bank 3 distinct fields
     const acNo = document.getElementById('acNo').value.trim();
     const ifscCode = document.getElementById('ifscCode').value.trim().toUpperCase();
     const bankName = document.getElementById('bankName').value.trim();
@@ -390,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- 4. ENTER KEY NAVIGATION SYSTEM ---
   const formFields = [
     { id: 'compName', type: 'input' }, { id: 'printName', type: 'input' },
     { id: 'gstNumber', type: 'input' }, { id: 'gstStatus', type: 'dropdown' },
