@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // API URL Mapping
-  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/account';
+  const API_URL = 'https://eliteplus-software-backend.vercel.app/api/accounts';
 
   // Elements Setup
   const accountForm = document.getElementById('accountForm');
